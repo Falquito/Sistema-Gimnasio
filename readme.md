@@ -3,3 +3,4 @@
 Integrantes
 
 - Joel Serrudo
+- Mauricio Martínez
