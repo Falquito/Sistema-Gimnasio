@@ -10,6 +10,7 @@ exports.GerentesModule = void 0;
 const common_1 = require("@nestjs/common");
 const gerentes_service_1 = require("./gerentes.service");
 const gerentes_controller_1 = require("./gerentes.controller");
+const auth_module_1 = require("../auth/auth.module");
 const typeorm_1 = require("@nestjs/typeorm");
 const Usuario_entity_1 = require("../entities/entities/Usuario.entity");
 const gerente_entity_1 = require("./entities/gerente.entity");
@@ -19,6 +20,7 @@ exports.GerentesModule = GerentesModule;
 exports.GerentesModule = GerentesModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            auth_module_1.AuthModule,
             typeorm_1.TypeOrmModule.forFeature([Usuario_entity_1.Usuario, gerente_entity_1.Gerente])
         ],
         controllers: [gerentes_controller_1.GerentesController],

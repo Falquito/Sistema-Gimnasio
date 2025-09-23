@@ -8,6 +8,7 @@ import { Gerente } from './entities/gerente.entity';
 
 @Module({
   imports:[
+    AuthModule,
     TypeOrmModule.forFeature([Usuario,Gerente])
   ],
   controllers: [GerentesController],
