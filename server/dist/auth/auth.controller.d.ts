@@ -13,21 +13,4 @@ export declare class AuthController {
         profesionales: import("../entities/entities/Profesionales.entity").Profesionales[];
         recepcionistas: import("../entities/entities/Recepcionista.entity").Recepcionista[];
     }>;
-    refresh(token: string): Promise<{
-        accessToken: string;
-    }>;
-    testingPrivateRoute(request: Express.Request, user: any, userEmail: string, RawHeaders: string[]): {
-        ok: boolean;
-        user: any;
-        userEmail: string;
-        RawHeaders: string[];
-    };
-    privateRoute2(user: any): {
-        ok: boolean;
-        user: any;
-    };
-    privateRoute3(user: any): {
-        ok: boolean;
-        user: any;
-    };
 }

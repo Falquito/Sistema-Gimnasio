@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gerente = void 0;
+const swagger_1 = require("@nestjs/swagger");
 const Usuario_entity_1 = require("../../entities/entities/Usuario.entity");
 const typeorm_1 = require("typeorm");
 let Gerente = class Gerente {
@@ -24,30 +25,37 @@ let Gerente = class Gerente {
 };
 exports.Gerente = Gerente;
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.PrimaryGeneratedColumn)("identity", { name: "id_gerente" }),
     __metadata("design:type", Number)
 ], Gerente.prototype, "idGerente", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.Column)("character varying", { name: "nombre_gerente", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "nombreGerente", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.Column)("character varying", { name: "apellido_gerente", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "apellidoGerente", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.Column)("character varying", { name: "telefono_gerente", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "telefonoGerente", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.Column)("character varying", { name: "dni", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "dni", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.Column)("character varying", { name: "fecha_alta", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "fechaAlta", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.Column)("character varying", { name: "fecha_ult_upd", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "fechaUltUpd", void 0);

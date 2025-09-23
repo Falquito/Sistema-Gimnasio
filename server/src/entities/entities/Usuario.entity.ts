@@ -2,9 +2,11 @@ import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeor
 import { Profesionales } from "./Profesionales.entity";
 import { Gerente } from '../../gerentes/entities/gerente.entity';
 import { Recepcionista } from "./Recepcionista.entity";
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity("usuario", { schema: "public" })
 export class Usuario {
+  @ApiProperty()
   @PrimaryGeneratedColumn("identity", { name: "id_usuario" })
   idUsuario: number;
 
