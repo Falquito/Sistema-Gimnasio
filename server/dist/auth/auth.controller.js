@@ -16,13 +16,8 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const login_dto_1 = require("./dto/login.dto");
-const passport_1 = require("@nestjs/passport");
-const get_user_decorator_1 = require("./decorators/get-user.decorator");
-const raw_header_decorator_1 = require("../decorators/raw-header.decorator");
-const user_role_guard_1 = require("./guards/user-role/user-role.guard");
-const role_protected_decorator_1 = require("./decorators/role-protected.decorator");
-const validRoles_1 = require("./interfaces/validRoles");
-const auth_decorator_1 = require("./decorators/auth.decorator");
+const swagger_1 = require("@nestjs/swagger");
+const loginResponse_1 = require("./types/loginResponse");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -31,75 +26,20 @@ let AuthController = class AuthController {
     login(dto) {
         return this.authService.login(dto);
     }
-    refresh(token) {
-        return this.authService.refresh(token);
-    }
-    testingPrivateRoute(request, user, userEmail, RawHeaders) {
-        console.log(request);
-        return {
-            ok: true,
-            user: user,
-            userEmail,
-            RawHeaders
-        };
-    }
-    privateRoute2(user) {
-        return {
-            ok: true,
-            user
-        };
-    }
-    privateRoute3(user) {
-        return {
-            ok: true,
-            user
-        };
-    }
 };
 exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Post)('login'),
+    (0, swagger_1.ApiResponse)({ status: 201, description: "Usuario Autenticado", type: loginResponse_1.UsuarioResponse }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: "Bad Request" }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: "Credenciales invalidas" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [login_dto_1.LoginDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "login", null);
-__decorate([
-    (0, common_1.Post)('refresh'),
-    __param(0, (0, common_1.Body)('refreshToken')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], AuthController.prototype, "refresh", null);
-__decorate([
-    (0, common_1.Get)("private"),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)()),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, get_user_decorator_1.GetUser)()),
-    __param(2, (0, get_user_decorator_1.GetUser)("idGerente")),
-    __param(3, (0, raw_header_decorator_1.RawHeaders)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, String, Array]),
-    __metadata("design:returntype", void 0)
-], AuthController.prototype, "testingPrivateRoute", null);
-__decorate([
-    (0, common_1.Get)("private2"),
-    (0, role_protected_decorator_1.RoleProtected)(validRoles_1.validRoles.gerente, validRoles_1.validRoles.recepcionista),
-    (0, common_1.UseGuards)((0, passport_1.AuthGuard)(), user_role_guard_1.UserRoleGuard),
-    __param(0, (0, get_user_decorator_1.GetUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AuthController.prototype, "privateRoute2", null);
-__decorate([
-    (0, common_1.Get)("private3"),
-    (0, auth_decorator_1.Auth)(validRoles_1.validRoles.recepcionista, validRoles_1.validRoles.trainer),
-    __param(0, (0, get_user_decorator_1.GetUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AuthController.prototype, "privateRoute3", null);
 exports.AuthController = AuthController = __decorate([
+    (0, swagger_1.ApiTags)("Auth"),
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);

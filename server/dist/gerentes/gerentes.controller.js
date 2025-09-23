@@ -16,7 +16,8 @@ exports.GerentesController = void 0;
 const common_1 = require("@nestjs/common");
 const gerentes_service_1 = require("./gerentes.service");
 const create_gerente_dto_1 = require("./dto/create-gerente.dto");
-const update_gerente_dto_1 = require("./dto/update-gerente.dto");
+const swagger_1 = require("@nestjs/swagger");
+const gerente_entity_1 = require("./entities/gerente.entity");
 let GerentesController = class GerentesController {
     gerentesService;
     constructor(gerentesService) {
@@ -31,16 +32,12 @@ let GerentesController = class GerentesController {
     findOne(id) {
         return this.gerentesService.findOne(+id);
     }
-    update(id, updateGerenteDto) {
-        return this.gerentesService.update(+id, updateGerenteDto);
-    }
-    remove(id) {
-        return this.gerentesService.remove(+id);
-    }
 };
 exports.GerentesController = GerentesController;
 __decorate([
     (0, common_1.Post)(),
+    (0, swagger_1.ApiResponse)({ status: 201, description: "Gerente creado", type: gerente_entity_1.Gerente }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_gerente_dto_1.CreateGerenteDto]),
@@ -59,22 +56,8 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], GerentesController.prototype, "findOne", null);
-__decorate([
-    (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_gerente_dto_1.UpdateGerenteDto]),
-    __metadata("design:returntype", void 0)
-], GerentesController.prototype, "update", null);
-__decorate([
-    (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], GerentesController.prototype, "remove", null);
 exports.GerentesController = GerentesController = __decorate([
+    (0, swagger_1.ApiTags)("Gerente"),
     (0, common_1.Controller)('gerentes'),
     __metadata("design:paramtypes", [gerentes_service_1.GerentesService])
 ], GerentesController);

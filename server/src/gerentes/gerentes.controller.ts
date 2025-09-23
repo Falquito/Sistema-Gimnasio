@@ -5,12 +5,16 @@ import { UpdateGerenteDto } from './dto/update-gerente.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Gerente } from './entities/gerente.entity';
+@ApiTags("Gerente")
 @Controller('gerentes')
 export class GerentesController {
   constructor(private readonly gerentesService: GerentesService) {}
 
   @Post()
+  @ApiResponse({status:201,description:"Gerente creado",type:Gerente})
+  @ApiResponse({status:401,description:"Unauthorized"})
   create(@Body() createGerenteDto: CreateGerenteDto) {
     return this.gerentesService.create(createGerenteDto);
   }
@@ -25,13 +29,13 @@ export class GerentesController {
     return this.gerentesService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGerenteDto: UpdateGerenteDto) {
-    return this.gerentesService.update(+id, updateGerenteDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateGerenteDto: UpdateGerenteDto) {
+  //   return this.gerentesService.update(+id, updateGerenteDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.gerentesService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.gerentesService.remove(+id);
+  // }
 }

@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const Profesionales_entity_1 = require("./Profesionales.entity");
 const gerente_entity_1 = require("../../gerentes/entities/gerente.entity");
 const Recepcionista_entity_1 = require("./Recepcionista.entity");
+const swagger_1 = require("@nestjs/swagger");
 let Usuario = class Usuario {
     idUsuario;
     email;
@@ -25,6 +26,7 @@ let Usuario = class Usuario {
 };
 exports.Usuario = Usuario;
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.PrimaryGeneratedColumn)("identity", { name: "id_usuario" }),
     __metadata("design:type", Number)
 ], Usuario.prototype, "idUsuario", void 0);
