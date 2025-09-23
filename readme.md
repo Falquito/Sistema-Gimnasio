@@ -26,3 +26,26 @@
 
 1. JWT_SECRET_KEY
 2. DB_URL
+
+## ¿Queres contribuir?
+### Usamos GitHub Flow para realizar los cambios
+1. Añadir el repositorio remoto con
+   ```
+   git remote add [nombre del repositorio remoto ej: origin] [link del repositorio]
+   ```
+2. Traer la ultima version del proyecto con
+  ```
+  git pull [nombre del repositorio remoto ej: origin] main
+  ```
+3. Una vez realizado las nuevas features, subiro a una nueva rama en el repositorio
+   ```
+   git switch -c feature/[nombre de la caracteristica que hiciste]
+   ```
+4. Guardar los cambios en esa rama
+   ```
+   git status #Ves si hay cambios o no
+   git add .
+   git commit -m "feat:[nombre de la caracteristica]"
+   git push [nombre del repositorio remoto ej: origin] feature/[nombre de la caracteristica que hiciste]
+   ```
+5. Listo!
