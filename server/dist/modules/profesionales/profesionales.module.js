@@ -1,0 +1,30 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProfesionalesModule = void 0;
+const common_1 = require("@nestjs/common");
+const typeorm_1 = require("@nestjs/typeorm");
+const profesionales_controller_1 = require("./profesionales.controller");
+const profesionales_service_1 = require("./profesionales.service");
+const Profesionales_entity_1 = require("../../entities/entities/Profesionales.entity");
+const Servicio_entity_1 = require("../../entities/entities/Servicio.entity");
+const ProfesionalesPorServicios_entity_1 = require("../../entities/entities/ProfesionalesPorServicios.entity");
+let ProfesionalesModule = class ProfesionalesModule {
+};
+exports.ProfesionalesModule = ProfesionalesModule;
+exports.ProfesionalesModule = ProfesionalesModule = __decorate([
+    (0, common_1.Module)({
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([Profesionales_entity_1.Profesionales, Servicio_entity_1.Servicio, ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios]),
+        ],
+        controllers: [profesionales_controller_1.ProfesionalesController],
+        providers: [profesionales_service_1.ProfesionalesService],
+        exports: [profesionales_service_1.ProfesionalesService],
+    })
+], ProfesionalesModule);
+//# sourceMappingURL=profesionales.module.js.map
