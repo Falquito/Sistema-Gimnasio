@@ -1,0 +1,13 @@
+[
+  {
+    "name": "default",
+    "type": "postgres",
+    "host": "dpg-d37n7o6mcj7s73fopf5g-a.virginia-postgres.render.com",
+    "port": 5432,
+    "username": "shark",
+    "password": "lyjpzBjKcGOGtG1dm6QJ5DxJmqIkwaks",
+    "database": "",
+    "synchronize": false,
+    "entities": ["entities/*.js"]
+  }
+]
