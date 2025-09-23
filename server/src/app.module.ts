@@ -24,7 +24,11 @@ import { Gerente } from './gerentes/entities/gerente.entity';
     AuthModule,
     TypeOrmModule.forRoot({
       type:"postgres",
-      url:process.env.DB_URL,
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT ?? '5432', 10),
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,            // aquí no hay que codificar
+        database: process.env.DB_NAME,
       ssl:
       {
         rejectUnauthorized:false
