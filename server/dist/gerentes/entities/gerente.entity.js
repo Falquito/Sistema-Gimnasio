@@ -25,37 +25,37 @@ let Gerente = class Gerente {
 };
 exports.Gerente = Gerente;
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: 1 }),
     (0, typeorm_1.PrimaryGeneratedColumn)("identity", { name: "id_gerente" }),
     __metadata("design:type", Number)
 ], Gerente.prototype, "idGerente", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: "Juan" }),
     (0, typeorm_1.Column)("character varying", { name: "nombre_gerente", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "nombreGerente", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: "Perez" }),
     (0, typeorm_1.Column)("character varying", { name: "apellido_gerente", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "apellidoGerente", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: "string" }),
     (0, typeorm_1.Column)("character varying", { name: "telefono_gerente", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "telefonoGerente", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: "string" }),
     (0, typeorm_1.Column)("character varying", { name: "dni", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "dni", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: "2020-09-23" }),
     (0, typeorm_1.Column)("character varying", { name: "fecha_alta", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "fechaAlta", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ example: "2025-09-23" }),
     (0, typeorm_1.Column)("character varying", { name: "fecha_ult_upd", nullable: true }),
     __metadata("design:type", Object)
 ], Gerente.prototype, "fechaUltUpd", void 0);
