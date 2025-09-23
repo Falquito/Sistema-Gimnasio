@@ -4,6 +4,7 @@ import { CreateGerenteDto } from './dto/create-gerente.dto';
 import { UpdateGerenteDto } from './dto/update-gerente.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/decorators/roles.decorator';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('gerentes')
 export class GerentesController {
