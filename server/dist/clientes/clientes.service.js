@@ -31,9 +31,22 @@ let ClientesService = class ClientesService {
         await queryRunner.startTransaction();
         try {
             const servicioBdd = await queryRunner.manager.findOneBy(Servicio_entity_1.Servicio, {
-                nombre: nombre
+                nombre: servicio
             });
-            const cliente = queryRunner.manager.create(cliente_entity_1.Cliente, createClienteDto);
+            const cliente = queryRunner.manager.create(cliente_entity_1.Cliente, {
+                nombre_cliente: nombre,
+                apellido_cliente: apellido,
+                telefono_cliente: telefono,
+                dni: dni,
+                genero: genero,
+                fecha_alta: fecha_alta,
+                fecha_ult_upd: fecha_alta_upd,
+                peso: peso,
+                altura: altura,
+                fecha_nacimiento: fecha_nacimiento,
+                observaciones: observaciones,
+                nivel_fisico: nivel_fisico,
+            });
             await queryRunner.manager.save(cliente);
             const servicioPorCliente = queryRunner.manager.create(ClientesPorServicios_entity_1.ClientesPorServicios, {
                 idCliente: cliente,
@@ -45,6 +58,7 @@ let ClientesService = class ClientesService {
         }
         catch (error) {
             await queryRunner.rollbackTransaction();
+            console.log(error);
             throw new common_1.InternalServerErrorException(error);
         }
         finally {
