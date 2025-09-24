@@ -6,7 +6,7 @@ export declare class Turnos {
     fecha: string | null;
     horaInicio: string | null;
     horaFin: string | null;
-    idCliente: number | null;
+    idCliente: number;
     rutina: string | null;
     observacion: string | null;
     estado: string | null;

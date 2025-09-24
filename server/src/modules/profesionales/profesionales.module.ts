@@ -5,9 +5,10 @@ import { ProfesionalesService } from './profesionales.service';
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
 import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [
+  imports: [AuthModule,
     TypeOrmModule.forFeature([Profesionales, Servicio, ProfesionalesPorServicios]),
   ],
   controllers: [ProfesionalesController],

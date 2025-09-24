@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const Profesionales_entity_1 = require("./Profesionales.entity");
 const Recepcionista_entity_1 = require("./Recepcionista.entity");
 const Servicio_entity_1 = require("./Servicio.entity");
+const cliente_entity_1 = require("../../clientes/entities/cliente.entity");
 let Turnos = class Turnos {
     idTurno;
     fecha;
@@ -47,8 +48,8 @@ __decorate([
     __metadata("design:type", Object)
 ], Turnos.prototype, "horaFin", void 0);
 __decorate([
-    (0, typeorm_1.Column)("integer", { name: "id_cliente", nullable: true }),
-    __metadata("design:type", Object)
+    (0, typeorm_1.ManyToOne)(() => cliente_entity_1.Cliente, (cliente) => cliente.turnos),
+    __metadata("design:type", Number)
 ], Turnos.prototype, "idCliente", void 0);
 __decorate([
     (0, typeorm_1.Column)("character varying", { name: "rutina", nullable: true }),

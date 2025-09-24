@@ -1,6 +1,9 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ProfesionalesService } from './profesionales.service';
 import { ListProfesionalesQuery } from 'src/modules/profesionales/dto/list-profesionales.query';
+import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { validRoles } from 'src/auth/interfaces/validRoles';
 
 @Controller('profesionales')
 export class ProfesionalesController {
@@ -24,5 +27,11 @@ export class ProfesionalesController {
     @Param('id', new ParseUUIDPipe()) id: number,
   ) {
     return this.service.findServiciosByProfesional(id);
+  }
+
+  @Post()
+  @Auth(validRoles.gerente)
+  create(@Body() createProfesionalDto:CreateProfesionaleDto){
+    return this.service.create(createProfesionalDto);
   }
 }

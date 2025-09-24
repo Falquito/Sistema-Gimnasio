@@ -1,6 +1,7 @@
 import { Servicio } from "./Servicio.entity";
+import { Cliente } from '../../clientes/entities/cliente.entity';
 export declare class ClientesPorServicios {
     id: number;
-    idCliente: number | null;
+    idCliente: Cliente;
     idServicio: Servicio;
 }

@@ -16,6 +16,10 @@ import { Servicio } from './entities/entities/Servicio.entity';
 import { ClientesPorServicios } from './entities/entities/ClientesPorServicios.entity';
 import { ProfesionalesPorServicios } from './entities/entities/ProfesionalesPorServicios.entity';
 import { Gerente } from './gerentes/entities/gerente.entity';
+import { TurnosModule } from './modules/turnos/turnos.module';
+import { ServiciosModule } from './modules/servicios/servicios.module';
+import { ProfesionalesModule } from './modules/profesionales/profesionales.module';
+import { ClientesModule } from './clientes/clientes.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -24,11 +28,7 @@ import { Gerente } from './gerentes/entities/gerente.entity';
     AuthModule,
     TypeOrmModule.forRoot({
       type:"postgres",
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT ?? '5432', 10),
-        username: process.env.DB_USER,
-        password: process.env.DB_PASS,            // aquí no hay que codificar
-        database: process.env.DB_NAME,
+        url:process.env.DB_URL,
       ssl:
       {
         rejectUnauthorized:false
@@ -40,7 +40,11 @@ import { Gerente } from './gerentes/entities/gerente.entity';
         __dirname + '/**/*.entity{.ts,.js}'
       ]
     }),
-    GerentesModule
+    GerentesModule,
+    TurnosModule,
+    ServiciosModule,
+    ProfesionalesModule,
+    ClientesModule
   ],
   controllers: [AppController, AuthController],
   providers: [AppService,

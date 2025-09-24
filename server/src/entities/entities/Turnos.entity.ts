@@ -2,6 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 import { Profesionales } from "./Profesionales.entity";
 import { Recepcionista } from "./Recepcionista.entity";
 import { Servicio } from "./Servicio.entity";
+import { Cliente } from "../../clientes/entities/cliente.entity";
 
 @Entity("turnos", { schema: "public" })
 export class Turnos {
@@ -17,8 +18,8 @@ export class Turnos {
   @Column("character varying", { name: "hora_fin", nullable: true })
   horaFin: string | null;
 
-  @Column("integer", { name: "id_cliente", nullable: true })
-  idCliente: number | null;
+  @ManyToOne(()=>Cliente,(cliente)=>cliente.turnos)
+    idCliente: number;
 
   @Column("character varying", { name: "rutina", nullable: true })
   rutina: string | null;

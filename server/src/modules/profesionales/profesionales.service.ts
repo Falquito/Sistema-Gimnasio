@@ -1,15 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
 import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
 import { ListProfesionalesQuery } from 'src/modules/profesionales/dto/list-profesionales.query';
+import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
 
+import { Usuario } from 'src/entities/entities/Usuario.entity';
+import * as bcrypt from "bcrypt"
 @Injectable()
 export class ProfesionalesService {
   constructor(
+    @InjectDataSource()
+    private readonly dataSource:DataSource,
     @InjectRepository(Profesionales)
     private readonly profRepo: Repository<Profesionales>,
 
@@ -19,6 +24,67 @@ export class ProfesionalesService {
     @InjectRepository(ProfesionalesPorServicios)
     private readonly ppsRepo: Repository<ProfesionalesPorServicios>,
   ) {}
+
+  private async hashPassword(plainPassword: string): Promise<string> {
+      const saltRounds = 10; // costo, más alto = más seguro pero más lento
+      const salt = await bcrypt.genSalt(saltRounds);
+      const hashed = await bcrypt.hash(plainPassword, salt);
+    return hashed
+  }
+  async create(createProfesionalDto:CreateProfesionaleDto){
+        const {apellido,dni,nombre,telefono,email,contraseña,servicio} = createProfesionalDto
+        const queryRunner = this.dataSource.createQueryRunner()
+        const fecha = new Date();
+        const contraseñaHasheada = await this.hashPassword(contraseña)
+    
+        const year = fecha.getFullYear() % 100; // últimos 2 dígitos
+        const month = fecha.getMonth() + 1; // los meses van de 0 a 11
+        const day = fecha.getDate();
+     
+        const fechaFormateada = `${year.toString().padStart(2,'0')}-${month.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
+        try {
+          
+          //Creo el usuario con el gmail y correo del gerente
+          const usuario = queryRunner.manager.create(Usuario,{
+            
+            email,
+            contraseA:contraseñaHasheada,
+            rol:"trainer"
+          })
+    
+          console.log(usuario)
+          await queryRunner.manager.save(usuario)
+          const profesional = queryRunner.manager.create(Profesionales,{
+            idUsuario:usuario,
+            nombreProfesional:nombre,
+            apellidoProfesional:apellido,
+            email:email,
+            dni:dni,
+            telefono:telefono,
+            fechaAlta:fechaFormateada,
+            fechaUltUpd:"-"
+          })
+    
+          await queryRunner.manager.save(profesional)
+          const servicioBdd = await queryRunner.manager.findOneBy(Servicio,{nombre:servicio})
+          const ppS = queryRunner.manager.create(ProfesionalesPorServicios,{
+            idServicio:servicioBdd!,
+            idProfesional:profesional
+          })
+          await queryRunner.manager.save(ppS)
+          await queryRunner.commitTransaction()
+          return profesional;
+    
+        } catch (error) {
+          await queryRunner.rollbackTransaction()
+          console.log(error)
+          throw new InternalServerErrorException("Necesito que revise los logs por favor.")
+        }finally{
+          await queryRunner.release()
+        }
+  }
 
   /**
    * Listar/filtrar profesionales con paginación.

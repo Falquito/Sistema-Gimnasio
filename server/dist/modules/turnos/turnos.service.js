@@ -201,7 +201,7 @@ let TurnosService = class TurnosService {
             qb.andWhere('t.clienteId = :cid', { cid: q.clienteId });
         if (q.estado)
             qb.andWhere('t.estado = :e', { e: q.estado });
-        qb.orderBy('t.inicio', 'DESC');
+        qb.orderBy('t.hora_inicio', 'DESC');
         return qb.getMany();
     }
     async getById(id) {
