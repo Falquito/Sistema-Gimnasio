@@ -4,6 +4,7 @@ import { ReprogramarTurnoDto } from './dto/reprogramar-turno.dto';
 import { CancelarTurnoDto } from './dto/cancelar-turno.dto';
 import { DisponibilidadQuery } from './dto/disponibilidad.query';
 import { AgendaQuery } from './dto/agenda.query';
+import { Turnos } from 'src/entities/entities/Turnos.entity';
 export declare class TurnosController {
     private readonly turnosService;
     constructor(turnosService: TurnosService);
@@ -17,10 +18,10 @@ export declare class TurnosController {
             horaFin: string;
         }[];
     }>;
-    crear(dto: CrearTurnoDto): Promise<import("../../entities/entities/Turnos.entity").Turnos>;
-    cancelar(id: number, dto: CancelarTurnoDto): Promise<import("../../entities/entities/Turnos.entity").Turnos>;
-    reprogramar(id: number, dto: ReprogramarTurnoDto): Promise<import("../../entities/entities/Turnos.entity").Turnos>;
-    agenda(q: AgendaQuery): Promise<import("../../entities/entities/Turnos.entity").Turnos[]>;
-    findOne(id: number): Promise<import("../../entities/entities/Turnos.entity").Turnos>;
-    listar(clienteId?: string, estado?: string): Promise<import("../../entities/entities/Turnos.entity").Turnos[]>;
+    crear(dto: CrearTurnoDto): Promise<Turnos>;
+    cancelar(id: number, dto: CancelarTurnoDto): Promise<Turnos>;
+    reprogramar(id: number, dto: ReprogramarTurnoDto): Promise<Turnos>;
+    agenda(q: AgendaQuery): Promise<Turnos[]>;
+    findOne(id: number): Promise<Turnos>;
+    listar(clienteId?: string, estado?: string): Promise<Turnos[]>;
 }

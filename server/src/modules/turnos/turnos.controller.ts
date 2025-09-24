@@ -8,6 +8,8 @@ import { ReprogramarTurnoDto } from './dto/reprogramar-turno.dto';
 import { CancelarTurnoDto } from './dto/cancelar-turno.dto';
 import { DisponibilidadQuery } from './dto/disponibilidad.query';
 import { AgendaQuery } from './dto/agenda.query';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { Turnos } from 'src/entities/entities/Turnos.entity';
 
 @Controller('turnos')
 export class TurnosController {
@@ -21,6 +23,7 @@ export class TurnosController {
 
   // HU-5: crear (registrar turno)
   @Post()
+  @ApiOkResponse({description:"Devuelve turno creado",type:Turnos})
   crear(@Body() dto: CrearTurnoDto) {
     return this.turnosService.crear(dto);
   }
@@ -51,6 +54,7 @@ export class TurnosController {
   }
 
   @Get()
+  @ApiOkResponse({type:Turnos,isArray:true})
   listar(@Query('clienteId') clienteId?: string, @Query('estado') estado?: string) {
     return this.turnosService.listar({
       clienteId: clienteId ? Number(clienteId) : undefined,
