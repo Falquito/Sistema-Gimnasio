@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom"
 import { SidebarDemo } from "../components/SidebarDemo"
 
 interface LayoutProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function Layout({ children }: LayoutProps) {
