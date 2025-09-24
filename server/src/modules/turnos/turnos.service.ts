@@ -36,7 +36,8 @@ export class TurnosService {
     if (!servicio) throw new NotFoundException('Servicio no encontrado');
 
     // @ts-ignore
-    const duracion = (servicio as any).duracionMin ?? fallback;
+    const duracion =30
+    console.log(duracion)
     if (!duracion) {
       throw new UnprocessableEntityException('No se conoce la duración del servicio');
     }
@@ -176,9 +177,13 @@ export class TurnosService {
           idServicio: { idServicio: dto.servicioId },       // relación
           idProfesional: { idProfesionales: dto.profesionalId }, // relación
           fecha,                                     // "YYYY-MM-DD"
-          horaInicio,                                // "HH:mm"
-          horaFin,                                   // "HH:mm"
+          horaInicio:horaInicio,                                // "HH:mm"
+          horaFin:horaFin,                                   // "HH:mm"
           estado: 'PENDIENTE',
+          rutina:dto.rutina,
+          observacion:dto.observacion,
+          fechaAlta:fecha,
+          fechaUltUpd:"-"
         });
       
         return mgr.getRepository(Turnos).save(turno);
