@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClientesPorServicios = void 0;
 const typeorm_1 = require("typeorm");
 const Servicio_entity_1 = require("./Servicio.entity");
+const cliente_entity_1 = require("../../clientes/entities/cliente.entity");
 let ClientesPorServicios = class ClientesPorServicios {
     id;
     idCliente;
@@ -23,8 +24,8 @@ __decorate([
     __metadata("design:type", Number)
 ], ClientesPorServicios.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)("integer", { name: "id_cliente", nullable: true }),
-    __metadata("design:type", Object)
+    (0, typeorm_1.ManyToOne)(() => cliente_entity_1.Cliente, (cliente) => cliente.clientesPorServicios),
+    __metadata("design:type", cliente_entity_1.Cliente)
 ], ClientesPorServicios.prototype, "idCliente", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => Servicio_entity_1.Servicio, (servicio) => servicio.clientesPorServicios),

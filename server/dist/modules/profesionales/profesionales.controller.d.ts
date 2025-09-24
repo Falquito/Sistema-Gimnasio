@@ -1,5 +1,6 @@
 import { ProfesionalesService } from './profesionales.service';
 import { ListProfesionalesQuery } from 'src/modules/profesionales/dto/list-profesionales.query';
+import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
 export declare class ProfesionalesController {
     private readonly service;
     constructor(service: ProfesionalesService);
@@ -11,4 +12,5 @@ export declare class ProfesionalesController {
     }>;
     findOne(id: number): Promise<import("../../entities/entities/Profesionales.entity").Profesionales>;
     findServicios(id: number): Promise<import("../../entities/entities/Servicio.entity").Servicio[]>;
+    create(createProfesionalDto: CreateProfesionaleDto): Promise<import("../../entities/entities/Profesionales.entity").Profesionales>;
 }

@@ -10,8 +10,8 @@ exports.ServiciosModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const servicios_service_1 = require("./servicios.service");
-const servicios_controller_1 = require("./servicios.controller");
 const Servicio_entity_1 = require("../../entities/entities/Servicio.entity");
+const servicios_controller_1 = require("./servicios.controller");
 let ServiciosModule = class ServiciosModule {
 };
 exports.ServiciosModule = ServiciosModule;

@@ -5,28 +5,50 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiciosService = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
+const Servicio_entity_1 = require("../../entities/entities/Servicio.entity");
 let ServiciosService = class ServiciosService {
-    create(createServicioDto) {
-        return 'This action adds a new servicio';
+    servRepo;
+    constructor(servRepo) {
+        this.servRepo = servRepo;
     }
     findAll() {
-        return `This action returns all servicios`;
+        return this.servRepo.find();
     }
-    findOne(id) {
-        return `This action returns a #${id} servicio`;
+    async findOne(id) {
+        const servicio = await this.servRepo.findOne({ where: { idServicio: id } });
+        if (!servicio)
+            throw new common_1.NotFoundException('Servicio no encontrado');
+        return servicio;
     }
-    update(id, updateServicioDto) {
-        return `This action updates a #${id} servicio`;
+    create(dto) {
+        const servicio = this.servRepo.create(dto);
+        return this.servRepo.save(servicio);
     }
-    remove(id) {
-        return `This action removes a #${id} servicio`;
+    async update(id, dto) {
+        const servicio = await this.findOne(id);
+        Object.assign(servicio, dto);
+        return this.servRepo.save(servicio);
+    }
+    async remove(id) {
+        const servicio = await this.findOne(id);
+        return this.servRepo.remove(servicio);
     }
 };
 exports.ServiciosService = ServiciosService;
 exports.ServiciosService = ServiciosService = __decorate([
-    (0, common_1.Injectable)()
+    (0, common_1.Injectable)(),
+    __param(0, (0, typeorm_1.InjectRepository)(Servicio_entity_1.Servicio)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
 ], ServiciosService);
 //# sourceMappingURL=servicios.service.js.map

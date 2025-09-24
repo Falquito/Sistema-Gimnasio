@@ -251,7 +251,7 @@ export class TurnosService {
     const qb = this.turnoRepo.createQueryBuilder('t');
     if (q.clienteId) qb.andWhere('t.clienteId = :cid', { cid: q.clienteId });
     if (q.estado) qb.andWhere('t.estado = :e', { e: q.estado });
-    qb.orderBy('t.inicio', 'DESC');
+    qb.orderBy('t.hora_inicio', 'DESC');
     return qb.getMany();
   }
   public async getById(id: number) {

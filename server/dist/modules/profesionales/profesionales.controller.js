@@ -16,6 +16,9 @@ exports.ProfesionalesController = void 0;
 const common_1 = require("@nestjs/common");
 const profesionales_service_1 = require("./profesionales.service");
 const list_profesionales_query_1 = require("./dto/list-profesionales.query");
+const create_profesionale_dto_1 = require("./dto/create-profesionale.dto");
+const auth_decorator_1 = require("../../auth/decorators/auth.decorator");
+const validRoles_1 = require("../../auth/interfaces/validRoles");
 let ProfesionalesController = class ProfesionalesController {
     service;
     constructor(service) {
@@ -29,6 +32,9 @@ let ProfesionalesController = class ProfesionalesController {
     }
     findServicios(id) {
         return this.service.findServiciosByProfesional(id);
+    }
+    create(createProfesionalDto) {
+        return this.service.create(createProfesionalDto);
     }
 };
 exports.ProfesionalesController = ProfesionalesController;
@@ -53,6 +59,14 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], ProfesionalesController.prototype, "findServicios", null);
+__decorate([
+    (0, common_1.Post)(),
+    (0, auth_decorator_1.Auth)(validRoles_1.validRoles.gerente),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_profesionale_dto_1.CreateProfesionaleDto]),
+    __metadata("design:returntype", void 0)
+], ProfesionalesController.prototype, "create", null);
 exports.ProfesionalesController = ProfesionalesController = __decorate([
     (0, common_1.Controller)('profesionales'),
     __metadata("design:paramtypes", [profesionales_service_1.ProfesionalesService])

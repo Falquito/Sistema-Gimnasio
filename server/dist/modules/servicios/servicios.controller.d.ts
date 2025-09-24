@@ -4,9 +4,9 @@ import { UpdateServicioDto } from './dto/update-servicio.dto';
 export declare class ServiciosController {
     private readonly service;
     constructor(service: ServiciosService);
-    findAll(): string;
-    findOne(id: number): string;
-    create(dto: CreateServicioDto): string;
-    update(id: number, dto: UpdateServicioDto): string;
-    remove(id: number): string;
+    findAll(): Promise<import("../../entities/entities/Servicio.entity").Servicio[]>;
+    findOne(id: number): Promise<import("../../entities/entities/Servicio.entity").Servicio>;
+    create(dto: CreateServicioDto): Promise<import("../../entities/entities/Servicio.entity").Servicio>;
+    update(id: number, dto: UpdateServicioDto): Promise<import("../../entities/entities/Servicio.entity").Servicio>;
+    remove(id: number): Promise<import("../../entities/entities/Servicio.entity").Servicio>;
 }
