@@ -37,7 +37,8 @@ let TurnosService = class TurnosService {
         const servicio = await this.servRepo.findOne({ where: { idServicio: servicioId } });
         if (!servicio)
             throw new common_1.NotFoundException('Servicio no encontrado');
-        const duracion = servicio.duracionMin ?? fallback;
+        const duracion = 30;
+        console.log(duracion);
         if (!duracion) {
             throw new common_1.UnprocessableEntityException('No se conoce la duración del servicio');
         }
@@ -140,9 +141,13 @@ let TurnosService = class TurnosService {
                     idServicio: { idServicio: dto.servicioId },
                     idProfesional: { idProfesionales: dto.profesionalId },
                     fecha,
-                    horaInicio,
-                    horaFin,
+                    horaInicio: horaInicio,
+                    horaFin: horaFin,
                     estado: 'PENDIENTE',
+                    rutina: dto.rutina,
+                    observacion: dto.observacion,
+                    fechaAlta: fecha,
+                    fechaUltUpd: "-"
                 });
                 return mgr.getRepository(Turnos_entity_1.Turnos).save(turno);
             });

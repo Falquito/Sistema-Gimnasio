@@ -3,4 +3,6 @@ export declare class CrearTurnoDto {
     servicioId: number;
     profesionalId: number;
     inicio: string;
+    rutina: string;
+    observacion: string;
 }

@@ -17,6 +17,8 @@ class CrearTurnoDto {
     servicioId;
     profesionalId;
     inicio;
+    rutina;
+    observacion;
 }
 exports.CrearTurnoDto = CrearTurnoDto;
 __decorate([
@@ -41,4 +43,12 @@ __decorate([
     (0, class_validator_1.IsISO8601)(),
     __metadata("design:type", String)
 ], CrearTurnoDto.prototype, "inicio", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CrearTurnoDto.prototype, "rutina", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CrearTurnoDto.prototype, "observacion", void 0);
 //# sourceMappingURL=crear-turno.dto.js.map
