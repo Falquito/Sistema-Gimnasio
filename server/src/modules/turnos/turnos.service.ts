@@ -248,12 +248,19 @@ export class TurnosService {
   }
   
   async listar(q: { clienteId?: number; estado?: string }) {
-    const qb = this.turnoRepo.createQueryBuilder('t');
-    if (q.clienteId) qb.andWhere('t.clienteId = :cid', { cid: q.clienteId });
-    if (q.estado) qb.andWhere('t.estado = :e', { e: q.estado });
-    qb.orderBy('t.hora_inicio', 'DESC');
-    return qb.getMany();
-  }
+  const qb = this.turnoRepo.createQueryBuilder('t')
+    .leftJoinAndSelect('t.idServicio', 'servicio')
+    .leftJoinAndSelect('t.idProfesional', 'profesional')
+    .leftJoinAndSelect('t.idCliente', 'cliente');  // ← Agregar este JOIN
+    
+  if (q.clienteId) qb.andWhere('t.idCliente = :cid', { cid: q.clienteId });
+  if (q.estado) qb.andWhere('t.estado = :e', { e: q.estado });
+  
+  qb.orderBy('t.fecha', 'DESC')
+    .addOrderBy('t.horaInicio', 'DESC');
+  
+  return qb.getMany();
+}
   public async getById(id: number) {
   return this.getTurnoOrThrow(id);
   }

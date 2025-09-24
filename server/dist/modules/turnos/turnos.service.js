@@ -196,12 +196,16 @@ let TurnosService = class TurnosService {
             .getMany();
     }
     async listar(q) {
-        const qb = this.turnoRepo.createQueryBuilder('t');
+        const qb = this.turnoRepo.createQueryBuilder('t')
+            .leftJoinAndSelect('t.idServicio', 'servicio')
+            .leftJoinAndSelect('t.idProfesional', 'profesional')
+            .leftJoinAndSelect('t.idCliente', 'cliente');
         if (q.clienteId)
-            qb.andWhere('t.clienteId = :cid', { cid: q.clienteId });
+            qb.andWhere('t.idCliente = :cid', { cid: q.clienteId });
         if (q.estado)
             qb.andWhere('t.estado = :e', { e: q.estado });
-        qb.orderBy('t.hora_inicio', 'DESC');
+        qb.orderBy('t.fecha', 'DESC')
+            .addOrderBy('t.horaInicio', 'DESC');
         return qb.getMany();
     }
     async getById(id) {
