@@ -20,6 +20,8 @@ const reprogramar_turno_dto_1 = require("./dto/reprogramar-turno.dto");
 const cancelar_turno_dto_1 = require("./dto/cancelar-turno.dto");
 const disponibilidad_query_1 = require("./dto/disponibilidad.query");
 const agenda_query_1 = require("./dto/agenda.query");
+const swagger_1 = require("@nestjs/swagger");
+const Turnos_entity_1 = require("../../entities/entities/Turnos.entity");
 let TurnosController = class TurnosController {
     turnosService;
     constructor(turnosService) {
@@ -60,6 +62,7 @@ __decorate([
 ], TurnosController.prototype, "getDisponibles", null);
 __decorate([
     (0, common_1.Post)(),
+    (0, swagger_1.ApiOkResponse)({ description: "Devuelve turno creado", type: Turnos_entity_1.Turnos }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [crear_turno_dto_1.CrearTurnoDto]),
@@ -97,6 +100,7 @@ __decorate([
 ], TurnosController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, swagger_1.ApiOkResponse)({ type: Turnos_entity_1.Turnos, isArray: true }),
     __param(0, (0, common_1.Query)('clienteId')),
     __param(1, (0, common_1.Query)('estado')),
     __metadata("design:type", Function),

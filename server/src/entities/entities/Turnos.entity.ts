@@ -3,52 +3,54 @@ import { Profesionales } from "./Profesionales.entity";
 import { Recepcionista } from "./Recepcionista.entity";
 import { Servicio } from "./Servicio.entity";
 import { Cliente } from "../../clientes/entities/cliente.entity";
+import { ApiProperty } from "@nestjs/swagger";
 
 @Entity("turnos", { schema: "public" })
 export class Turnos {
+  @ApiProperty()
   @Column("integer", { primary: true, name: "id_turno" })
   idTurno: number;
-
+  @ApiProperty()
   @Column("character varying", { name: "fecha", nullable: true })
-  fecha: string | null;
-
+  fecha: string;
+  @ApiProperty()
   @Column("character varying", { name: "hora_inicio", nullable: true })
-  horaInicio: string | null;
-
+  horaInicio: string;
+  @ApiProperty()
   @Column("character varying", { name: "hora_fin", nullable: true })
-  horaFin: string | null;
-
-  @ManyToOne(()=>Cliente,(cliente)=>cliente.turnos)
+  horaFin: string;
+  @ApiProperty({example:1})
+  @ManyToOne(()=>Cliente,(cliente)=>cliente.turnos,{eager:true})
     idCliente: number;
-
+  @ApiProperty()
   @Column("character varying", { name: "rutina", nullable: true })
-  rutina: string | null;
-
+  rutina: string;
+  @ApiProperty()
   @Column("character varying", { name: "observacion", nullable: true })
-  observacion: string | null;
-
+  observacion: string;
+  @ApiProperty()
   @Column("character varying", { name: "estado", nullable: true })
-  estado: string | null;
-
+  estado: string;
+  @ApiProperty()
   @Column("character varying", { name: "fecha_alta", nullable: true })
-  fechaAlta: string | null;
-
+  fechaAlta: string;
+  @ApiProperty()
   @Column("character varying", { name: "fecha_ult_upd", nullable: true })
-  fechaUltUpd: string | null;
-
-  @ManyToOne(() => Profesionales, (profesionales) => profesionales.turnos)
+  fechaUltUpd: string;
+  
+  @ManyToOne(() => Profesionales, (profesionales) => profesionales.turnos,{eager:true})
   @JoinColumn([
     { name: "id_profesional", referencedColumnName: "idProfesionales" },
   ])
   idProfesional: Profesionales;
-
-  @ManyToOne(() => Recepcionista, (recepcionista) => recepcionista.turnos)
+  
+  @ManyToOne(() => Recepcionista, (recepcionista) => recepcionista.turnos,{eager:true})
   @JoinColumn([
     { name: "id_recepcionista", referencedColumnName: "idRecepcionista" },
   ])
   idRecepcionista: Recepcionista;
-
-  @ManyToOne(() => Servicio, (servicio) => servicio.turnos)
+ 
+  @ManyToOne(() => Servicio, (servicio) => servicio.turnos,{eager:true})
   @JoinColumn([{ name: "id_servicio", referencedColumnName: "idServicio" }])
   idServicio: Servicio;
 }
