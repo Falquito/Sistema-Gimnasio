@@ -23,10 +23,23 @@ export class ClientesService {
 
     try {
       const servicioBdd = await queryRunner.manager.findOneBy(Servicio,{
-        nombre:nombre
+        nombre:servicio
       })
 
-      const cliente = queryRunner.manager.create(Cliente,createClienteDto)
+      const cliente = queryRunner.manager.create(Cliente,{
+        nombre_cliente:nombre,
+        apellido_cliente:apellido,
+        telefono_cliente:telefono,
+        dni:dni,
+        genero:genero,
+        fecha_alta:fecha_alta,
+        fecha_ult_upd:fecha_alta_upd,
+        peso:peso,
+        altura:altura,
+        fecha_nacimiento:fecha_nacimiento,
+        observaciones:observaciones,
+        nivel_fisico:nivel_fisico,
+      })
 
       await queryRunner.manager.save(cliente)
 
@@ -41,6 +54,7 @@ export class ClientesService {
       return cliente
     } catch (error) {
       await queryRunner.rollbackTransaction()
+      console.log(error)
       throw new InternalServerErrorException(error)
     }finally{
       await queryRunner.release()
