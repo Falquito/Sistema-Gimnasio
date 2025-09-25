@@ -56,7 +56,7 @@ const Login: React.FC = () => {
 
         {/* Título */}
         <h1 className="text-2xl font-bold text-center text-white mb-6">
-          Bienvenido a <span className="text-blue-500">Shark Fit</span> 🦈
+          Bienvenido a <span className="text-blue-500">Neuro Salud</span>
         </h1>
 
         {/* Formulario */}
