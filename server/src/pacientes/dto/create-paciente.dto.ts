@@ -13,7 +13,7 @@ export class CreatePacienteDto {
     telefono:string;
     @ApiProperty()
     @IsString()
-    dni:string;
+    dni:string; 
     @ApiProperty()
     @IsString()
     @IsIn(["M","F"])
@@ -24,4 +24,13 @@ export class CreatePacienteDto {
     @ApiProperty()
     @IsString()
     observaciones:string;
+    @ApiProperty()
+    @IsString()
+    email:string;
+    @ApiProperty()
+    @IsString()
+    nro_obraSocial:number;
+    @ApiProperty()
+    @IsString()
+    id_obraSocial:number;
 }

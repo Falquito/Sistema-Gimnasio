@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Paciente = void 0;
+const ObraSocial_entity_1 = require("../../entities/entities/ObraSocial.entity");
 const Turnos_entity_1 = require("../../entities/entities/Turnos.entity");
 const typeorm_1 = require("typeorm");
 let Paciente = class Paciente {
@@ -22,7 +23,10 @@ let Paciente = class Paciente {
     fecha_nacimiento;
     observaciones;
     estado;
+    email;
+    nro_obrasocial;
     turnos;
+    obraSocial;
 };
 exports.Paciente = Paciente;
 __decorate([
@@ -62,9 +66,21 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Paciente.prototype, "estado", void 0);
 __decorate([
+    (0, typeorm_1.Column)("text", { default: "", nullable: true }),
+    __metadata("design:type", String)
+], Paciente.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)("int", { nullable: true }),
+    __metadata("design:type", Number)
+], Paciente.prototype, "nro_obrasocial", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => Turnos_entity_1.Turnos, (turnos) => turnos.idPaciente),
     __metadata("design:type", Array)
 ], Paciente.prototype, "turnos", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => ObraSocial_entity_1.ObraSocial, (obraSocial) => obraSocial.paciente, { eager: true }),
+    __metadata("design:type", ObraSocial_entity_1.ObraSocial)
+], Paciente.prototype, "obraSocial", void 0);
 exports.Paciente = Paciente = __decorate([
     (0, typeorm_1.Entity)()
 ], Paciente);

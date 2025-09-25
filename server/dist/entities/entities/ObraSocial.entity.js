@@ -12,11 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObraSocial = void 0;
 const typeorm_1 = require("typeorm");
 const ObraSocialPorProfesional_entity_1 = require("./ObraSocialPorProfesional.entity");
+const paciente_entity_1 = require("../../pacientes/entities/paciente.entity");
 let ObraSocial = class ObraSocial {
     id_os;
     nombre;
     fecha_alta;
     obraSocialPorProfesional;
+    paciente;
 };
 exports.ObraSocial = ObraSocial;
 __decorate([
@@ -35,6 +37,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => ObraSocialPorProfesional_entity_1.ObraSocialPorProfesional, (obrp) => obrp.obraSocial),
     __metadata("design:type", Array)
 ], ObraSocial.prototype, "obraSocialPorProfesional", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => paciente_entity_1.Paciente, (paciente) => paciente.obraSocial),
+    __metadata("design:type", Array)
+], ObraSocial.prototype, "paciente", void 0);
 exports.ObraSocial = ObraSocial = __decorate([
     (0, typeorm_1.Entity)()
 ], ObraSocial);

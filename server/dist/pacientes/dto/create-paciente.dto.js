@@ -20,6 +20,9 @@ class CreatePacienteDto {
     genero;
     fecha_nacimiento;
     observaciones;
+    email;
+    nro_obraSocial;
+    id_obraSocial;
 }
 exports.CreatePacienteDto = CreatePacienteDto;
 __decorate([
@@ -58,4 +61,19 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreatePacienteDto.prototype, "observaciones", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePacienteDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", Number)
+], CreatePacienteDto.prototype, "nro_obraSocial", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", Number)
+], CreatePacienteDto.prototype, "id_obraSocial", void 0);
 //# sourceMappingURL=create-paciente.dto.js.map

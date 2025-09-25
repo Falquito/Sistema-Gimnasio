@@ -21,6 +21,7 @@ import { TurnosModule } from './modules/turnos/turnos.module';
 import { ProfesionalesModule } from './modules/profesionales/profesionales.module';
 import { PacientesModule } from './pacientes/pacientes.module';
 import { RecepcionistaModule } from './recepcionista/recepcionista.module';
+import { ObraSocialModule } from './obra-social/obra-social.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -46,7 +47,8 @@ import { RecepcionistaModule } from './recepcionista/recepcionista.module';
     // ServiciosModule,
     ProfesionalesModule,
     PacientesModule,
-    RecepcionistaModule
+    RecepcionistaModule,
+    ObraSocialModule
   ],
   controllers: [AppController, AuthController],
   providers: [AppService,
