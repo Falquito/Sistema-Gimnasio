@@ -12,5 +12,6 @@ export declare class TurnosController {
     cancelar(id: number, dto: CancelarTurnoDto): Promise<Turnos>;
     agenda(q: AgendaQuery): Promise<Turnos[]>;
     findOne(id: number): Promise<Turnos>;
+    completar(id: number): Promise<Turnos>;
     listar(pacienteId?: string, estado?: string): Promise<Turnos[]>;
 }

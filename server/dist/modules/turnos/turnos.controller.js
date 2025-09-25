@@ -43,6 +43,9 @@ let TurnosController = class TurnosController {
     findOne(id) {
         return this.turnosService.getById(id);
     }
+    completar(id) {
+        return this.turnosService.completar(id);
+    }
     listar(pacienteId, estado) {
         return this.turnosService.listar({
             pacienteId: pacienteId ? Number(pacienteId) : undefined,
@@ -88,6 +91,13 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], TurnosController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Patch)(':id/completar'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], TurnosController.prototype, "completar", null);
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOkResponse)({ type: Turnos_entity_1.Turnos, isArray: true }),

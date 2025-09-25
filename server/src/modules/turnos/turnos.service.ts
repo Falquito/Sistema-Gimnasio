@@ -195,6 +195,23 @@ export class TurnosService {
     return await this.turnoRepo.save(turno);
   }
 
+  async completar(id: number) {
+  const turno = await this.getTurnoOrThrow(id);
+  
+  if (turno.estado === 'COMPLETADO') {
+    return turno; // Ya está completado
+  }
+  
+  if (turno.estado === 'CANCELADO') {
+    throw new ConflictException('No se puede completar un turno cancelado');
+  }
+  
+  turno.estado = 'COMPLETADO';
+  turno.fechaUltUpd = new Date().toISOString().slice(0, 10); // Fecha actual
+  
+  return await this.turnoRepo.save(turno);
+}
+
  async agenda(q: { profesionalId?: number; desde?: string; hasta?: string; estado?: string }) {
   const qb = this.turnoRepo.createQueryBuilder('t')
     .leftJoinAndSelect('t.idPaciente', 'paciente')

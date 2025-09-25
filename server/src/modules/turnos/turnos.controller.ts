@@ -51,6 +51,11 @@ export class TurnosController {
     return this.turnosService.getById(id);
   }
 
+  @Patch(':id/completar')
+completar(@Param('id', ParseIntPipe) id: number) {
+  return this.turnosService.completar(id);
+}
+
   @Get()
   @ApiOkResponse({type:Turnos,isArray:true})
   listar(@Query('pacienteId') pacienteId?: string, @Query('estado') estado?: string) {

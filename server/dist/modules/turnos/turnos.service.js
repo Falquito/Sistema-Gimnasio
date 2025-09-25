@@ -155,6 +155,18 @@ let TurnosService = class TurnosService {
         turno.estado = 'CANCELADO';
         return await this.turnoRepo.save(turno);
     }
+    async completar(id) {
+        const turno = await this.getTurnoOrThrow(id);
+        if (turno.estado === 'COMPLETADO') {
+            return turno;
+        }
+        if (turno.estado === 'CANCELADO') {
+            throw new common_1.ConflictException('No se puede completar un turno cancelado');
+        }
+        turno.estado = 'COMPLETADO';
+        turno.fechaUltUpd = new Date().toISOString().slice(0, 10);
+        return await this.turnoRepo.save(turno);
+    }
     async agenda(q) {
         const qb = this.turnoRepo.createQueryBuilder('t')
             .leftJoinAndSelect('t.idPaciente', 'paciente')

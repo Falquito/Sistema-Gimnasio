@@ -24,10 +24,10 @@ export class PacientesController {
     return this.pacienteService.findOne(+id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateClienteDto: UpdatePacienteDto) {
-  //   return this.pacienteService.update(+id, updateClienteDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateClienteDto: UpdatePacienteDto) {
+    return this.pacienteService.update(+id, updateClienteDto);
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {

@@ -1,29 +1,23 @@
-// components/AppointmentsTable.tsx
 import React, { useState } from 'react';
-import { 
-  Filter, 
-  Eye, 
-  Edit3, 
-  XCircle, 
-  MoreHorizontal, 
-  Target, 
-  Search,
+import {
+  Filter,
+  Eye,
+  Edit3,
+  XCircle,
+  MoreHorizontal,
+  Target,
   Calendar,
   Clock,
-  User,
-  Briefcase,
-  ChevronDown,
-  FileText,
   Phone,
   Mail,
-  MapPin,
   CheckCircle2,
   AlertCircle,
   Pause,
+  Check,
   X
 } from 'lucide-react';
 import type { Turno } from '../../types/turnos';
-import { getStatusConfig, formatearFecha, formatearHora, getInitials } from '../../utils/dashboard.utils';
+import { formatearFecha, formatearHora, getInitials } from '../../utils/dashboard.utils';
 
 interface AppointmentsTableProps {
   turnos: Turno[];
@@ -31,63 +25,100 @@ interface AppointmentsTableProps {
   searchTerm: string;
   statusFilter: string;
   onCancelTurno: (id: number) => Promise<void>;
+  onCompleteTurno?: (id: number) => Promise<void>; // ← AHORA SÍ EN LAS PROPS
   onEditTurno?: (turno: Turno) => void;
   onViewDetails?: (turno: Turno) => void;
 }
 
-// Configuración de estados mejorada
-const getImprovedStatusConfig = (estado: string) => {
-  const configs: Record<string, {
+/* ================== Estados UI y normalización ================== */
+type UIEstado =
+  | 'PROGRAMADO'
+  | 'CONFIRMADO'
+  | 'EN_PROGRESO'
+  | 'COMPLETADO'
+  | 'CANCELADO'
+  | 'NO_ASISTIO'
+  | 'PAUSADO';
+
+/** Mapea los estados del backend a los estados de UI.
+ *  - Backend: PENDIENTE → UI: PROGRAMADO
+ *  - Backend: CANCELADO → UI: CANCELADO
+ *  - Otros: se intentan usar tal cual en mayúsculas
+ */
+const toUIEstado = (estado: Turno['estado'] | string): UIEstado => {
+  switch (String(estado).toUpperCase()) {
+    case 'PENDIENTE':
+      return 'PROGRAMADO';
+    case 'CANCELADO':
+      return 'CANCELADO';
+    case 'CONFIRMADO':
+      return 'CONFIRMADO';
+    case 'EN_PROGRESO':
+      return 'EN_PROGRESO';
+    case 'COMPLETADO':
+      return 'COMPLETADO';
+    case 'NO_ASISTIO':
+      return 'NO_ASISTIO';
+    case 'PAUSADO':
+      return 'PAUSADO';
+    default:
+      return 'PROGRAMADO';
+  }
+};
+
+const getImprovedStatusConfig = (estado: UIEstado) => {
+  const configs: Record<UIEstado, {
     label: string;
     icon: any;
     color: string;
     badgeColor: string;
   }> = {
-    'PROGRAMADO': {
+    PROGRAMADO: {
       label: 'Programado',
       icon: Calendar,
       color: 'bg-blue-50 text-blue-700 border-blue-200',
       badgeColor: 'bg-blue-100 text-blue-800'
     },
-    'CONFIRMADO': {
+    CONFIRMADO: {
       label: 'Confirmado',
       icon: CheckCircle2,
       color: 'bg-green-50 text-green-700 border-green-200',
       badgeColor: 'bg-green-100 text-green-800'
     },
-    'EN_PROGRESO': {
+    EN_PROGRESO: {
       label: 'En progreso',
       icon: Clock,
       color: 'bg-orange-50 text-orange-700 border-orange-200',
       badgeColor: 'bg-orange-100 text-orange-800'
     },
-    'COMPLETADO': {
+    COMPLETADO: {
       label: 'Completado',
       icon: CheckCircle2,
       color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       badgeColor: 'bg-emerald-100 text-emerald-800'
     },
-    'CANCELADO': {
+    CANCELADO: {
       label: 'Cancelado',
       icon: X,
       color: 'bg-red-50 text-red-700 border-red-200',
       badgeColor: 'bg-red-100 text-red-800'
     },
-    'NO_ASISTIO': {
+    NO_ASISTIO: {
       label: 'No asistió',
       icon: AlertCircle,
       color: 'bg-gray-50 text-gray-700 border-gray-200',
       badgeColor: 'bg-gray-100 text-gray-800'
     },
-    'PAUSADO': {
+    PAUSADO: {
       label: 'Pausado',
       icon: Pause,
       color: 'bg-yellow-50 text-yellow-700 border-yellow-200',
       badgeColor: 'bg-yellow-100 text-yellow-800'
     }
   };
-  return configs[estado] || configs['PROGRAMADO'];
+  return configs[estado] ?? configs.PROGRAMADO;
 };
+/* =============================================================== */
 
 export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
   turnos,
@@ -95,11 +126,11 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
   searchTerm,
   statusFilter,
   onCancelTurno,
+  onCompleteTurno, // ← desestructurado
   onEditTurno,
   onViewDetails,
 }) => {
   const [selectedTurno, setSelectedTurno] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
   if (turnos.length === 0 && !loading) {
     return (
@@ -124,15 +155,6 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
       </div>
     );
   }
-
-
-const toMin = (hhmm: string) => {
-  const [h, m] = hhmm.split(':').map(Number);
-  return h * 60 + m;
-};
-
-const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =>
-  toMin(aStart) < toMin(bEnd) && toMin(aEnd) > toMin(bStart);
 
   const pickCliente = (t: any) => {
     const c = t?.idCliente ?? t?.idPaciente ?? t?.cliente;
@@ -195,7 +217,7 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      {/* Header simplificado */}
+      {/* Header */}
       <div className="px-6 py-5 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
@@ -207,14 +229,12 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
               {turnos.length} {turnos.length === 1 ? 'sesión encontrada' : 'sesiones encontradas'}
             </p>
           </div>
-          
+
           <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Filtros avanzados">
             <Filter className="w-5 h-5 text-gray-600" />
           </button>
         </div>
       </div>
-
-
 
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -231,8 +251,9 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
           </thead>
 
           <tbody>
-            {turnos.map((turno, index) => {
-              const statusConfig = getImprovedStatusConfig(turno.estado);
+            {turnos.map((turno) => {
+              const uiEstado = toUIEstado(turno.estado);
+              const statusConfig = getImprovedStatusConfig(uiEstado);
               const StatusIcon = statusConfig.icon;
 
               const cliente = pickCliente(turno);
@@ -243,14 +264,14 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
               const isSelected = selectedTurno === turno.idTurno;
               const isHighlighted = isToday(turno.fecha);
 
+              const puedeCompletar = uiEstado === 'PROGRAMADO' || uiEstado === 'CONFIRMADO';
+
               return (
                 <React.Fragment key={turno.idTurno}>
-                  <tr 
+                  <tr
                     className={`border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
                       isSelected ? 'bg-green-50' : ''
-                    } ${
-                      isHighlighted ? 'border-l-4 border-l-green-500' : ''
-                    }`}
+                    } ${isHighlighted ? 'border-l-4 border-l-green-500' : ''}`}
                     onClick={() => setSelectedTurno(isSelected ? null : turno.idTurno)}
                   >
                     {/* Estado */}
@@ -264,7 +285,7 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
                       )}
                     </td>
 
-                    {/* Cliente simplificado */}
+                    {/* Cliente */}
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
@@ -281,7 +302,7 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
                       </div>
                     </td>
 
-                    {/* Servicio simplificado */}
+                    {/* Servicio */}
                     <td className="py-4 px-6">
                       <div>
                         <p className="font-medium text-gray-900">{servicio.nombre}</p>
@@ -294,7 +315,7 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
                       </div>
                     </td>
 
-                    {/* Profesional simplificado */}
+                    {/* Profesional */}
                     <td className="py-4 px-6">
                       <div>
                         <p className="text-gray-900 font-medium">
@@ -308,7 +329,7 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
                       </div>
                     </td>
 
-                    {/* Horario simplificado */}
+                    {/* Horario */}
                     <td className="py-4 px-6">
                       <div>
                         <p className="font-semibold text-gray-900">
@@ -316,12 +337,12 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
                           {turno.horaFin ? ` - ${formatearHora(turno.horaFin)}` : ''}
                         </p>
                         <p className="text-gray-500 text-sm capitalize">
-                          {getRelativeDate(turno.fecha)}
+                          {formatearFecha(turno.fecha)}
                         </p>
                       </div>
                     </td>
 
-                    {/* Duración simplificada */}
+                    {/* Duración */}
                     <td className="py-4 px-6">
                       <span className="text-gray-700 text-sm font-medium">{duracion}m</span>
                     </td>
@@ -329,29 +350,23 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
                     {/* Acciones */}
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onViewDetails?.(turno);
-                          }}
-                          className="p-2 hover:bg-green-100 rounded-lg transition-colors group" 
-                          title="Ver detalles"
-                        >
-                          <Eye className="w-4 h-4 text-gray-500 group-hover:text-green-600" />
-                        </button>
-                        
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditTurno?.(turno);
-                          }}
-                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors group" 
-                          title="Editar turno"
-                        >
-                          <Edit3 className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
-                        </button>
-                        
-                        {turno.estado !== 'CANCELADO' && turno.estado !== 'COMPLETADO' && (
+                      
+                        {/* Completar */}
+                        {puedeCompletar && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCompleteTurno?.(turno.idTurno);
+                            }}
+                            className="p-2 hover:bg-emerald-100 rounded-lg transition-colors group"
+                            title="Marcar como completado"
+                          >
+                            <Check className="w-4 h-4 text-gray-500 group-hover:text-emerald-600" />
+                          </button>
+                        )}
+
+                        {/* Cancelar */}
+                        {uiEstado !== 'CANCELADO' && uiEstado !== 'COMPLETADO' && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -363,10 +378,8 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
                             <XCircle className="w-4 h-4 text-gray-500 group-hover:text-red-600" />
                           </button>
                         )}
-                        
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors group">
-                          <MoreHorizontal className="w-4 h-4 text-gray-500 group-hover:text-gray-700" />
-                        </button>
+
+                       
                       </div>
                     </td>
                   </tr>
@@ -399,33 +412,22 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
 
                           {/* Notas */}
                           <div className="space-y-3">
-                            <h4 className="font-semibold text-gray-900 text-sm">
-                              Notas y Observaciones
-                            </h4>
+                            <h4 className="font-semibold text-gray-900 text-sm">Notas y Observaciones</h4>
                             <div className="text-sm text-gray-700">
-                              {turno.rutina || 'Sin observaciones adicionales'}
+                              {turno.observacion ?? 'Sin observaciones adicionales'}
                             </div>
                           </div>
                         </div>
-                        
-                        {/* Acciones simplificadas */}
+
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <div className="flex gap-3">
-                            <button 
-                              onClick={() => onViewDetails?.(turno)}
-                              className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                              Ver Detalles
-                            </button>
-                            <button 
-                              onClick={() => onEditTurno?.(turno)}
-                              className="px-4 py-2 text-sm font-medium bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Editar
-                            </button>
-                            {turno.estado === 'PROGRAMADO' && (
-                              <button className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                Confirmar
+                            {/* Completar desde expandible */}
+                            {puedeCompletar && (
+                              <button
+                                onClick={() => onCompleteTurno?.(turno.idTurno)}
+                                className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                              >
+                                Completar Sesión
                               </button>
                             )}
                           </div>
@@ -440,7 +442,7 @@ const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =
         </table>
       </div>
 
-      {/* Footer simplificado */}
+      {/* Footer */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span>Mostrando {turnos.length} sesiones</span>

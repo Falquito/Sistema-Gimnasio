@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import {CreatePacienteDto } from './dto/create-paciente.dto';
 import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -62,6 +62,27 @@ export class PacienteService {
     return await this.pacienteRepository.find()
   }
 
+
+  async update(id:number,updatePacienteDto:UpdatePacienteDto){
+    const paciente = await this.pacienteRepository.findOneBy({id_paciente:id})
+    if(!paciente){
+      throw new NotFoundException(`No se encontro el paiente con el id: ${id}`)
+    }
+    const pacienteUpdated = await this.pacienteRepository.preload({
+      
+      id_paciente:paciente.id_paciente,
+      apellido_paciente:updatePacienteDto.apellido?updatePacienteDto.apellido:paciente.apellido_paciente,
+      nombre_paciente:updatePacienteDto.nombre?updatePacienteDto.nombre:paciente.nombre_paciente,
+      fecha_nacimiento:updatePacienteDto.fecha_nacimiento?updatePacienteDto.fecha_nacimiento:paciente.fecha_nacimiento,
+      dni:updatePacienteDto.dni?updatePacienteDto.dni:paciente.dni,
+      genero:updatePacienteDto.genero?updatePacienteDto.genero:paciente.genero,
+      observaciones:updatePacienteDto.observaciones?updatePacienteDto.observaciones:paciente.observaciones,
+      telefono_paciente:updatePacienteDto.telefono?updatePacienteDto.telefono:paciente.telefono_paciente,
+    })
+
+    return this.pacienteRepository.save(pacienteUpdated!);
+
+  }
   async findOne(id: number) {
     return await this.pacienteRepository.findOneBy({id_paciente:id})
   }

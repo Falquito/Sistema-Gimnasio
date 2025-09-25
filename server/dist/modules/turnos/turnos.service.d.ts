@@ -20,6 +20,7 @@ export declare class TurnosService {
     disponibilidad(q: DisponibilidadQuery): Promise<void>;
     crear(dto: CrearTurnoDto): Promise<Turnos>;
     cancelar(id: number, dto: CancelarTurnoDto): Promise<Turnos>;
+    completar(id: number): Promise<Turnos>;
     agenda(q: {
         profesionalId?: number;
         desde?: string;

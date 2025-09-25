@@ -170,27 +170,52 @@ const InnerForm: React.FC<InnerFormProps> = ({
     }));
   };
 
-  const handleSubmit: React.FormEventHandler = async (e) => {
-    e.preventDefault();
-    if (
-      !formData.clienteId ||
-      !formData.servicioId ||
-      !formData.profesionalId ||
-      !formData.fecha ||
-      !formData.horaInicio ||
-      !formData.horaFin
-    )
-      return;
+const handleSubmit: React.FormEventHandler = async (e) => {
+  e.preventDefault();
+  
+  console.log('Datos del formulario antes de enviar:', formData);
+  
+  // QUITAR servicioId de la validación ya que no tienes ese campo
+  if (
+    !formData.clienteId ||
+    !formData.profesionalId ||
+    !formData.fecha ||
+    !formData.horaInicio ||
+    !formData.horaFin
+  ) {
+    console.log('Faltan datos:', {
+      clienteId: formData.clienteId,
+      profesionalId: formData.profesionalId,
+      fecha: formData.fecha,
+      horaInicio: formData.horaInicio,
+      horaFin: formData.horaFin
+    });
+    alert('Por favor completa todos los campos obligatorios');
+    return;
+  }
 
-    setLoading(true);
-    try {
-      await onSubmit(formData as NewSessionFormData);
-      setFormData({ fecha: "", horaInicio: "", horaFin: "", rutina: "" });
-      setOpen(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    console.log('Llamando a onSubmit...');
+    
+    // Agregar servicioId con valor por defecto
+    const dataToSend = {
+      ...formData,
+      servicioId: 1 // Valor por defecto o el que corresponda
+    } as NewSessionFormData;
+    
+    await onSubmit(dataToSend);
+    
+    // Solo limpiar y cerrar si todo salió bien
+    setFormData({ fecha: "", horaInicio: "", horaFin: "", rutina: "" });
+    setOpen(false);
+  } catch (error) {
+    console.error('Error en handleSubmit:', error);
+    // El error ya se maneja en el componente padre
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fechaPreview = formData.fecha
     ? new Date(formData.fecha + "T00:00:00").toLocaleDateString("es-AR", {
@@ -227,21 +252,7 @@ const InnerForm: React.FC<InnerFormProps> = ({
             />
           </div>
 
-          {/* Servicio */}
-          <div>
-            <label className="block text-sm font-medium text-black mb-2">Servicio *</label>
-            <select
-              value={formData.servicioId ?? ""}
-              onChange={(e) => handleInputChange("servicioId", parseInt(e.target.value))}
-              required
-              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black text-black"
-            >
-              <option value="">Seleccionar servicio</option>
-              <option value="1">Entrenamiento Personal</option>
-              <option value="2">Clase Grupal</option>
-              <option value="3">Consulta Nutricional</option>
-            </select>
-          </div>
+      
 
           {/* Profesional */}
           <div className="md:col-span-2">
