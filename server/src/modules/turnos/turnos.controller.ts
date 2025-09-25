@@ -44,10 +44,10 @@ export class TurnosController {
     return this.turnosService.agenda(q);
   }
 
+
   // Utilidades de lectura
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    // expón en el service un método público que retorne por id
     return this.turnosService.getById(id);
   }
 

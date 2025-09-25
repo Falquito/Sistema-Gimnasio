@@ -10,6 +10,7 @@ import {
 import { Usuario } from "./Usuario.entity";
 // import { ProfesionalesPorServicios } from "./ProfesionalesPorServicios.entity";
 import { Turnos } from "./Turnos.entity";
+import { ObraSocialPorProfesional } from "./ObraSocialPorProfesional.entity";
 
 @Entity("profesionales", { schema: "public" })
 export class Profesionales {
@@ -55,4 +56,7 @@ export class Profesionales {
 
   @OneToMany(() => Turnos, (turnos) => turnos.idProfesional)
   turnos: Turnos[];
+
+  @OneToMany(()=>ObraSocialPorProfesional,(obrp)=>obrp.profesional)
+  obraSocialPorProfesional:ObraSocialPorProfesional
 }

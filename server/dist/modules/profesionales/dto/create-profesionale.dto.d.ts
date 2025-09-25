@@ -6,4 +6,8 @@ export declare class CreateProfesionaleDto {
     email: string;
     contraseña: string;
     servicio: string;
+    ObrasSociales: ObraSocialDto[];
+}
+export declare class ObraSocialDto {
+    idObraSocial: number;
 }

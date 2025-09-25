@@ -5,7 +5,7 @@ import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Auth()
-@Controller('clientes')
+@Controller('pacientes')
 export class PacientesController {
   constructor(private readonly pacienteService: PacienteService) {}
 

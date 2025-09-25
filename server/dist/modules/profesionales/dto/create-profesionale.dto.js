@@ -9,8 +9,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateProfesionaleDto = void 0;
+exports.ObraSocialDto = exports.CreateProfesionaleDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 class CreateProfesionaleDto {
     nombre;
@@ -20,6 +21,7 @@ class CreateProfesionaleDto {
     email;
     contraseña;
     servicio;
+    ObrasSociales;
 }
 exports.CreateProfesionaleDto = CreateProfesionaleDto;
 __decorate([
@@ -56,4 +58,17 @@ __decorate([
     (0, class_validator_1.IsIn)(["Psicologia", "Psicopedagogia", "Psiqiuatria", "Fonoaudiologia"]),
     __metadata("design:type", String)
 ], CreateProfesionaleDto.prototype, "servicio", void 0);
+__decorate([
+    (0, class_validator_1.IsArray)(),
+    (0, class_transformer_1.Type)(() => ObraSocialDto),
+    __metadata("design:type", Array)
+], CreateProfesionaleDto.prototype, "ObrasSociales", void 0);
+class ObraSocialDto {
+    idObraSocial;
+}
+exports.ObraSocialDto = ObraSocialDto;
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], ObraSocialDto.prototype, "idObraSocial", void 0);
 //# sourceMappingURL=create-profesionale.dto.js.map

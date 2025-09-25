@@ -10,6 +10,8 @@ import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
 
 import { Usuario } from 'src/entities/entities/Usuario.entity';
 import * as bcrypt from "bcrypt"
+import { ObraSocialPorProfesional } from 'src/entities/entities/ObraSocialPorProfesional.entity';
+import { ObraSocial } from 'src/entities/entities/ObraSocial.entity';
 @Injectable()
 export class ProfesionalesService {
   constructor(
@@ -32,7 +34,7 @@ export class ProfesionalesService {
     return hashed
   }
   async create(createProfesionalDto:CreateProfesionaleDto){
-        const {apellido,dni,nombre,telefono,email,contraseña,servicio} = createProfesionalDto
+        const {ObrasSociales,apellido,dni,nombre,telefono,email,contraseña,servicio} = createProfesionalDto
         const queryRunner = this.dataSource.createQueryRunner()
         const fecha = new Date();
         const contraseñaHasheada = await this.hashPassword(contraseña)
@@ -75,6 +77,21 @@ export class ProfesionalesService {
           //   idProfesional:profesional
           // })
           // await queryRunner.manager.save(ppS)
+
+          
+          for(const item of ObrasSociales){
+            const obraSocial = await queryRunner.manager.findOneBy(ObraSocial,{
+            id_os:item.idObraSocial
+          })
+          if(!obraSocial){
+            throw new NotFoundException(`Obra social con el id ${item.idObraSocial} no encontrada`)
+          }
+          const obraSocialPorProfesional = queryRunner.manager.create(ObraSocialPorProfesional,{
+            profesional:profesional!,
+            obraSocial:obraSocial!
+          })
+          await queryRunner.manager.save(obraSocialPorProfesional)
+          }
           await queryRunner.commitTransaction()
           return profesional;
     

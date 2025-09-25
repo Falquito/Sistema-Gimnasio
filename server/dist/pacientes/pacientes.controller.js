@@ -55,7 +55,7 @@ __decorate([
 ], PacientesController.prototype, "findOne", null);
 exports.PacientesController = PacientesController = __decorate([
     (0, auth_decorator_1.Auth)(),
-    (0, common_1.Controller)('clientes'),
+    (0, common_1.Controller)('pacientes'),
     __metadata("design:paramtypes", [pacientes_service_1.PacienteService])
 ], PacientesController);
 //# sourceMappingURL=pacientes.controller.js.map
