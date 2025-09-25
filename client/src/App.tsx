@@ -5,7 +5,7 @@ import Recepcionista from "./pages/Recepcionista"
 import Turnos from "./pages/Turnos"
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import PacientesPage from "./pages/Pacientes";
 
 
 function App() {
@@ -21,6 +21,7 @@ function App() {
             <Route path="user" element={<ProtectedRoute><User /></ProtectedRoute>} />
             <Route path="recepcionista" element={<ProtectedRoute><Recepcionista /></ProtectedRoute>} />
             <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
+            <Route path="/pacientes" element={<PacientesPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
