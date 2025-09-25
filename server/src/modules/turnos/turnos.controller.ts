@@ -10,8 +10,11 @@ import { DisponibilidadQuery } from './dto/disponibilidad.query';
 import { AgendaQuery } from './dto/agenda.query';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { Turnos } from 'src/entities/entities/Turnos.entity';
+import { validRoles } from 'src/auth/interfaces/validRoles';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('turnos')
+@Auth(validRoles.gerente,validRoles.recepcionista)
 export class TurnosController {
   constructor(private readonly turnosService: TurnosService) {}
 
@@ -50,9 +53,9 @@ export class TurnosController {
 
   @Get()
   @ApiOkResponse({type:Turnos,isArray:true})
-  listar(@Query('clienteId') clienteId?: string, @Query('estado') estado?: string) {
+  listar(@Query('pacienteId') pacienteId?: string, @Query('estado') estado?: string) {
     return this.turnosService.listar({
-      clienteId: clienteId ? Number(clienteId) : undefined,
+      pacienteId: pacienteId ? Number(pacienteId) : undefined,
       estado: estado || undefined,
     });
   }

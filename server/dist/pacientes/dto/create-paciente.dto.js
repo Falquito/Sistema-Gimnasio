@@ -39,6 +39,7 @@ __decorate([
 ], CreatePacienteDto.prototype, "dni", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsIn)(["M", "F"]),
     __metadata("design:type", String)
 ], CreatePacienteDto.prototype, "genero", void 0);
 __decorate([

@@ -16,15 +16,14 @@ export declare class TurnosService {
     private getProfesionalId;
     disponibilidad(q: DisponibilidadQuery): Promise<void>;
     crear(dto: CrearTurnoDto): Promise<Turnos>;
-    cancelar(id: number, dto: CancelarTurnoDto): Promise<void>;
+    cancelar(id: number, dto: CancelarTurnoDto): Promise<Turnos>;
     agenda(q: {
         profesionalId: number;
         desde: string;
-        hasta: string;
         estado?: string;
     }): Promise<Turnos[]>;
     listar(q: {
-        clienteId?: number;
+        pacienteId?: number;
         estado?: string;
     }): Promise<Turnos[]>;
     getById(id: number): Promise<Turnos>;

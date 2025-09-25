@@ -120,7 +120,7 @@ let ProfesionalesService = class ProfesionalesService {
             const activoBool = q.activo === 'true';
             qb.andWhere('p.activo = :activo', { activo: activoBool });
         }
-        qb.orderBy('p.apellido', 'ASC').addOrderBy('p.nombre', 'ASC');
+        qb.orderBy('p.apellido_profesional', 'ASC').addOrderBy('p.nombre_profesional', 'ASC');
         qb.take(limit).skip(skip);
         const [items, total] = await qb.getManyAndCount();
         return {

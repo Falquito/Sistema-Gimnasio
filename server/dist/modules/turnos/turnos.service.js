@@ -57,7 +57,7 @@ let TurnosService = class TurnosService {
     async getTurnoOrThrow(id) {
         const turno = await this.turnoRepo.findOne({
             where: { idTurno: id },
-            relations: ['idServicio', 'idProfesional'],
+            relations: ['idProfesional'],
         });
         if (!turno)
             throw new common_1.NotFoundException('Turno no encontrado');
@@ -112,20 +112,57 @@ let TurnosService = class TurnosService {
         }
     }
     async cancelar(id, dto) {
+        const turno = await this.getTurnoOrThrow(id);
+        if (turno.estado === 'CANCELADO')
+            return turno;
+        turno.estado = 'CANCELADO';
+        return await this.turnoRepo.save(turno);
     }
     async agenda(q) {
-        return this.turnoRepo.createQueryBuilder('t')
-            .where('t.id_profesional = :pid', { pid: q.profesionalId })
-            .andWhere('t.fecha BETWEEN :d AND :h', { d: q.desde, h: q.hasta })
-            .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-            .orderBy('t.fecha', 'ASC')
-            .addOrderBy('t.horaInicio', 'ASC')
-            .getMany();
+        if (q.desde && q.profesionalId && q.estado) {
+            return this.turnoRepo.createQueryBuilder('t')
+                .where('t.id_profesional = :pid', { pid: q.profesionalId })
+                .andWhere('t.fecha >= :d', { d: q.desde })
+                .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+                .orderBy('t.fecha', 'ASC')
+                .addOrderBy('t.horaInicio', 'ASC')
+                .getMany();
+        }
+        else if (q.profesionalId && q.estado) {
+            return this.turnoRepo.createQueryBuilder('t')
+                .where('t.id_profesional = :pid', { pid: q.profesionalId })
+                .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+                .orderBy('t.fecha', 'ASC')
+                .addOrderBy('t.horaInicio', 'ASC')
+                .getMany();
+        }
+        else if (q.desde) {
+            return this.turnoRepo.createQueryBuilder('t')
+                .where('t.fecha >= :d', { d: q.desde })
+                .orderBy('t.fecha', 'ASC')
+                .addOrderBy('t.horaInicio', 'ASC')
+                .getMany();
+        }
+        else if (q.profesionalId) {
+            return this.turnoRepo.createQueryBuilder('t')
+                .where('t.id_profesional = :pid', { pid: q.profesionalId })
+                .orderBy('t.fecha', 'ASC')
+                .addOrderBy('t.horaInicio', 'ASC')
+                .getMany();
+        }
+        else if (q.estado) {
+            return this.turnoRepo.createQueryBuilder('t')
+                .where(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+                .orderBy('t.fecha', 'ASC')
+                .addOrderBy('t.horaInicio', 'ASC')
+                .getMany();
+        }
+        throw new common_1.BadRequestException("Necesito que mandes por lo menos algunos de {profesionalId,estado,desde}");
     }
     async listar(q) {
         const qb = this.turnoRepo.createQueryBuilder('t');
-        if (q.clienteId)
-            qb.andWhere('t.clienteId = :cid', { cid: q.clienteId });
+        if (q.pacienteId)
+            qb.andWhere('t.clienteId = :cid', { cid: q.pacienteId });
         if (q.estado)
             qb.andWhere('t.estado = :e', { e: q.estado });
         qb.orderBy('t.hora_inicio', 'DESC');

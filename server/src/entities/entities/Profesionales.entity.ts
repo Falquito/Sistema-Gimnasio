@@ -44,7 +44,7 @@ export class Profesionales {
   @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
   idUsuario: Usuario;
 
-  @Column({type:"text"})
+  @Column({type:"text",nullable:true}) 
   servicio:string;
 
   // @OneToMany(

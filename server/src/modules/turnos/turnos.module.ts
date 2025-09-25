@@ -7,10 +7,11 @@ import { TurnosController } from './turnos.controller';
 import { Turnos } from 'src/entities/entities/Turnos.entity';
 // import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
+import { AuthModule } from 'src/auth/auth.module';
 // import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
 
 @Module({
-  imports: [
+  imports: [AuthModule,
     TypeOrmModule.forFeature([Turnos, Profesionales]),
   ],
   controllers: [TurnosController],

@@ -121,7 +121,7 @@ export class ProfesionalesService {
     // (Opcional) incluir relaciones livianas si querés
     // qb.leftJoinAndSelect('p.especialidades', 'esp');
 
-    qb.orderBy('p.apellido', 'ASC').addOrderBy('p.nombre', 'ASC');
+    qb.orderBy('p.apellido_profesional', 'ASC').addOrderBy('p.nombre_profesional', 'ASC');
     qb.take(limit).skip(skip);
 
     const [items, total] = await qb.getManyAndCount();
