@@ -15,6 +15,7 @@
 - Maxi Corbalan
 - Facundo Visa
 - Ivan Giron
+- Nicolas Martinelli
 
 ## Como arrancar el proyecto
 
