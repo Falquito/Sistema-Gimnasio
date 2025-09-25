@@ -13,6 +13,7 @@ exports.Profesionales = void 0;
 const typeorm_1 = require("typeorm");
 const Usuario_entity_1 = require("./Usuario.entity");
 const Turnos_entity_1 = require("./Turnos.entity");
+const ObraSocialPorProfesional_entity_1 = require("./ObraSocialPorProfesional.entity");
 let Profesionales = class Profesionales {
     idProfesionales;
     nombreProfesional;
@@ -26,6 +27,7 @@ let Profesionales = class Profesionales {
     idUsuario;
     servicio;
     turnos;
+    obraSocialPorProfesional;
 };
 exports.Profesionales = Profesionales;
 __decorate([
@@ -77,6 +79,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => Turnos_entity_1.Turnos, (turnos) => turnos.idProfesional),
     __metadata("design:type", Array)
 ], Profesionales.prototype, "turnos", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => ObraSocialPorProfesional_entity_1.ObraSocialPorProfesional, (obrp) => obrp.profesional),
+    __metadata("design:type", ObraSocialPorProfesional_entity_1.ObraSocialPorProfesional)
+], Profesionales.prototype, "obraSocialPorProfesional", void 0);
 exports.Profesionales = Profesionales = __decorate([
     (0, typeorm_1.Entity)("profesionales", { schema: "public" })
 ], Profesionales);

@@ -52,6 +52,8 @@ const typeorm_2 = require("typeorm");
 const Profesionales_entity_1 = require("../../entities/entities/Profesionales.entity");
 const Usuario_entity_1 = require("../../entities/entities/Usuario.entity");
 const bcrypt = __importStar(require("bcrypt"));
+const ObraSocialPorProfesional_entity_1 = require("../../entities/entities/ObraSocialPorProfesional.entity");
+const ObraSocial_entity_1 = require("../../entities/entities/ObraSocial.entity");
 let ProfesionalesService = class ProfesionalesService {
     dataSource;
     profRepo;
@@ -66,7 +68,7 @@ let ProfesionalesService = class ProfesionalesService {
         return hashed;
     }
     async create(createProfesionalDto) {
-        const { apellido, dni, nombre, telefono, email, contraseña, servicio } = createProfesionalDto;
+        const { ObrasSociales, apellido, dni, nombre, telefono, email, contraseña, servicio } = createProfesionalDto;
         const queryRunner = this.dataSource.createQueryRunner();
         const fecha = new Date();
         const contraseñaHasheada = await this.hashPassword(contraseña);
@@ -96,6 +98,19 @@ let ProfesionalesService = class ProfesionalesService {
                 servicio: servicio
             });
             await queryRunner.manager.save(profesional);
+            for (const item of ObrasSociales) {
+                const obraSocial = await queryRunner.manager.findOneBy(ObraSocial_entity_1.ObraSocial, {
+                    id_os: item.idObraSocial
+                });
+                if (!obraSocial) {
+                    throw new common_1.NotFoundException(`Obra social con el id ${item.idObraSocial} no encontrada`);
+                }
+                const obraSocialPorProfesional = queryRunner.manager.create(ObraSocialPorProfesional_entity_1.ObraSocialPorProfesional, {
+                    profesional: profesional,
+                    obraSocial: obraSocial
+                });
+                await queryRunner.manager.save(obraSocialPorProfesional);
+            }
             await queryRunner.commitTransaction();
             return profesional;
         }

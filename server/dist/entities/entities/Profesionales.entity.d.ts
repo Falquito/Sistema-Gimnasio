@@ -1,5 +1,6 @@
 import { Usuario } from "./Usuario.entity";
 import { Turnos } from "./Turnos.entity";
+import { ObraSocialPorProfesional } from "./ObraSocialPorProfesional.entity";
 export declare class Profesionales {
     idProfesionales: number;
     nombreProfesional: string | null;
@@ -13,4 +14,5 @@ export declare class Profesionales {
     idUsuario: Usuario;
     servicio: string;
     turnos: Turnos[];
+    obraSocialPorProfesional: ObraSocialPorProfesional;
 }
