@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Profesionales = void 0;
 const typeorm_1 = require("typeorm");
 const Usuario_entity_1 = require("./Usuario.entity");
-const ProfesionalesPorServicios_entity_1 = require("./ProfesionalesPorServicios.entity");
 const Turnos_entity_1 = require("./Turnos.entity");
 let Profesionales = class Profesionales {
     idProfesionales;
@@ -25,7 +24,7 @@ let Profesionales = class Profesionales {
     fechaAlta;
     fechaUltUpd;
     idUsuario;
-    profesionalesPorServicios;
+    servicio;
     turnos;
 };
 exports.Profesionales = Profesionales;
@@ -71,9 +70,9 @@ __decorate([
     __metadata("design:type", Usuario_entity_1.Usuario)
 ], Profesionales.prototype, "idUsuario", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios, (profesionalesPorServicios) => profesionalesPorServicios.idProfesional),
-    __metadata("design:type", Array)
-], Profesionales.prototype, "profesionalesPorServicios", void 0);
+    (0, typeorm_1.Column)({ type: "text" }),
+    __metadata("design:type", String)
+], Profesionales.prototype, "servicio", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => Turnos_entity_1.Turnos, (turnos) => turnos.idProfesional),
     __metadata("design:type", Array)

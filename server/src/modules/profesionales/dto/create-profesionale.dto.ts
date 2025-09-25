@@ -20,6 +20,6 @@ export class CreateProfesionaleDto {
     @ApiProperty()
     @IsString()
     contraseña:string;
-    @IsIn(["Hipertrofia","Zumba"])
+    @IsIn(["Psicologia","Psicopedagogia","Psiqiuatria","Fonoaudiologia"])
     servicio:string;
 }

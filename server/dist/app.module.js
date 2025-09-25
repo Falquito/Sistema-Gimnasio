@@ -16,9 +16,9 @@ const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const gerentes_module_1 = require("./gerentes/gerentes.module");
 const turnos_module_1 = require("./modules/turnos/turnos.module");
-const servicios_module_1 = require("./modules/servicios/servicios.module");
 const profesionales_module_1 = require("./modules/profesionales/profesionales.module");
-const clientes_module_1 = require("./clientes/clientes.module");
+const pacientes_module_1 = require("./pacientes/pacientes.module");
+const recepcionista_module_1 = require("./recepcionista/recepcionista.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -42,9 +42,9 @@ exports.AppModule = AppModule = __decorate([
             }),
             gerentes_module_1.GerentesModule,
             turnos_module_1.TurnosModule,
-            servicios_module_1.ServiciosModule,
             profesionales_module_1.ProfesionalesModule,
-            clientes_module_1.ClientesModule
+            pacientes_module_1.PacientesModule,
+            recepcionista_module_1.RecepcionistaModule
         ],
         controllers: [app_controller_1.AppController, auth_controller_1.AuthController],
         providers: [app_service_1.AppService,

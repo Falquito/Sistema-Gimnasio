@@ -1,38 +1,22 @@
 import { DataSource, Repository } from 'typeorm';
 import { Turnos } from 'src/entities/entities/Turnos.entity';
-import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
-import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
 import { DisponibilidadQuery } from './dto/disponibilidad.query';
 import { CrearTurnoDto } from './dto/crear-turno.dto';
-import { ReprogramarTurnoDto } from './dto/reprogramar-turno.dto';
 import { CancelarTurnoDto } from './dto/cancelar-turno.dto';
 export declare class TurnosService {
     private readonly dataSource;
     private readonly turnoRepo;
-    private readonly servRepo;
     private readonly profRepo;
-    private readonly ppsRepo;
-    constructor(dataSource: DataSource, turnoRepo: Repository<Turnos>, servRepo: Repository<Servicio>, profRepo: Repository<Profesionales>, ppsRepo: Repository<ProfesionalesPorServicios>);
+    constructor(dataSource: DataSource, turnoRepo: Repository<Turnos>, profRepo: Repository<Profesionales>);
     private getDuracionMin;
     private isoToParts;
     private addMinutesHM;
     private getTurnoOrThrow;
-    private getServicioId;
     private getProfesionalId;
-    disponibilidad(q: DisponibilidadQuery): Promise<{
-        servicioId: number;
-        duracionMin: number;
-        slots: {
-            profesionalId: number;
-            fecha: string;
-            horaInicio: string;
-            horaFin: string;
-        }[];
-    }>;
+    disponibilidad(q: DisponibilidadQuery): Promise<void>;
     crear(dto: CrearTurnoDto): Promise<Turnos>;
-    cancelar(id: number, dto: CancelarTurnoDto): Promise<Turnos>;
-    reprogramar(id: number, dto: ReprogramarTurnoDto): Promise<Turnos>;
+    cancelar(id: number, dto: CancelarTurnoDto): Promise<void>;
     agenda(q: {
         profesionalId: number;
         desde: string;

@@ -1,14 +1,13 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Profesionales } from "./Profesionales.entity";
 import { Recepcionista } from "./Recepcionista.entity";
-import { Servicio } from "./Servicio.entity";
-import { Cliente } from "../../clientes/entities/cliente.entity";
+import { Paciente } from "../../pacientes/entities/paciente.entity";
 import { ApiProperty } from "@nestjs/swagger";
 
 @Entity("turnos", { schema: "public" })
 export class Turnos {
   @ApiProperty()
-  @Column("integer", { primary: true, name: "id_turno" })
+  @PrimaryGeneratedColumn("identity",{ name: "id_turno" })
   idTurno: number;
   @ApiProperty()
   @Column("character varying", { name: "fecha", nullable: true })
@@ -16,15 +15,11 @@ export class Turnos {
   @ApiProperty()
   @Column("character varying", { name: "hora_inicio", nullable: true })
   horaInicio: string;
-  @ApiProperty()
-  @Column("character varying", { name: "hora_fin", nullable: true })
-  horaFin: string;
+  
   @ApiProperty({example:1})
-  @ManyToOne(()=>Cliente,(cliente)=>cliente.turnos,{eager:true})
-    idCliente: number;
-  @ApiProperty()
-  @Column("character varying", { name: "rutina", nullable: true })
-  rutina: string;
+  @ManyToOne(()=>Paciente,(paciente)=>paciente.turnos,{eager:true})
+    idPaciente: Paciente;
+  
   @ApiProperty()
   @Column("character varying", { name: "observacion", nullable: true })
   observacion: string;
@@ -50,7 +45,5 @@ export class Turnos {
   ])
   idRecepcionista: Recepcionista;
  
-  @ManyToOne(() => Servicio, (servicio) => servicio.turnos,{eager:true})
-  @JoinColumn([{ name: "id_servicio", referencedColumnName: "idServicio" }])
-  idServicio: Servicio;
+  
 }

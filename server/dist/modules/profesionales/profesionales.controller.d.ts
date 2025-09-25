@@ -11,6 +11,5 @@ export declare class ProfesionalesController {
         items: import("../../entities/entities/Profesionales.entity").Profesionales[];
     }>;
     findOne(id: number): Promise<import("../../entities/entities/Profesionales.entity").Profesionales>;
-    findServicios(id: number): Promise<import("../../entities/entities/Servicio.entity").Servicio[]>;
     create(createProfesionalDto: CreateProfesionaleDto): Promise<import("../../entities/entities/Profesionales.entity").Profesionales>;
 }
