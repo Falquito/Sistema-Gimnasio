@@ -41,7 +41,7 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync(token);
       const newAccessToken = await this.jwtService.signAsync(
         { sub: payload.sub, email: payload.email },
-        { expiresIn: '15m' },
+        { expiresIn: '1h' },
       );
       return { accessToken: newAccessToken };
     } catch {

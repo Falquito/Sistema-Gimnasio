@@ -10,6 +10,7 @@ export class CreatePacienteDto {
     @IsString()
     dni:string;
     @IsString()
+    @IsIn(["M","F"])
     genero:string;
     @IsString()
     fecha_nacimiento:string;

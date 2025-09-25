@@ -9,8 +9,8 @@ export declare class TurnosController {
     constructor(turnosService: TurnosService);
     getDisponibles(q: DisponibilidadQuery): Promise<void>;
     crear(dto: CrearTurnoDto): Promise<Turnos>;
-    cancelar(id: number, dto: CancelarTurnoDto): Promise<void>;
+    cancelar(id: number, dto: CancelarTurnoDto): Promise<Turnos>;
     agenda(q: AgendaQuery): Promise<Turnos[]>;
     findOne(id: number): Promise<Turnos>;
-    listar(clienteId?: string, estado?: string): Promise<Turnos[]>;
+    listar(pacienteId?: string, estado?: string): Promise<Turnos[]>;
 }

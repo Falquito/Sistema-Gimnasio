@@ -70,7 +70,7 @@ __decorate([
     __metadata("design:type", Usuario_entity_1.Usuario)
 ], Profesionales.prototype, "idUsuario", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "text" }),
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
     __metadata("design:type", String)
 ], Profesionales.prototype, "servicio", void 0);
 __decorate([

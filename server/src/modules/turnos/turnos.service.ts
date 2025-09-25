@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -74,7 +75,7 @@ export class TurnosService {
   private async getTurnoOrThrow(id: number) {
     const turno = await this.turnoRepo.findOne({
       where: { idTurno: id },
-      relations: ['idServicio', 'idProfesional'], // ← tus relaciones reales
+      relations: [ 'idProfesional'], // ← tus relaciones reales
     });
     if (!turno) throw new NotFoundException('Turno no encontrado');
     return turno;
@@ -236,67 +237,63 @@ export class TurnosService {
 
   // ====== HU-6a: CANCELAR ======
   async cancelar(id: number, dto: CancelarTurnoDto) {
-  //   const turno = await this.getTurnoOrThrow(id);
+    const turno = await this.getTurnoOrThrow(id);
   
-  //   if (turno.estado === 'CANCELADO') return turno;
+    if (turno.estado === 'CANCELADO') return turno;
   
-  //   turno.estado = 'CANCELADO';
-  //   (turno as any).motivoCancelacion = dto.motivo ?? null;
-  //   return this.turnoRepo.save(turno);
-  // }
-  
-  // // ====== HU-6b: REPROGRAMAR ======
-  // async reprogramar(id: number, dto: ReprogramarTurnoDto) {
-  //   const turno = await this.getTurnoOrThrow(id);
-  
-  //   if (turno.estado === 'CANCELADO') {
-  //     throw new UnprocessableEntityException('No se puede reprogramar un turno cancelado');
-  //   }
-  
-  //   const servicioId = this.getServicioId(turno);
-  //   const duracionMin = await this.getDuracionMin(servicioId);
-  //   const { fecha, hora: nuevaHI } = this.isoToParts(dto.nuevoInicio);
-  //   const nuevaHF = this.addMinutesHM(nuevaHI, duracionMin);
-  
-  //   const profesionalId = this.getProfesionalId(turno);
-  
-  //   const solapa = await this.turnoRepo.createQueryBuilder('t')
-  //     .where('t.id_profesional = :pid', { pid: profesionalId })
-  //     .andWhere('t.id_turno != :id', { id })
-  //     .andWhere('t.fecha = :f', { f: fecha })
-  //     .andWhere('t.horaInicio < :hf AND t.horaFin > :hi', { hi: nuevaHI, hf: nuevaHF })
-  //     .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
-  //     .getExists();
-  //   if (solapa) throw new ConflictException('El nuevo horario está ocupado');
-  
-  //   turno.fecha = fecha as any;
-  //   turno.horaInicio = nuevaHI as any;
-  //   turno.horaFin = nuevaHF as any;
-  //   turno.estado = 'PENDIENTE'; // o 'REPROGRAMADO'
-  
-  //   return this.turnoRepo.save(turno);
-  }
-
-
-
-  async agenda(q: { profesionalId: number; desde: string; hasta: string; estado?: string }) {
-  return this.turnoRepo.createQueryBuilder('t')
-    .where('t.id_profesional = :pid', { pid: q.profesionalId })
-    .andWhere('t.fecha BETWEEN :d AND :h', { d: q.desde, h: q.hasta })
-    .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-    .orderBy('t.fecha', 'ASC')
-    .addOrderBy('t.horaInicio', 'ASC')
-    .getMany();
+    turno.estado = 'CANCELADO';
+    return await this.turnoRepo.save(turno);
   }
   
-  async listar(q: { clienteId?: number; estado?: string }) {
+  async agenda(q: { profesionalId: number; desde: string; estado?: string }) {
+    
+    if(q.desde && q.profesionalId && q.estado){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.id_profesional = :pid', { pid: q.profesionalId })
+      .andWhere('t.fecha >= :d', { d: q.desde})
+      .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany(); 
+    }else if(q.profesionalId && q.estado){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.id_profesional = :pid', { pid: q.profesionalId })
+      .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany();
+    }else if(q.desde){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.fecha >= :d', { d: q.desde})
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany();
+    }else if(q.profesionalId){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.id_profesional = :pid', { pid: q.profesionalId})
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany();
+    }else if(q.estado){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany(); 
+    }
+
+    throw new BadRequestException("Necesito que mandes por lo menos algunos de {profesionalId,estado,desde}")
+    
+    }
+    
+  async listar(q: { pacienteId?: number; estado?: string }) {
     const qb = this.turnoRepo.createQueryBuilder('t');
-    if (q.clienteId) qb.andWhere('t.clienteId = :cid', { cid: q.clienteId });
+    if (q.pacienteId) qb.andWhere('t.clienteId = :cid', { cid: q.pacienteId });
     if (q.estado) qb.andWhere('t.estado = :e', { e: q.estado });
     qb.orderBy('t.hora_inicio', 'DESC');
     return qb.getMany();
   }
   public async getById(id: number) {
-  return this.getTurnoOrThrow(id);
+    return this.getTurnoOrThrow(id);
   }
 };

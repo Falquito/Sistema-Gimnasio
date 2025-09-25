@@ -21,6 +21,8 @@ const disponibilidad_query_1 = require("./dto/disponibilidad.query");
 const agenda_query_1 = require("./dto/agenda.query");
 const swagger_1 = require("@nestjs/swagger");
 const Turnos_entity_1 = require("../../entities/entities/Turnos.entity");
+const validRoles_1 = require("../../auth/interfaces/validRoles");
+const auth_decorator_1 = require("../../auth/decorators/auth.decorator");
 let TurnosController = class TurnosController {
     turnosService;
     constructor(turnosService) {
@@ -41,9 +43,9 @@ let TurnosController = class TurnosController {
     findOne(id) {
         return this.turnosService.getById(id);
     }
-    listar(clienteId, estado) {
+    listar(pacienteId, estado) {
         return this.turnosService.listar({
-            clienteId: clienteId ? Number(clienteId) : undefined,
+            pacienteId: pacienteId ? Number(pacienteId) : undefined,
             estado: estado || undefined,
         });
     }
@@ -89,7 +91,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOkResponse)({ type: Turnos_entity_1.Turnos, isArray: true }),
-    __param(0, (0, common_1.Query)('clienteId')),
+    __param(0, (0, common_1.Query)('pacienteId')),
     __param(1, (0, common_1.Query)('estado')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
@@ -97,6 +99,7 @@ __decorate([
 ], TurnosController.prototype, "listar", null);
 exports.TurnosController = TurnosController = __decorate([
     (0, common_1.Controller)('turnos'),
+    (0, auth_decorator_1.Auth)(validRoles_1.validRoles.gerente, validRoles_1.validRoles.recepcionista),
     __metadata("design:paramtypes", [turnos_service_1.TurnosService])
 ], TurnosController);
 //# sourceMappingURL=turnos.controller.js.map

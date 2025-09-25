@@ -3,13 +3,12 @@ import { Type } from 'class-transformer';
 
 export class AgendaQuery {
   @Type(() => Number) @IsInt() @IsPositive()
+  @IsOptional()
   profesionalId: number;
 
   @IsISO8601()
+  @IsOptional()
   desde: string;
-
-  @IsISO8601()
-  hasta: string;
 
   @IsOptional()
   estado?: string; // PENDIENTE|CONFIRMADO|CANCELADO|
