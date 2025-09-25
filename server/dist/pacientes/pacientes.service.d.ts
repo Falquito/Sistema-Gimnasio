@@ -10,4 +10,5 @@ export declare class PacienteService {
     findAll(): Promise<Paciente[]>;
     update(id: number, updatePacienteDto: UpdatePacienteDto): Promise<Paciente>;
     findOne(id: number): Promise<Paciente | null>;
+    remove(id: number): Promise<Paciente>;
 }

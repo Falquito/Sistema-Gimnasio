@@ -21,6 +21,7 @@ let Paciente = class Paciente {
     genero;
     fecha_nacimiento;
     observaciones;
+    estado;
     turnos;
 };
 exports.Paciente = Paciente;
@@ -56,6 +57,10 @@ __decorate([
     (0, typeorm_1.Column)("text"),
     __metadata("design:type", String)
 ], Paciente.prototype, "observaciones", void 0);
+__decorate([
+    (0, typeorm_1.Column)("boolean", { default: true }),
+    __metadata("design:type", Boolean)
+], Paciente.prototype, "estado", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => Turnos_entity_1.Turnos, (turnos) => turnos.idPaciente),
     __metadata("design:type", Array)

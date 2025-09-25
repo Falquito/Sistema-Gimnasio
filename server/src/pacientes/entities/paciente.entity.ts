@@ -23,6 +23,9 @@ export class Paciente {
     @Column("text")
     observaciones:string;
 
+    @Column("boolean",{default:true})
+    estado:boolean
+
 
 
     // @OneToMany(

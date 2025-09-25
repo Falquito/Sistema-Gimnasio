@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { AppointmentsTable } from '../components/turno/AppointmentsTable';
+import { listarPacientes, type PacienteListItem } from '../services/pacientes.services';
+import { LoadingSpinner, LoadingSpinner2 } from '../components/turno/LoadingSpinner';
+import { apiFetch } from '../lib/api';
 
 // === TIPOS, DATOS DE EJEMPLO Y UTILIDADES ===
 interface Paciente {
@@ -15,6 +19,7 @@ interface Paciente {
   observaciones?: string;
   fecha_alta: string;
   fecha_ult_upd: string;
+  estado:boolean;
 }
 
 const obrasSocialesCatalogo = [
@@ -25,23 +30,26 @@ const obrasSocialesCatalogo = [
     { id: 5, nombre: 'IAPOS' },
 ];
 
-const pacientesDeEjemplo: Paciente[] = [
-  { id_paciente: 1, nombre_paciente: 'Juan', apellido_paciente: 'Pérez', dni: '30123456', email: 'juan.perez@example.com', telefono_paciente: '1122334455', fecha_nacimiento: '1985-05-20', genero: 'Masculino', id_obra_social: 1, nro_obra_social: '12345-01', observaciones: 'Historial de ansiedad.', fecha_alta: '2023-01-15', fecha_ult_upd: '2023-10-28' },
-  { id_paciente: 2, nombre_paciente: 'Ana', apellido_paciente: 'García', dni: '35987654', email: 'ana.garcia@example.com', telefono_paciente: '9988776655', fecha_nacimiento: '1992-11-30', genero: 'Femenino', id_obra_social: 2, nro_obra_social: '67890-02', observaciones: 'Primera consulta.', fecha_alta: '2023-03-22', fecha_ult_upd: '2023-11-05' },
-];
-
 // === COMPONENTE PRINCIPAL ===
 const PacientesPage = () => {
-  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [pacientes, setPacientes] = useState<PacienteListItem[]>([]);
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState<Paciente | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading,setLoading] = useState(true)
   
   // Estado para manejar las notificaciones (mensaje y tipo)
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
+
+  const getPacientes = async()=>{
+    const pacientesLista= await listarPacientes()
+    setPacientes(pacientesLista)
+    setLoading(false)
+  }
+
   useEffect(() => {
-    setPacientes(pacientesDeEjemplo);
+    getPacientes()
   }, []);
 
   const mostrarNotificacion = (message: string, type: 'success' | 'error' = 'success') => {
@@ -64,8 +72,10 @@ const PacientesPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenModalParaEditar = (paciente: Paciente) => {
+  const handleOpenModalParaEditar = async (paciente: Paciente) => {
     setPacienteSeleccionado(paciente);
+    //Creo metodo para actualizar paciente
+    
     setIsModalOpen(true);
   };
   
@@ -74,28 +84,70 @@ const PacientesPage = () => {
     setPacienteSeleccionado(null);
   };
 
-  const handleGuardarPaciente = (paciente: Paciente) => {
+  const handleGuardarPaciente = async (paciente: Paciente) => {
     const isEditing = !!paciente.id_paciente;
     if (isEditing) {
-      setPacientes(pacientes.map(p => p.id_paciente === paciente.id_paciente ? paciente : p));
+      const req = await apiFetch<Paciente>(`/pacientes/${paciente.id_paciente}`,{
+      method:"PATCH",
+      body:JSON.stringify({
+        nombre:paciente.nombre_paciente,
+        apellido:paciente.apellido_paciente,
+        telefono:paciente.telefono_paciente,
+        genero:paciente.genero,
+        dni:paciente.dni,
+        observaciones:paciente.observaciones
+      })
+    })
+
+    const data = await req;
+    console.log(data)
+    getPacientes()
       mostrarNotificacion('Paciente Modificado Exitosamente');
     } else {
       const nuevoPaciente = { ...paciente, id_paciente: Date.now() };
-      setPacientes([...pacientes, nuevoPaciente]);
+      console.log(paciente.fecha_nacimiento)
+      const req = await apiFetch<Paciente>(`/pacientes/`,{
+      method:"POST",
+      body:JSON.stringify({
+        nombre:paciente.nombre_paciente,
+        apellido:paciente.apellido_paciente,
+        telefono:paciente.telefono_paciente,
+        genero:paciente.genero[0],
+        dni:paciente.dni,
+        observaciones:paciente.observaciones,
+        fecha_nacimiento:paciente.fecha_nacimiento
+      })
+    })
+
+    const data = await req;
+    console.log(data)
+    getPacientes()
       mostrarNotificacion('Paciente Creado Exitosamente');
     }
     handleCerrarModal();
   };
 
-  const handleEliminarPaciente = (id: number) => {
+  const handleEliminarPaciente = async (id: number) => {
     if (window.confirm('¿Está seguro de eliminar el paciente?')) {
-        setPacientes(pacientes.filter(p => p.id_paciente !== id));
+        const req = await apiFetch<Paciente>(`/pacientes/${id}`,{
+      method:"DELETE"
+    })
+
+    const data = await req;
+    console.log(data)
+    getPacientes()
         mostrarNotificacion('Paciente Eliminado Exitosamente', 'error');
     }
   };
 
   return (
-    <div style={styles.container}>
+    <>
+    {loading?(
+      <>
+      <LoadingSpinner2></LoadingSpinner2>
+      </>
+    ):(
+      <div style={styles.container}>
       {notification && (
         <div style={{...styles.notification, backgroundColor: notification.type === 'success' ? '#28a745' : '#dc3545'}}>
           {notification.message}
@@ -115,13 +167,12 @@ const PacientesPage = () => {
           + Nuevo Paciente
         </button>
       </div>
-
       <TablaPacientes 
         pacientes={pacientesFiltrados}
         onEditar={handleOpenModalParaEditar}
         onEliminar={handleEliminarPaciente}
       />
-
+  
       {isModalOpen && (
         <ModalFormulario
             paciente={pacienteSeleccionado}
@@ -131,6 +182,9 @@ const PacientesPage = () => {
         />
       )}
     </div>
+    )}
+    </>
+    
   );
 };
 
@@ -140,9 +194,12 @@ const TablaPacientes = ({ pacientes, onEditar, onEliminar }: { pacientes: Pacien
   <table style={styles.table}>
     <thead>
       <tr>
+        <th style={styles.th}>Estado</th>
         <th style={styles.th}>Nombre Completo</th>
         <th style={styles.th}>DNI</th>
-        <th style={styles.th}>Email</th>
+        <th style={styles.th}>Genero</th>
+        <th style={styles.th}>Fecha Nacimiento</th>
+        <th style={styles.th}>Observaciones</th>
         <th style={styles.th}>Teléfono</th>
         <th style={styles.th}>Acciones</th>
       </tr>
@@ -150,9 +207,13 @@ const TablaPacientes = ({ pacientes, onEditar, onEliminar }: { pacientes: Pacien
     <tbody>
       {pacientes.map(p => (
         <tr key={p.id_paciente}>
+          <td style={styles.td}>{p.estado?"Activo":"Inactivo"}</td>
           <td style={styles.td}>{p.nombre_paciente} {p.apellido_paciente}</td>
           <td style={styles.td}>{p.dni}</td>
-          <td style={styles.td}>{p.email}</td>
+          <td style={styles.td}>{p.genero}</td>
+          <td style={styles.td}>{p.fecha_nacimiento}</td>
+          <td style={styles.td}>{p.observaciones}</td>
+
           <td style={styles.td}>{p.telefono_paciente}</td>
           <td style={styles.td}>
             <button onClick={() => onEditar(p)} style={{...styles.actionButton, ...styles.editButton}}>Editar</button>
@@ -178,7 +239,8 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
         nro_obra_social: paciente?.nro_obra_social || '',
         observaciones: paciente?.observaciones || '',
         fecha_alta: paciente?.fecha_alta || new Date().toISOString().split('T')[0],
-        fecha_ult_upd: new Date().toISOString().split('T')[0]
+        fecha_ult_upd: new Date().toISOString().split('T')[0],
+        estado:paciente?.estado!
     });
     
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -192,7 +254,7 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
         if (dniExistente) newErrors.dni = 'Este DNI ya está registrado.';
 
         // Email: Formato válido
-        if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'El formato del email es inválido.';
+        // if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'El formato del email es inválido.';
         
         // Teléfono: Formato y longitud
         if (!/^[0-9+\-() ]{8,15}$/.test(formData.telefono_paciente)) newErrors.telefono_paciente = 'Teléfono inválido (8-15 dígitos).';
@@ -202,8 +264,8 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
         else if (new Date(formData.fecha_nacimiento) > new Date()) newErrors.fecha_nacimiento = 'La fecha de nacimiento no puede ser futura.';
 
         // Obra Social: Lógica condicional
-        if (formData.id_obra_social && !formData.nro_obra_social) newErrors.nro_obra_social = 'Número de afiliado obligatorio.';
-        if (!formData.id_obra_social && formData.nro_obra_social) newErrors.id_obra_social = 'Seleccione una obra social.';
+        // if (formData.id_obra_social && !formData.nro_obra_social) newErrors.nro_obra_social = 'Número de afiliado obligatorio.';
+        // if (!formData.id_obra_social && formData.nro_obra_social) newErrors.id_obra_social = 'Seleccione una obra social.';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -240,7 +302,7 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
                     </div>
                      <div style={styles.formRow}>
                         <div style={styles.formGroup}><label style={styles.label}>DNI (*)</label><input type="text" name="dni" value={formData.dni} onChange={handleChange} required maxLength={10} style={styles.input}/>{errors.dni && <small style={styles.errorText}>{errors.dni}</small>}</div>
-                        <div style={styles.formGroup}><label style={styles.label}>Email (*)</label><input type="email" name="email" value={formData.email} onChange={handleChange} required style={styles.input}/>{errors.email && <small style={styles.errorText}>{errors.email}</small>}</div>
+                        {/* <div style={styles.formGroup}><label style={styles.label}>Email (*)</label><input type="email" name="email" value={formData.email} onChange={handleChange} required style={styles.input}/>{errors.email && <small style={styles.errorText}>{errors.email}</small>}</div> */}
                     </div>
                      <div style={styles.formRow}>
                          <div style={styles.formGroup}><label style={styles.label}>Teléfono (*)</label><input type="tel" name="telefono_paciente" value={formData.telefono_paciente} onChange={handleChange} required maxLength={15} style={styles.input}/>{errors.telefono_paciente && <small style={styles.errorText}>{errors.telefono_paciente}</small>}</div>
@@ -248,9 +310,9 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
                     </div>
                     <div style={styles.formRow}>
                         <div style={styles.formGroup}><label style={styles.label}>Género (*)</label><select name="genero" value={formData.genero} onChange={handleChange} required style={styles.input}><option value="Femenino">Femenino</option><option value="Masculino">Masculino</option><option value="Otro">Otro</option></select></div>
-                        <div style={styles.formGroup}><label style={styles.label}>Obra Social</label><select name="id_obra_social" value={formData.id_obra_social} onChange={handleChange} style={styles.input}><option value="">Ninguna</option>{obrasSocialesCatalogo.map(os => (<option key={os.id} value={os.id}>{os.nombre}</option>))}</select>{errors.id_obra_social && <small style={styles.errorText}>{errors.id_obra_social}</small>}</div>
+                        {/* <div style={styles.formGroup}><label style={styles.label}>Obra Social</label><select name="id_obra_social" value={formData.id_obra_social} onChange={handleChange} style={styles.input}><option value="">Ninguna</option>{obrasSocialesCatalogo.map(os => (<option key={os.id} value={os.id}>{os.nombre}</option>))}</select>{errors.id_obra_social && <small style={styles.errorText}>{errors.id_obra_social}</small>}</div> */}
                     </div>
-                     <div style={styles.formGroup}><label style={styles.label}>Número de Afiliado</label><input type="text" name="nro_obra_social" value={formData.nro_obra_social} onChange={handleChange} style={styles.input}/>{errors.nro_obra_social && <small style={styles.errorText}>{errors.nro_obra_social}</small>}</div>
+                     {/* <div style={styles.formGroup}><label style={styles.label}>Número de Afiliado</label><input type="text" name="nro_obra_social" value={formData.nro_obra_social} onChange={handleChange} style={styles.input}/>{errors.nro_obra_social && <small style={styles.errorText}>{errors.nro_obra_social}</small>}</div> */}
                     <div style={styles.formGroup}><label style={styles.label}>Observaciones</label><textarea name="observaciones" value={formData.observaciones} onChange={handleChange} rows={3} style={styles.textarea}></textarea></div>
                     <div style={styles.formActions}><button type="button" onClick={onCerrar} style={{...styles.actionButton, ...styles.cancelButton}}>Cancelar</button><button type="submit" style={{...styles.actionButton, ...styles.saveButton}}>Guardar</button></div>
                 </form>
@@ -261,14 +323,14 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
 
 // === ESTILOS ===
 const styles: { [key: string]: React.CSSProperties } = {
-    container: { fontFamily: 'Arial, sans-serif', padding: '20px', color: '#FFFFFF', position: 'relative' },
+    container: { fontFamily: 'Arial, sans-serif', padding: '20px', color: 'black', position: 'relative' },
     notification: { position: 'fixed', top: '20px', right: '20px', color: 'white', padding: '15px 20px', borderRadius: '5px', zIndex: 1050, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' },
     header: { borderBottom: '2px solid #444', paddingBottom: '10px' },
     toolbar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0' },
     searchInput: { flex: 1, padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #555', backgroundColor: '#333', color: '#FFFFFF', marginRight: '20px' },
     addButton: { backgroundColor: '#007bff', color: 'white', padding: '10px 15px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' },
-    table: { width: '100%', borderCollapse: 'collapse', marginTop: '20px' },
-    th: { backgroundColor: '#333', padding: '12px', border: '1px solid #555', textAlign: 'left' },
+    table: { width: '100%', marginTop: '20px',background:"white" , borderRadius:""},
+    th: { backgroundColor: 'white', padding: '12px', border: '1px solid #555', textAlign: 'left' },
     td: { padding: '12px', border: '1px solid #555' },
     actionButton: { border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', marginRight: '5px', color: 'white' },
     editButton: { backgroundColor: '#ffc107', color: 'black' },
