@@ -15,7 +15,6 @@ const class_transformer_1 = require("class-transformer");
 class AgendaQuery {
     profesionalId;
     desde;
-    hasta;
     estado;
 }
 exports.AgendaQuery = AgendaQuery;
@@ -23,16 +22,14 @@ __decorate([
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.IsPositive)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], AgendaQuery.prototype, "profesionalId", void 0);
 __decorate([
     (0, class_validator_1.IsISO8601)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], AgendaQuery.prototype, "desde", void 0);
-__decorate([
-    (0, class_validator_1.IsISO8601)(),
-    __metadata("design:type", String)
-], AgendaQuery.prototype, "hasta", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)

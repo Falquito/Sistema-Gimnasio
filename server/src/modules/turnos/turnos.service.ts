@@ -1,42 +1,49 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 
 import { Turnos } from 'src/entities/entities/Turnos.entity';
-import { Servicio } from 'src/entities/entities/Servicio.entity';
+// import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
-import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
+// import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
 
 import { DisponibilidadQuery } from './dto/disponibilidad.query';
 import { CrearTurnoDto } from './dto/crear-turno.dto';
 import { ReprogramarTurnoDto } from './dto/reprogramar-turno.dto';
 import { CancelarTurnoDto } from './dto/cancelar-turno.dto';
 import { AgendaQuery } from './dto/agenda.query';
+import { Recepcionista } from 'src/entities/entities/Recepcionista.entity';
+import { Paciente } from 'src/pacientes/entities/paciente.entity';
 
 @Injectable()
 export class TurnosService {
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(Turnos) private readonly turnoRepo: Repository<Turnos>,
-    @InjectRepository(Servicio) private readonly servRepo: Repository<Servicio>,
+    // @InjectRepository(Servicio) private readonly servRepo: Repository<Servicio>,
     @InjectRepository(Profesionales) private readonly profRepo: Repository<Profesionales>,
-    @InjectRepository(ProfesionalesPorServicios) private readonly ppsRepo: Repository<ProfesionalesPorServicios>,
+    // @InjectRepository(ProfesionalesPorServicios) private readonly ppsRepo: Repository<ProfesionalesPorServicios>,
+ 
+  
   ) {}
 
   // ====== UTIL ======
 
   private async getDuracionMin(servicioId: number, fallback?: number): Promise<number> {
 
-    const servicio = await this.servRepo.findOne({ where: { idServicio: servicioId } });
-    if (!servicio) throw new NotFoundException('Servicio no encontrado');
+    // const servicio = await this.servRepo.findOne({ where: { idServicio: servicioId } });
+    // if (!servicio) throw new NotFoundException('Servicio no encontrado');
 
     // @ts-ignore
-    const duracion = (servicio as any).duracionMin ?? fallback;
+    const duracion =30
+    console.log(duracion)
     if (!duracion) {
       throw new UnprocessableEntityException('No se conoce la duración del servicio');
     }
@@ -68,17 +75,17 @@ export class TurnosService {
   private async getTurnoOrThrow(id: number) {
     const turno = await this.turnoRepo.findOne({
       where: { idTurno: id },
-      relations: ['idServicio', 'idProfesional'], // ← tus relaciones reales
+      relations: [ 'idProfesional'], // ← tus relaciones reales
     });
     if (!turno) throw new NotFoundException('Turno no encontrado');
     return turno;
   }
 
   /** Helper para obtener el id numérico de servicio desde la relación */
-  private getServicioId(turno: Turnos): number {
-    // idServicio es una relación (Servicio). Sacamos su PK.
-    return (turno.idServicio as any)?.idServicio ?? (turno as any).idServicio;
-  }
+  // private getServicioId(turno: Turnos): number {
+  //   // idServicio es una relación (Servicio). Sacamos su PK.
+  //   return (turno.idServicio as any)?.idServicio ?? (turno as any).idServicio;
+  // }
 
   /** Helper para obtener el id numérico del profesional desde la relación */
   private getProfesionalId(turno: Turnos): number {
@@ -101,46 +108,47 @@ export class TurnosService {
     // profesionales candidatos
     let profesionalesIds: number[];
     if (q.profesionalId) {
-      profesionalesIds = [q.profesionalId];
-    } else {
-      const rows = await this.ppsRepo.createQueryBuilder('pps')
-        .select('pps.idProfesionales', 'pid')  // nombre real
-        .where('pps.idServicio = :sid', { sid: q.servicioId })
-        .getRawMany();
-      profesionalesIds = rows.map(r => Number(r.pid));
-      if (!profesionalesIds.length) return { servicioId: q.servicioId, duracionMin, slots: [] };
-    }
+      profesionalesIds = [q.profesionalId];}
+
+    //  else {
+    //   const rows = await this.ppsRepo.createQueryBuilder('pps')
+    //     .select('pps.idProfesionales', 'pid')  // nombre real
+    //     .where('pps.idServicio = :sid', { sid: q.servicioId })
+    //     .getRawMany();
+    //   profesionalesIds = rows.map(r => Number(r.pid));
+    //   if (!profesionalesIds.length) return { servicioId: q.servicioId, duracionMin, slots: [] };
+    // }
 
     // turnos ocupados del día
-    type Ocupado = { horaInicio: string; horaFin: string; id_profesional: number };
-    const ocupados: Ocupado[] = await this.turnoRepo.createQueryBuilder('t')
-      .select(['t.horaInicio AS "horaInicio"', 't.horaFin AS "horaFin"', 't.id_profesional AS "id_profesional"'])
-      .where('t.fecha = :f', { f: q.fecha })
-      .andWhere('t.id_profesional IN (:...pids)', { pids: profesionalesIds })
-      .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
-      .getRawMany<Ocupado>();
+  //   type Ocupado = { horaInicio: string; horaFin: string; id_profesional: number };
+  //   const ocupados: Ocupado[] = await this.turnoRepo.createQueryBuilder('t')
+  //     .select(['t.horaInicio AS "horaInicio"', 't.horaFin AS "horaFin"', 't.id_profesional AS "id_profesional"'])
+  //     .where('t.fecha = :f', { f: q.fecha })
+  //     .andWhere('t.id_profesional IN (:...pids)', { pids: profesionalesIds })
+  //     .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
+  //     .getRawMany<Ocupado>();
 
-    const slots: { profesionalId: number; fecha: string; horaInicio: string; horaFin: string }[] = [];
-    for (const pid of profesionalesIds) {
-      //ejemplo horario laboral
-      let cursor = '08:00';
-      const finDia = '20:00';
-      while (cursor < finDia) {
-        const hi = cursor;
-        const hf = this.addMinutesHM(hi, duracionMin);
+  //   const slots: { profesionalId: number; fecha: string; horaInicio: string; horaFin: string }[] = [];
+  //   for (const pid of profesionalesIds) {
+  //     //ejemplo horario laboral
+  //     let cursor = '08:00';
+  //     const finDia = '20:00';
+  //     while (cursor < finDia) {
+  //       const hi = cursor;
+  //       const hf = this.addMinutesHM(hi, duracionMin);
 
-        const haySolape = ocupados
-          .filter(o => o.id_profesional === pid)
-          .some(o => o.horaInicio < hf && o.horaFin > hi);
+  //       const haySolape = ocupados
+  //         .filter(o => o.id_profesional === pid)
+  //         .some(o => o.horaInicio < hf && o.horaFin > hi);
 
-        if (!haySolape) {
-          slots.push({ profesionalId: pid, fecha: q.fecha, horaInicio: hi, horaFin: hf });
-        }
-        cursor = this.addMinutesHM(cursor, duracionMin);
-      }
-    }
+  //       if (!haySolape) {
+  //         slots.push({ profesionalId: pid, fecha: q.fecha, horaInicio: hi, horaFin: hf });
+  //       }
+  //       cursor = this.addMinutesHM(cursor, duracionMin);
+  //     }
+  //   }
 
-    return { servicioId: q.servicioId, duracionMin, slots };
+  //   return { servicioId: q.servicioId, duracionMin, slots };
   }
 
 
@@ -148,44 +156,79 @@ export class TurnosService {
 
 
     // ====== HU-5: CREAR ======
-  async crear(dto: CrearTurnoDto) {
-    const duracionMin = await this.getDuracionMin(dto.servicioId);
+  async crear( dto: CrearTurnoDto) {
     const { fecha, hora: horaInicio } = this.isoToParts(dto.inicio);
-    const horaFin = this.addMinutesHM(horaInicio, duracionMin);
-  
+    const queryRunner = this.dataSource.createQueryRunner()
     try {
-      return await this.dataSource.transaction(async (mgr) => {
-        // valida profesional ↔ servicio (bloque anterior)
+      await queryRunner.connect()
+      await queryRunner.startTransaction()
+
+      const {pacienteId,inicio,observacion,profesionalId,recepcionistaId} = dto
+
+      const profesional = await queryRunner.manager.findOneBy(Profesionales,{idProfesionales:profesionalId})
+
+      const recepcionista = await queryRunner.manager.findOneBy(Recepcionista,{idRecepcionista:recepcionistaId})
+
+      const paciente = await queryRunner.manager.findOneBy(Paciente,{
+        id_paciente:pacienteId
+      })
+
+      const turno = queryRunner.manager.create(Turnos,{
+        idRecepcionista:recepcionista!,
+        idPaciente:paciente!,
+        idProfesional:profesional!,
+        estado:"PENDIENTE",
+        observacion:observacion,
+        fecha:fecha,
+        horaInicio:horaInicio,
+        fechaAlta:fecha,
+        fechaUltUpd:"-"
+
+      })
+
+      await queryRunner.manager.save(turno)
+      await queryRunner.commitTransaction()
+      return turno;
+      // return await this.dataSource.transaction(async (mgr) => {
+      //   valida profesional ↔ servicio (bloque anterior)
       
-        // chequear solape: mismo día y rangos de hora
-        const solapa = await mgr.getRepository(Turnos)
-          .createQueryBuilder('t')
-          .where('t.idProfesional = :pid', { pid: dto.profesionalId })
-          .andWhere('t.fecha = :f', { f: fecha })
-          .andWhere('t.horaInicio < :hf AND t.horaFin > :hi', {
-            hi: horaInicio,
-            hf: horaFin,
-          })
-          .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
-          .getExists();
-        if (solapa) throw new ConflictException('El horario ya está ocupado');
+      //   chequear solape: mismo día y rangos de hora
+      //   const solapa = await mgr.getRepository(Turnos)
+      //     .createQueryBuilder('t')
+      //     .where('t.idProfesional = :pid', { pid: dto.profesionalId })
+      //     .andWhere('t.fecha = :f', { f: fecha })
+      //     .andWhere('t.horaInicio < :hf AND t.horaFin > :hi', {
+      //       hi: horaInicio,
+      //       hf: horaFin,
+      //     })
+      //     .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
+      //     .getExists();
+      //   if (solapa) throw new ConflictException('El horario ya está ocupado');
         
-        // crear usando los nombres de TU entidad:
-        const turno = mgr.getRepository(Turnos).create({
-          idCliente: dto.clienteId,                 // FK plana
-          idServicio: { idServicio: dto.servicioId },       // relación
-          idProfesional: { idProfesionales: dto.profesionalId }, // relación
-          fecha,                                     // "YYYY-MM-DD"
-          horaInicio,                                // "HH:mm"
-          horaFin,                                   // "HH:mm"
-          estado: 'PENDIENTE',
-        });
+      //   crear usando los nombres de TU entidad:
+      //   const turno = mgr.getRepository(Turnos).create({
+      //     idCliente: dto.clienteId,                 // FK plana
+      //     idServicio: { idServicio: dto.servicioId },       // relación
+      //     idProfesional: { idProfesionales: dto.profesionalId }, // relación
+      //     fecha,                                     // "YYYY-MM-DD"
+      //     horaInicio:horaInicio,                                // "HH:mm"
+      //     horaFin:horaFin,                                   // "HH:mm"
+      //     estado: 'PENDIENTE',
+      //     rutina:dto.rutina,
+      //     observacion:dto.observacion,
+      //     fechaAlta:fecha,
+      //     fechaUltUpd:"-"
+      //   });
       
-        return mgr.getRepository(Turnos).save(turno);
-      });
-    } catch (e: any) {
-      if (e?.code === '23505') throw new ConflictException('El horario ya fue tomado');
-      throw e;
+      //   return mgr.getRepository(Turnos).save(turno);
+      // });
+    } catch (error) {
+        await queryRunner.rollbackTransaction()
+        throw new InternalServerErrorException(error)
+      // if (e?.code === '23505') throw new ConflictException('El horario ya fue tomado');
+      // throw e;
+    }finally{
+      await queryRunner.release()
     }
   }
   
@@ -199,42 +242,47 @@ export class TurnosService {
     if (turno.estado === 'CANCELADO') return turno;
   
     turno.estado = 'CANCELADO';
-    (turno as any).motivoCancelacion = dto.motivo ?? null;
-    return this.turnoRepo.save(turno);
+    return await this.turnoRepo.save(turno);
   }
   
-  // ====== HU-6b: REPROGRAMAR ======
-  async reprogramar(id: number, dto: ReprogramarTurnoDto) {
-    const turno = await this.getTurnoOrThrow(id);
-  
-    if (turno.estado === 'CANCELADO') {
-      throw new UnprocessableEntityException('No se puede reprogramar un turno cancelado');
+  async agenda(q: { profesionalId: number; desde: string; estado?: string }) {
+    
+    if(q.desde && q.profesionalId && q.estado){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.id_profesional = :pid', { pid: q.profesionalId })
+      .andWhere('t.fecha >= :d', { d: q.desde})
+      .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany(); 
+    }else if(q.profesionalId && q.estado){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.id_profesional = :pid', { pid: q.profesionalId })
+      .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany();
+    }else if(q.desde){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.fecha >= :d', { d: q.desde})
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany();
+    }else if(q.profesionalId){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where('t.id_profesional = :pid', { pid: q.profesionalId})
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany();
+    }else if(q.estado){
+      return this.turnoRepo.createQueryBuilder('t')
+      .where(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
+      .orderBy('t.fecha', 'ASC')
+      .addOrderBy('t.horaInicio', 'ASC')
+      .getMany(); 
     }
-  
-    const servicioId = this.getServicioId(turno);
-    const duracionMin = await this.getDuracionMin(servicioId);
-    const { fecha, hora: nuevaHI } = this.isoToParts(dto.nuevoInicio);
-    const nuevaHF = this.addMinutesHM(nuevaHI, duracionMin);
-  
-    const profesionalId = this.getProfesionalId(turno);
-  
-    const solapa = await this.turnoRepo.createQueryBuilder('t')
-      .where('t.id_profesional = :pid', { pid: profesionalId })
-      .andWhere('t.id_turno != :id', { id })
-      .andWhere('t.fecha = :f', { f: fecha })
-      .andWhere('t.horaInicio < :hf AND t.horaFin > :hi', { hi: nuevaHI, hf: nuevaHF })
-      .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
-      .getExists();
-    if (solapa) throw new ConflictException('El nuevo horario está ocupado');
-  
-    turno.fecha = fecha as any;
-    turno.horaInicio = nuevaHI as any;
-    turno.horaFin = nuevaHF as any;
-    turno.estado = 'PENDIENTE'; // o 'REPROGRAMADO'
-  
-    return this.turnoRepo.save(turno);
-  }
 
+<<<<<<< HEAD
 
 
   async agenda(q: { profesionalId: number; desde: string; hasta: string; estado?: string }) {
@@ -261,7 +309,20 @@ export class TurnosService {
   
   return qb.getMany();
 }
+=======
+    throw new BadRequestException("Necesito que mandes por lo menos algunos de {profesionalId,estado,desde}")
+    
+    }
+    
+  async listar(q: { pacienteId?: number; estado?: string }) {
+    const qb = this.turnoRepo.createQueryBuilder('t');
+    if (q.pacienteId) qb.andWhere('t.clienteId = :cid', { cid: q.pacienteId });
+    if (q.estado) qb.andWhere('t.estado = :e', { e: q.estado });
+    qb.orderBy('t.hora_inicio', 'DESC');
+    return qb.getMany();
+  }
+>>>>>>> 4476f43cac5131d7f9601eb86c55c06caa1c8982
   public async getById(id: number) {
-  return this.getTurnoOrThrow(id);
+    return this.getTurnoOrThrow(id);
   }
 };

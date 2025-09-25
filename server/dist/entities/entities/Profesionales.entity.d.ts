@@ -1,5 +1,4 @@
 import { Usuario } from "./Usuario.entity";
-import { ProfesionalesPorServicios } from "./ProfesionalesPorServicios.entity";
 import { Turnos } from "./Turnos.entity";
 export declare class Profesionales {
     idProfesionales: number;
@@ -12,6 +11,6 @@ export declare class Profesionales {
     fechaAlta: string | null;
     fechaUltUpd: string | null;
     idUsuario: Usuario;
-    profesionalesPorServicios: ProfesionalesPorServicios[];
+    servicio: string;
     turnos: Turnos[];
 }

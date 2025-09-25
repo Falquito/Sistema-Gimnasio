@@ -1,7 +1,7 @@
-import GymAppointmentsDashboard from "../components/dashboard/AppointmentsDashboard"
+import Dashboard from "../components/turno/Dashboard"
 
 export default function Turnos(){
     return(
-        <GymAppointmentsDashboard/>
+        <Dashboard/>
     )
 }

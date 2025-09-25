@@ -1,6 +1,7 @@
 export declare class CrearTurnoDto {
-    clienteId: number;
-    servicioId: number;
     profesionalId: number;
+    recepcionistaId: number;
     inicio: string;
+    pacienteId: number;
+    observacion: string;
 }

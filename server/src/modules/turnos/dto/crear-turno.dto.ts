@@ -1,16 +1,23 @@
-import { IsISO8601, IsInt, IsPositive } from 'class-validator';
+import { IsISO8601, IsInt, IsPositive, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CrearTurnoDto {
-  @Type(() => Number) @IsInt() @IsPositive()
-  clienteId: number;
-
-  @Type(() => Number) @IsInt() @IsPositive()
-  servicioId: number;
-
+ 
+  @ApiProperty({example:1})
   @Type(() => Number) @IsInt() @IsPositive()
   profesionalId: number;
-
+  @ApiProperty({example:1})
+  @Type(() => Number) @IsInt() @IsPositive()
+  recepcionistaId: number;
+  @ApiProperty({example:"2011-10-05T14:48:00.000Z"})
   @IsISO8601()
   inicio: string; // timestamptz ISO
+  
+  @ApiProperty({example:1})
+  @Type(() => Number) @IsInt() @IsPositive()
+  pacienteId: number;
+  @ApiProperty()
+  @IsString()
+  observacion:string;
 }

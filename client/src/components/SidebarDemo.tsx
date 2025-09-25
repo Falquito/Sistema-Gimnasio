@@ -11,12 +11,21 @@ import {
 import { motion } from "motion/react";
 import { cn } from "../lib/utils";
 import logo from "../img/logo/b2c0709b7e3fd5b4d48dcdfecac9a5e1-removebg-preview.png"
+import { useNavigate } from "react-router-dom";
+
 
 
 export function SidebarDemo() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // borra token
+    navigate("/login"); // redirige al login
+  };
+
   const links = [
     {
-      label: "Usarios",
+      label: "Usuarios",
       href: "/user",
       icon: (
         <IconUser className="h-5 w-5 shrink-0 text-white dark:text-[#e4e4e4]" />
@@ -41,11 +50,11 @@ export function SidebarDemo() {
     
     {
       label: "Logout",
-      href: "/logout",
+      href: "#",
       icon: (
         <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-white" />
       ),
-      
+      onClick: handleLogout,
     },
     
     

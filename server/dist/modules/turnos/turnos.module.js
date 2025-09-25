@@ -12,16 +12,15 @@ const typeorm_1 = require("@nestjs/typeorm");
 const turnos_service_1 = require("./turnos.service");
 const turnos_controller_1 = require("./turnos.controller");
 const Turnos_entity_1 = require("../../entities/entities/Turnos.entity");
-const Servicio_entity_1 = require("../../entities/entities/Servicio.entity");
 const Profesionales_entity_1 = require("../../entities/entities/Profesionales.entity");
-const ProfesionalesPorServicios_entity_1 = require("../../entities/entities/ProfesionalesPorServicios.entity");
+const auth_module_1 = require("../../auth/auth.module");
 let TurnosModule = class TurnosModule {
 };
 exports.TurnosModule = TurnosModule;
 exports.TurnosModule = TurnosModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            typeorm_1.TypeOrmModule.forFeature([Turnos_entity_1.Turnos, Servicio_entity_1.Servicio, Profesionales_entity_1.Profesionales, ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios]),
+        imports: [auth_module_1.AuthModule,
+            typeorm_1.TypeOrmModule.forFeature([Turnos_entity_1.Turnos, Profesionales_entity_1.Profesionales]),
         ],
         controllers: [turnos_controller_1.TurnosController],
         providers: [turnos_service_1.TurnosService],

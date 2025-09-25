@@ -1,18 +1,15 @@
 import { Profesionales } from "./Profesionales.entity";
 import { Recepcionista } from "./Recepcionista.entity";
-import { Servicio } from "./Servicio.entity";
+import { Paciente } from "../../pacientes/entities/paciente.entity";
 export declare class Turnos {
     idTurno: number;
-    fecha: string | null;
-    horaInicio: string | null;
-    horaFin: string | null;
-    idCliente: number;
-    rutina: string | null;
-    observacion: string | null;
-    estado: string | null;
-    fechaAlta: string | null;
-    fechaUltUpd: string | null;
+    fecha: string;
+    horaInicio: string;
+    idPaciente: Paciente;
+    observacion: string;
+    estado: string;
+    fechaAlta: string;
+    fechaUltUpd: string;
     idProfesional: Profesionales;
     idRecepcionista: Recepcionista;
-    idServicio: Servicio;
 }

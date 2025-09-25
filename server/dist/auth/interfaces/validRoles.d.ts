@@ -1,5 +1,5 @@
 export declare enum validRoles {
     gerente = "gerente",
-    trainer = "trainer",
+    medico = "medico",
     recepcionista = "recepcionista"
 }

@@ -20,7 +20,7 @@ export class TurnosApiService {
     if (query.hasta) params.append('hasta', query.hasta);
     if (query.duracionMin) params.append('duracionMin', query.duracionMin.toString());
 
-    const response = await fetch(`${this.baseUrl}/disponibilidad?${params}`);
+    const response = await fetch(`${this.baseUrl}/disponibles?${params}`);
     if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
     return response.json();
   }
@@ -53,7 +53,9 @@ export class TurnosApiService {
   async listarTurnos(clienteId?: number, estado?: string): Promise<Turno[]> {
     const params = new URLSearchParams();
     if (clienteId) params.append('clienteId', clienteId.toString());
-    if (estado) params.append('estado', estado);
+   if (estado && estado.toLowerCase() !== 'todos') {
+   params.append('estado', estado);
+}
 
     const response = await fetch(`${this.baseUrl}?${params}`);
     if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);

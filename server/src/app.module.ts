@@ -12,14 +12,15 @@ import { Usuario } from './entities/entities/Usuario.entity';
 import { Profesionales } from './entities/entities/Profesionales.entity';
 import { Recepcionista } from './entities/entities/Recepcionista.entity';
 import { Turnos } from './entities/entities/Turnos.entity';
-import { Servicio } from './entities/entities/Servicio.entity';
-import { ClientesPorServicios } from './entities/entities/ClientesPorServicios.entity';
-import { ProfesionalesPorServicios } from './entities/entities/ProfesionalesPorServicios.entity';
-import { Gerente } from './gerentes/entities/gerente.entity';
+// import { Servicio } from './entities/entities/Servicio.entity';
+// import { ClientesPorServicios } from './entities/entities/ClientesPorServicios.entity';
+// import { ProfesionalesPorServicios } from './entities/entities/ProfesionalesPorServicios.entity';
+// import { Gerente } from './gerentes/entities/gerente.entity';
 import { TurnosModule } from './modules/turnos/turnos.module';
-import { ServiciosModule } from './modules/servicios/servicios.module';
+// import { ServiciosModule } from './modules/servicios/servicios.module';
 import { ProfesionalesModule } from './modules/profesionales/profesionales.module';
-import { ClientesModule } from './clientes/clientes.module';
+import { PacientesModule } from './pacientes/pacientes.module';
+import { RecepcionistaModule } from './recepcionista/recepcionista.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -42,9 +43,10 @@ import { ClientesModule } from './clientes/clientes.module';
     }),
     GerentesModule,
     TurnosModule,
-    ServiciosModule,
+    // ServiciosModule,
     ProfesionalesModule,
-    ClientesModule
+    PacientesModule,
+    RecepcionistaModule
   ],
   controllers: [AppController, AuthController],
   providers: [AppService,

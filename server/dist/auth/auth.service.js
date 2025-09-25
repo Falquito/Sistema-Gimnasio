@@ -80,7 +80,7 @@ let AuthService = class AuthService {
     async refresh(token) {
         try {
             const payload = await this.jwtService.verifyAsync(token);
-            const newAccessToken = await this.jwtService.signAsync({ sub: payload.sub, email: payload.email }, { expiresIn: '15m' });
+            const newAccessToken = await this.jwtService.signAsync({ sub: payload.sub, email: payload.email }, { expiresIn: '1h' });
             return { accessToken: newAccessToken };
         }
         catch {

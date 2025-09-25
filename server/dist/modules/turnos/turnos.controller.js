@@ -16,10 +16,13 @@ exports.TurnosController = void 0;
 const common_1 = require("@nestjs/common");
 const turnos_service_1 = require("./turnos.service");
 const crear_turno_dto_1 = require("./dto/crear-turno.dto");
-const reprogramar_turno_dto_1 = require("./dto/reprogramar-turno.dto");
 const cancelar_turno_dto_1 = require("./dto/cancelar-turno.dto");
 const disponibilidad_query_1 = require("./dto/disponibilidad.query");
 const agenda_query_1 = require("./dto/agenda.query");
+const swagger_1 = require("@nestjs/swagger");
+const Turnos_entity_1 = require("../../entities/entities/Turnos.entity");
+const validRoles_1 = require("../../auth/interfaces/validRoles");
+const auth_decorator_1 = require("../../auth/decorators/auth.decorator");
 let TurnosController = class TurnosController {
     turnosService;
     constructor(turnosService) {
@@ -34,18 +37,15 @@ let TurnosController = class TurnosController {
     cancelar(id, dto) {
         return this.turnosService.cancelar(id, dto);
     }
-    reprogramar(id, dto) {
-        return this.turnosService.reprogramar(id, dto);
-    }
     agenda(q) {
         return this.turnosService.agenda(q);
     }
     findOne(id) {
         return this.turnosService.getById(id);
     }
-    listar(clienteId, estado) {
+    listar(pacienteId, estado) {
         return this.turnosService.listar({
-            clienteId: clienteId ? Number(clienteId) : undefined,
+            pacienteId: pacienteId ? Number(pacienteId) : undefined,
             estado: estado || undefined,
         });
     }
@@ -60,6 +60,7 @@ __decorate([
 ], TurnosController.prototype, "getDisponibles", null);
 __decorate([
     (0, common_1.Post)(),
+    (0, swagger_1.ApiOkResponse)({ description: "Devuelve turno creado", type: Turnos_entity_1.Turnos }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [crear_turno_dto_1.CrearTurnoDto]),
@@ -73,14 +74,6 @@ __decorate([
     __metadata("design:paramtypes", [Number, cancelar_turno_dto_1.CancelarTurnoDto]),
     __metadata("design:returntype", void 0)
 ], TurnosController.prototype, "cancelar", null);
-__decorate([
-    (0, common_1.Patch)(':id/reprogramar'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, reprogramar_turno_dto_1.ReprogramarTurnoDto]),
-    __metadata("design:returntype", void 0)
-], TurnosController.prototype, "reprogramar", null);
 __decorate([
     (0, common_1.Get)('agenda'),
     __param(0, (0, common_1.Query)()),
@@ -97,7 +90,8 @@ __decorate([
 ], TurnosController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('clienteId')),
+    (0, swagger_1.ApiOkResponse)({ type: Turnos_entity_1.Turnos, isArray: true }),
+    __param(0, (0, common_1.Query)('pacienteId')),
     __param(1, (0, common_1.Query)('estado')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
@@ -105,6 +99,7 @@ __decorate([
 ], TurnosController.prototype, "listar", null);
 exports.TurnosController = TurnosController = __decorate([
     (0, common_1.Controller)('turnos'),
+    (0, auth_decorator_1.Auth)(validRoles_1.validRoles.gerente, validRoles_1.validRoles.recepcionista),
     __metadata("design:paramtypes", [turnos_service_1.TurnosService])
 ], TurnosController);
 //# sourceMappingURL=turnos.controller.js.map
