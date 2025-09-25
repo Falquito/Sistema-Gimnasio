@@ -1,13 +1,44 @@
 import React, { useState } from "react";
-import logo from "../img/logo/b2c0709b7e3fd5b4d48dcdfecac9a5e1-removebg-preview.png"; // 👈 guardá tu logo en /src/assets
+import { useNavigate } from "react-router-dom";
+import logo from "../img/logo/b2c0709b7e3fd5b4d48dcdfecac9a5e1-removebg-preview.png";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login con:", email, password);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:3000/auth/login", {
+        // ⚠️ Cambiá la URL según tu backend real
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Credenciales inválidas");
+      }
+
+      const data = await response.json();
+      console.log("Respuesta del backend:", data);
+
+      // Guardar token en localStorage
+      localStorage.setItem("token", data.token);
+
+      // Redirigir al dashboard (ejemplo: /user)
+      navigate("/user");
+    } catch (err: any) {
+      setError(err.message);
+    }
+
+    
   };
 
   return (
@@ -46,6 +77,8 @@ const Login: React.FC = () => {
             className="mb-6 p-3 rounded-lg border border-gray-700 bg-[#101010] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
           <button
             type="submit"
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors duration-300"
@@ -53,14 +86,6 @@ const Login: React.FC = () => {
             Ingresar
           </button>
         </form>
-
-        {/* Extra */}
-        {/* <p className="text-gray-400 text-sm text-center mt-6">
-          ¿No tenés cuenta?{" "}
-          <a href="#" className="text-blue-400 hover:text-blue-500">
-            Registrate aquí
-          </a>
-        </p> */}
       </div>
     </div>
   );

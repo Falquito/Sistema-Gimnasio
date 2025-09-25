@@ -4,7 +4,7 @@ import User from "./pages/User"
 import Recepcionista from "./pages/Recepcionista"
 import Turnos from "./pages/Turnos"
 import Login from "./pages/Login";
-
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 
@@ -18,9 +18,9 @@ function App() {
 
           {/* Rutas con Layout */}
           <Route path="/" element={<Layout/>}>
-            <Route path="user" element={<User />} />
-            <Route path="recepcionista" element={<Recepcionista />} />
-            <Route path="turnos" element={<Turnos />} />
+            <Route path="user" element={<ProtectedRoute><User /></ProtectedRoute>} />
+            <Route path="recepcionista" element={<ProtectedRoute><Recepcionista /></ProtectedRoute>} />
+            <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>

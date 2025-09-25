@@ -160,18 +160,45 @@ export const SidebarLink = ({
   className,
   ...props
 }: {
-  link: Links;
+  link: Links & { onClick?: () => void };
   className?: string;
 }) => {
   const { open, animate } = useSidebar();
+
+  // Si el link tiene onClick (ej: Logout), usamos un <button>
+  if (link.onClick) {
+    return (
+      <button
+        onClick={link.onClick}
+        className={cn(
+          "flex items-center justify-start gap-2 text-white py-2 px-1 rounded-lg transition-all duration-200 hover:bg-red-600",
+          className
+        )}
+        {...props}
+      >
+        {link.icon}
+        <motion.span
+          animate={{
+            display: animate ? (open ? "inline-block" : "none") : "inline-block",
+            opacity: animate ? (open ? 1 : 0) : 1,
+          }}
+          className="text-sm whitespace-pre inline-block"
+        >
+          {link.label}
+        </motion.span>
+      </button>
+    );
+  }
+
+  // Si no tiene onClick, usamos NavLink normal
   return (
     <NavLink
       to={link.href}
       className={({ isActive }) =>
         cn(
           "flex items-center justify-start gap-2 text-white group/sidebar py-2 px-1 rounded-lg transition-all duration-200",
-          isActive && "bg-white/20 text-white font-semibold backdrop-blur-sm", // Fondo activo
-          !isActive && "hover:bg-white/10", // Hover sutil
+          isActive && "bg-white/20 text-white font-semibold backdrop-blur-sm",
+          !isActive && "hover:bg-white/10",
           className
         )
       }
