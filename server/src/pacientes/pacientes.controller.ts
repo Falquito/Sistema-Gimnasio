@@ -5,7 +5,7 @@ import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Auth()
-@Controller('clientes')
+@Controller('pacientes')
 export class PacientesController {
   constructor(private readonly pacienteService: PacienteService) {}
 
@@ -24,10 +24,10 @@ export class PacientesController {
     return this.pacienteService.findOne(+id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateClienteDto: UpdatePacienteDto) {
-  //   return this.pacienteService.update(+id, updateClienteDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateClienteDto: UpdatePacienteDto) {
+    return this.pacienteService.update(+id, updateClienteDto);
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {
