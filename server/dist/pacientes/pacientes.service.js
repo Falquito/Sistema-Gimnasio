@@ -75,6 +75,11 @@ let PacienteService = class PacienteService {
     async findOne(id) {
         return await this.pacienteRepository.findOneBy({ id_paciente: id });
     }
+    async remove(id) {
+        const paciente = await this.findOne(id);
+        const pacienteDeleted = await this.pacienteRepository.preload({ ...paciente, estado: false });
+        return await this.pacienteRepository.save(pacienteDeleted);
+    }
 };
 exports.PacienteService = PacienteService;
 exports.PacienteService = PacienteService = __decorate([

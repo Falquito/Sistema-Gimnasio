@@ -87,5 +87,11 @@ export class PacienteService {
     return await this.pacienteRepository.findOneBy({id_paciente:id})
   }
 
+  async remove(id:number){
+    const paciente = await this.findOne(id)
+    const pacienteDeleted = await this.pacienteRepository.preload({...paciente,estado:false})
+    return await this.pacienteRepository.save(pacienteDeleted!)
+  }
+
 
 }

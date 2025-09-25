@@ -29,8 +29,8 @@ export class PacientesController {
     return this.pacienteService.update(+id, updateClienteDto);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.pacienteService.remove(+id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.pacienteService.remove(+id);
+  }
 }

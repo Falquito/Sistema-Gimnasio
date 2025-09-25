@@ -8,4 +8,5 @@ export declare class PacientesController {
     findAll(): Promise<import("./entities/paciente.entity").Paciente[]>;
     findOne(id: string): Promise<import("./entities/paciente.entity").Paciente | null>;
     update(id: string, updateClienteDto: UpdatePacienteDto): Promise<import("./entities/paciente.entity").Paciente>;
+    remove(id: string): Promise<import("./entities/paciente.entity").Paciente>;
 }

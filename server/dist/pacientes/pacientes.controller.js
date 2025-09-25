@@ -35,6 +35,9 @@ let PacientesController = class PacientesController {
     update(id, updateClienteDto) {
         return this.pacienteService.update(+id, updateClienteDto);
     }
+    remove(id) {
+        return this.pacienteService.remove(+id);
+    }
 };
 exports.PacientesController = PacientesController;
 __decorate([
@@ -65,6 +68,13 @@ __decorate([
     __metadata("design:paramtypes", [String, update_paciente_dto_1.UpdatePacienteDto]),
     __metadata("design:returntype", void 0)
 ], PacientesController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], PacientesController.prototype, "remove", null);
 exports.PacientesController = PacientesController = __decorate([
     (0, auth_decorator_1.Auth)(),
     (0, common_1.Controller)('pacientes'),
