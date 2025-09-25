@@ -31,11 +31,26 @@ let TurnosService = class TurnosService {
     }
     async getDuracionMin(servicioId, fallback) {
         const duracion = 30;
-        console.log(duracion);
         if (!duracion) {
             throw new common_1.UnprocessableEntityException('No se conoce la duración del servicio');
         }
         return Number(duracion);
+    }
+    onlyDate(v) {
+        if (!v)
+            return undefined;
+        return v.length >= 10 ? v.slice(0, 10) : v;
+    }
+    normHM(hm) {
+        const [hStr, mStr = '0'] = hm.split(':');
+        const h = Number(hStr);
+        const m = Number(mStr);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${pad(h)}:${pad(m)}`;
+    }
+    toMin(hm) {
+        const [h, m] = hm.split(':').map(Number);
+        return h * 60 + m;
     }
     isoToParts(iso) {
         const d = new Date(iso);
@@ -71,7 +86,7 @@ let TurnosService = class TurnosService {
         if (!q.fecha) {
             throw new common_1.UnprocessableEntityException('Para este modelo usá ?fecha=YYYY-MM-DD');
         }
-        let profesionalesIds;
+        let profesionalesIds = [];
         if (q.profesionalId) {
             profesionalesIds = [q.profesionalId];
         }
@@ -82,22 +97,42 @@ let TurnosService = class TurnosService {
         try {
             await queryRunner.connect();
             await queryRunner.startTransaction();
-            const { pacienteId, inicio, observacion, profesionalId, recepcionistaId } = dto;
+            const { pacienteId, observacion, profesionalId, recepcionistaId } = dto;
             const profesional = await queryRunner.manager.findOneBy(Profesionales_entity_1.Profesionales, { idProfesionales: profesionalId });
             const recepcionista = await queryRunner.manager.findOneBy(Recepcionista_entity_1.Recepcionista, { idRecepcionista: recepcionistaId });
-            const paciente = await queryRunner.manager.findOneBy(paciente_entity_1.Paciente, {
-                id_paciente: pacienteId
+            const paciente = await queryRunner.manager.findOneBy(paciente_entity_1.Paciente, { id_paciente: pacienteId });
+            const DURACION_MIN = 60;
+            const hInicioNorm = this.normHM(horaInicio);
+            const hFinNorm = this.addMinutesHM(hInicioNorm, DURACION_MIN);
+            const existentes = await queryRunner.manager
+                .getRepository(Turnos_entity_1.Turnos)
+                .createQueryBuilder('t')
+                .where('t.id_profesional = :pid', { pid: profesionalId })
+                .andWhere('t.fecha = :f', { f: fecha })
+                .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
+                .getMany();
+            const bStart = this.toMin(hInicioNorm);
+            const bEnd = this.toMin(hFinNorm);
+            const seSolapa = existentes.some((t) => {
+                const ini = this.normHM(t.horaInicio);
+                const fin = t.horaFin ? this.normHM(t.horaFin) : this.addMinutesHM(ini, DURACION_MIN);
+                const aStart = this.toMin(ini);
+                const aEnd = this.toMin(fin);
+                return aStart < bEnd && aEnd > bStart;
             });
+            if (seSolapa) {
+                throw new common_1.ConflictException('El horario ya está ocupado');
+            }
             const turno = queryRunner.manager.create(Turnos_entity_1.Turnos, {
                 idRecepcionista: recepcionista,
                 idPaciente: paciente,
                 idProfesional: profesional,
-                estado: "PENDIENTE",
-                observacion: observacion,
-                fecha: fecha,
-                horaInicio: horaInicio,
+                estado: 'PENDIENTE',
+                observacion,
+                fecha,
+                horaInicio: hInicioNorm,
                 fechaAlta: fecha,
-                fechaUltUpd: "-"
+                fechaUltUpd: '-',
             });
             await queryRunner.manager.save(turno);
             await queryRunner.commitTransaction();
@@ -105,6 +140,8 @@ let TurnosService = class TurnosService {
         }
         catch (error) {
             await queryRunner.rollbackTransaction();
+            if (error instanceof common_1.ConflictException)
+                throw error;
             throw new common_1.InternalServerErrorException(error);
         }
         finally {
@@ -119,53 +156,43 @@ let TurnosService = class TurnosService {
         return await this.turnoRepo.save(turno);
     }
     async agenda(q) {
-        if (q.desde && q.profesionalId && q.estado) {
-            return this.turnoRepo.createQueryBuilder('t')
-                .where('t.id_profesional = :pid', { pid: q.profesionalId })
-                .andWhere('t.fecha >= :d', { d: q.desde })
-                .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-                .orderBy('t.fecha', 'ASC')
-                .addOrderBy('t.horaInicio', 'ASC')
-                .getMany();
+        const qb = this.turnoRepo.createQueryBuilder('t')
+            .leftJoinAndSelect('t.idPaciente', 'paciente')
+            .leftJoinAndSelect('t.idProfesional', 'profesional')
+            .leftJoinAndSelect('t.idRecepcionista', 'recep');
+        if (q.profesionalId != null) {
+            qb.andWhere('t.id_profesional = :pid', { pid: q.profesionalId });
         }
-        else if (q.profesionalId && q.estado) {
-            return this.turnoRepo.createQueryBuilder('t')
-                .where('t.id_profesional = :pid', { pid: q.profesionalId })
-                .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-                .orderBy('t.fecha', 'ASC')
-                .addOrderBy('t.horaInicio', 'ASC')
-                .getMany();
+        const d = this.onlyDate(q.desde);
+        if (d)
+            qb.andWhere('t.fecha >= :d', { d });
+        const h = this.onlyDate(q.hasta);
+        if (h)
+            qb.andWhere('t.fecha <= :h', { h });
+        if (q.estado) {
+            qb.andWhere('t.estado = :e', { e: q.estado });
         }
-        else if (q.desde) {
-            return this.turnoRepo.createQueryBuilder('t')
-                .where('t.fecha >= :d', { d: q.desde })
-                .orderBy('t.fecha', 'ASC')
-                .addOrderBy('t.horaInicio', 'ASC')
-                .getMany();
+        else {
+            qb.andWhere('t.estado != :cancel', { cancel: 'CANCELADO' });
         }
-        else if (q.profesionalId) {
-            return this.turnoRepo.createQueryBuilder('t')
-                .where('t.id_profesional = :pid', { pid: q.profesionalId })
-                .orderBy('t.fecha', 'ASC')
-                .addOrderBy('t.horaInicio', 'ASC')
-                .getMany();
-        }
-        else if (q.estado) {
-            return this.turnoRepo.createQueryBuilder('t')
-                .where(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-                .orderBy('t.fecha', 'ASC')
-                .addOrderBy('t.horaInicio', 'ASC')
-                .getMany();
-        }
-        throw new common_1.BadRequestException("Necesito que mandes por lo menos algunos de {profesionalId,estado,desde}");
+        qb.orderBy('t.fecha', 'ASC').addOrderBy('t.horaInicio', 'ASC');
+        const rows = await qb.getMany();
+        console.log(`Agenda query - profesional: ${q.profesionalId}, fecha: ${d}, encontrados: ${rows.length} turnos`);
+        return rows;
     }
     async listar(q) {
-        const qb = this.turnoRepo.createQueryBuilder('t');
-        if (q.pacienteId)
-            qb.andWhere('t.clienteId = :cid', { cid: q.pacienteId });
-        if (q.estado)
+        const qb = this.turnoRepo
+            .createQueryBuilder('t')
+            .leftJoinAndSelect('t.idPaciente', 'paciente')
+            .leftJoinAndSelect('t.idProfesional', 'profesional')
+            .leftJoinAndSelect('t.idRecepcionista', 'recep');
+        if (q.pacienteId) {
+            qb.andWhere('paciente.id_paciente = :pid', { pid: q.pacienteId });
+        }
+        if (q.estado) {
             qb.andWhere('t.estado = :e', { e: q.estado });
-        qb.orderBy('t.hora_inicio', 'DESC');
+        }
+        qb.orderBy('t.fecha', 'ASC').addOrderBy('t.horaInicio', 'ASC');
         return qb.getMany();
     }
     async getById(id) {
@@ -181,5 +208,4 @@ exports.TurnosService = TurnosService = __decorate([
         typeorm_1.Repository,
         typeorm_1.Repository])
 ], TurnosService);
-;
 //# sourceMappingURL=turnos.service.js.map

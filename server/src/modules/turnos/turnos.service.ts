@@ -7,12 +7,10 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { Turnos } from 'src/entities/entities/Turnos.entity';
-// import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
-// import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
 
 import { DisponibilidadQuery } from './dto/disponibilidad.query';
 import { CrearTurnoDto } from './dto/crear-turno.dto';
@@ -27,31 +25,44 @@ export class TurnosService {
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(Turnos) private readonly turnoRepo: Repository<Turnos>,
-    // @InjectRepository(Servicio) private readonly servRepo: Repository<Servicio>,
     @InjectRepository(Profesionales) private readonly profRepo: Repository<Profesionales>,
-    // @InjectRepository(ProfesionalesPorServicios) private readonly ppsRepo: Repository<ProfesionalesPorServicios>,
- 
-  
   ) {}
 
   // ====== UTIL ======
 
   private async getDuracionMin(servicioId: number, fallback?: number): Promise<number> {
-
     // const servicio = await this.servRepo.findOne({ where: { idServicio: servicioId } });
     // if (!servicio) throw new NotFoundException('Servicio no encontrado');
-
     // @ts-ignore
-    const duracion =30
-    console.log(duracion)
+    const duracion = 30;
     if (!duracion) {
       throw new UnprocessableEntityException('No se conoce la duración del servicio');
     }
     return Number(duracion);
   }
 
+  /** Acepta 'YYYY-MM-DD' o 'YYYY-MM-DDTHH:mm:ss' y devuelve 'YYYY-MM-DD' */
+  private onlyDate(v?: string): string | undefined {
+    if (!v) return undefined;
+    return v.length >= 10 ? v.slice(0, 10) : v;
+  }
 
-    /** "2025-09-25T14:00:00-03:00" -> { fecha: "2025-09-25", hora: "14:00" } */
+  /** "9:0" -> "09:00" */
+  private normHM(hm: string) {
+    const [hStr, mStr = '0'] = hm.split(':');
+    const h = Number(hStr);
+    const m = Number(mStr);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(h)}:${pad(m)}`;
+  }
+
+  /** "HH:mm" -> minutos (entero) */
+  private toMin(hm: string) {
+    const [h, m] = hm.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  /** "2025-09-25T14:00:00-03:00" -> { fecha: "2025-09-25", hora: "14:00" } */
   private isoToParts(iso: string) {
     const d = new Date(iso);
     const y = d.getFullYear();
@@ -61,6 +72,7 @@ export class TurnosService {
     const mm = String(d.getMinutes()).padStart(2, '0');
     return { fecha: `${y}-${m}-${day}`, hora: `${hh}:${mm}` };
   }
+
   /** "14:00" + 30 -> "14:30" */
   private addMinutesHM(hora: string, min: number) {
     const [hh, mm] = hora.split(':').map(Number);
@@ -69,33 +81,21 @@ export class TurnosService {
     const H = String(base.getHours()).padStart(2, '0');
     const M = String(base.getMinutes()).padStart(2, '0');
     return `${H}:${M}`;
-  
   }
-    /** Trae el turno por id o lanza 404. Incluyo relaciones que usás luego. */
+
+  /** Trae el turno por id o lanza 404 */
   private async getTurnoOrThrow(id: number) {
     const turno = await this.turnoRepo.findOne({
       where: { idTurno: id },
-      relations: [ 'idProfesional'], // ← tus relaciones reales
+      relations: ['idProfesional'],
     });
     if (!turno) throw new NotFoundException('Turno no encontrado');
     return turno;
   }
 
-  /** Helper para obtener el id numérico de servicio desde la relación */
-  // private getServicioId(turno: Turnos): number {
-  //   // idServicio es una relación (Servicio). Sacamos su PK.
-  //   return (turno.idServicio as any)?.idServicio ?? (turno as any).idServicio;
-  // }
-
-  /** Helper para obtener el id numérico del profesional desde la relación */
   private getProfesionalId(turno: Turnos): number {
     return (turno.idProfesional as any)?.idProfesionales ?? (turno as any).idProfesional;
   }
-    
-
-
-
-
 
   // ====== HU-4: DISPONIBILIDAD ======
   async disponibilidad(q: DisponibilidadQuery) {
@@ -106,194 +106,144 @@ export class TurnosService {
     }
 
     // profesionales candidatos
-    let profesionalesIds: number[];
+    let profesionalesIds: number[] = [];
     if (q.profesionalId) {
-      profesionalesIds = [q.profesionalId];}
+      profesionalesIds = [q.profesionalId];
+    }
 
-    //  else {
-    //   const rows = await this.ppsRepo.createQueryBuilder('pps')
-    //     .select('pps.idProfesionales', 'pid')  // nombre real
-    //     .where('pps.idServicio = :sid', { sid: q.servicioId })
-    //     .getRawMany();
-    //   profesionalesIds = rows.map(r => Number(r.pid));
-    //   if (!profesionalesIds.length) return { servicioId: q.servicioId, duracionMin, slots: [] };
-    // }
-
-    // turnos ocupados del día
-  //   type Ocupado = { horaInicio: string; horaFin: string; id_profesional: number };
-  //   const ocupados: Ocupado[] = await this.turnoRepo.createQueryBuilder('t')
-  //     .select(['t.horaInicio AS "horaInicio"', 't.horaFin AS "horaFin"', 't.id_profesional AS "id_profesional"'])
-  //     .where('t.fecha = :f', { f: q.fecha })
-  //     .andWhere('t.id_profesional IN (:...pids)', { pids: profesionalesIds })
-  //     .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
-  //     .getRawMany<Ocupado>();
-
-  //   const slots: { profesionalId: number; fecha: string; horaInicio: string; horaFin: string }[] = [];
-  //   for (const pid of profesionalesIds) {
-  //     //ejemplo horario laboral
-  //     let cursor = '08:00';
-  //     const finDia = '20:00';
-  //     while (cursor < finDia) {
-  //       const hi = cursor;
-  //       const hf = this.addMinutesHM(hi, duracionMin);
-
-  //       const haySolape = ocupados
-  //         .filter(o => o.id_profesional === pid)
-  //         .some(o => o.horaInicio < hf && o.horaFin > hi);
-
-  //       if (!haySolape) {
-  //         slots.push({ profesionalId: pid, fecha: q.fecha, horaInicio: hi, horaFin: hf });
-  //       }
-  //       cursor = this.addMinutesHM(cursor, duracionMin);
-  //     }
-  //   }
-
-  //   return { servicioId: q.servicioId, duracionMin, slots };
+    // (lógica de slots ocupados/commentado)
   }
 
-
-
-
-
-    // ====== HU-5: CREAR ======
-  async crear( dto: CrearTurnoDto) {
+  // ====== HU-5: CREAR ======
+  async crear(dto: CrearTurnoDto) {
     const { fecha, hora: horaInicio } = this.isoToParts(dto.inicio);
-    const queryRunner = this.dataSource.createQueryRunner()
+    const queryRunner = this.dataSource.createQueryRunner();
+
     try {
-      await queryRunner.connect()
-      await queryRunner.startTransaction()
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
 
-      const {pacienteId,inicio,observacion,profesionalId,recepcionistaId} = dto
+      const { pacienteId, observacion, profesionalId, recepcionistaId } = dto;
 
-      const profesional = await queryRunner.manager.findOneBy(Profesionales,{idProfesionales:profesionalId})
+      const profesional = await queryRunner.manager.findOneBy(Profesionales, { idProfesionales: profesionalId });
+      const recepcionista = await queryRunner.manager.findOneBy(Recepcionista, { idRecepcionista: recepcionistaId });
+      const paciente = await queryRunner.manager.findOneBy(Paciente, { id_paciente: pacienteId });
 
-      const recepcionista = await queryRunner.manager.findOneBy(Recepcionista,{idRecepcionista:recepcionistaId})
+      // 1) duración (fija por ahora o tomada del servicio)
+      const DURACION_MIN = 60; // o await this.getDuracionMin(dto.servicioId, 60);
 
-      const paciente = await queryRunner.manager.findOneBy(Paciente,{
-        id_paciente:pacienteId
-      })
+      // 2) normalizar inicio y calcular fin del NUEVO turno
+      const hInicioNorm = this.normHM(horaInicio);
+      const hFinNorm = this.addMinutesHM(hInicioNorm, DURACION_MIN);
 
-      const turno = queryRunner.manager.create(Turnos,{
-        idRecepcionista:recepcionista!,
-        idPaciente:paciente!,
-        idProfesional:profesional!,
-        estado:"PENDIENTE",
-        observacion:observacion,
-        fecha:fecha,
-        horaInicio:horaInicio,
-        fechaAlta:fecha,
-        fechaUltUpd:"-"
+      // 3) traer turnos del mismo día/profesional (no cancelados)
+      const existentes = await queryRunner.manager
+        .getRepository(Turnos)
+        .createQueryBuilder('t')
+        .where('t.id_profesional = :pid', { pid: profesionalId })
+        .andWhere('t.fecha = :f', { f: fecha })
+        .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
+        .getMany();
 
-      })
+      // 4) chequeo de solape en minutos (no strings)
+      const bStart = this.toMin(hInicioNorm);
+      const bEnd = this.toMin(hFinNorm);
 
-      await queryRunner.manager.save(turno)
-      await queryRunner.commitTransaction()
+      const seSolapa = existentes.some((t) => {
+        const ini = this.normHM(t.horaInicio);
+        const fin = (t as any).horaFin ? this.normHM((t as any).horaFin) : this.addMinutesHM(ini, DURACION_MIN);
+        const aStart = this.toMin(ini);
+        const aEnd = this.toMin(fin);
+        return aStart < bEnd && aEnd > bStart; // overlap
+      });
+
+      if (seSolapa) {
+        throw new ConflictException('El horario ya está ocupado');
+      }
+
+      // 5) crear y guardar (guardar hora normalizada)
+      const turno = queryRunner.manager.create(Turnos, {
+        idRecepcionista: recepcionista!,
+        idPaciente: paciente!,
+        idProfesional: profesional!,
+        estado: 'PENDIENTE',
+        observacion,
+        fecha,
+        horaInicio: hInicioNorm, // "HH:mm" consistente
+        // horaFin: hFinNorm,     // si agregás la columna
+        fechaAlta: fecha,
+        fechaUltUpd: '-',
+      });
+
+      await queryRunner.manager.save(turno);
+      await queryRunner.commitTransaction();
       return turno;
-      // return await this.dataSource.transaction(async (mgr) => {
-      //   valida profesional ↔ servicio (bloque anterior)
-      
-      //   chequear solape: mismo día y rangos de hora
-      //   const solapa = await mgr.getRepository(Turnos)
-      //     .createQueryBuilder('t')
-      //     .where('t.idProfesional = :pid', { pid: dto.profesionalId })
-      //     .andWhere('t.fecha = :f', { f: fecha })
-      //     .andWhere('t.horaInicio < :hf AND t.horaFin > :hi', {
-      //       hi: horaInicio,
-      //       hf: horaFin,
-      //     })
-      //     .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
-      //     .getExists();
-      //   if (solapa) throw new ConflictException('El horario ya está ocupado');
-        
-      //   crear usando los nombres de TU entidad:
-      //   const turno = mgr.getRepository(Turnos).create({
-      //     idCliente: dto.clienteId,                 // FK plana
-      //     idServicio: { idServicio: dto.servicioId },       // relación
-      //     idProfesional: { idProfesionales: dto.profesionalId }, // relación
-      //     fecha,                                     // "YYYY-MM-DD"
-      //     horaInicio:horaInicio,                                // "HH:mm"
-      //     horaFin:horaFin,                                   // "HH:mm"
-      //     estado: 'PENDIENTE',
-      //     rutina:dto.rutina,
-      //     observacion:dto.observacion,
-      //     fechaAlta:fecha,
-      //     fechaUltUpd:"-"
-      //   });
-      
-      //   return mgr.getRepository(Turnos).save(turno);
-      // });
     } catch (error) {
-        await queryRunner.rollbackTransaction()
-        throw new InternalServerErrorException(error)
-      // if (e?.code === '23505') throw new ConflictException('El horario ya fue tomado');
-      // throw e;
-    }finally{
-      await queryRunner.release()
+      await queryRunner.rollbackTransaction();
+      if (error instanceof ConflictException) throw error; // 409 para solape
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.release();
     }
   }
-  
-
-
 
   // ====== HU-6a: CANCELAR ======
   async cancelar(id: number, dto: CancelarTurnoDto) {
     const turno = await this.getTurnoOrThrow(id);
-  
     if (turno.estado === 'CANCELADO') return turno;
-  
     turno.estado = 'CANCELADO';
     return await this.turnoRepo.save(turno);
   }
+
+ async agenda(q: { profesionalId?: number; desde?: string; hasta?: string; estado?: string }) {
+  const qb = this.turnoRepo.createQueryBuilder('t')
+    .leftJoinAndSelect('t.idPaciente', 'paciente')
+    .leftJoinAndSelect('t.idProfesional', 'profesional')
+    .leftJoinAndSelect('t.idRecepcionista', 'recep');
+
+  if (q.profesionalId != null) {
+    qb.andWhere('t.id_profesional = :pid', { pid: q.profesionalId });
+  }
+
+  const d = this.onlyDate(q.desde);
+  if (d) qb.andWhere('t.fecha >= :d', { d });
+
+  const h = this.onlyDate(q.hasta);
+  if (h) qb.andWhere('t.fecha <= :h', { h });
+
+  if (q.estado) {
+    qb.andWhere('t.estado = :e', { e: q.estado });
+  } else {
+    qb.andWhere('t.estado != :cancel', { cancel: 'CANCELADO' });
+  }
+
+  qb.orderBy('t.fecha', 'ASC').addOrderBy('t.horaInicio', 'ASC');
+
+  const rows = await qb.getMany();
   
-  async agenda(q: { profesionalId: number; desde: string; estado?: string }) {
-    
-    if(q.desde && q.profesionalId && q.estado){
-      return this.turnoRepo.createQueryBuilder('t')
-      .where('t.id_profesional = :pid', { pid: q.profesionalId })
-      .andWhere('t.fecha >= :d', { d: q.desde})
-      .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-      .orderBy('t.fecha', 'ASC')
-      .addOrderBy('t.horaInicio', 'ASC')
-      .getMany(); 
-    }else if(q.profesionalId && q.estado){
-      return this.turnoRepo.createQueryBuilder('t')
-      .where('t.id_profesional = :pid', { pid: q.profesionalId })
-      .andWhere(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-      .orderBy('t.fecha', 'ASC')
-      .addOrderBy('t.horaInicio', 'ASC')
-      .getMany();
-    }else if(q.desde){
-      return this.turnoRepo.createQueryBuilder('t')
-      .where('t.fecha >= :d', { d: q.desde})
-      .orderBy('t.fecha', 'ASC')
-      .addOrderBy('t.horaInicio', 'ASC')
-      .getMany();
-    }else if(q.profesionalId){
-      return this.turnoRepo.createQueryBuilder('t')
-      .where('t.id_profesional = :pid', { pid: q.profesionalId})
-      .orderBy('t.fecha', 'ASC')
-      .addOrderBy('t.horaInicio', 'ASC')
-      .getMany();
-    }else if(q.estado){
-      return this.turnoRepo.createQueryBuilder('t')
-      .where(q.estado ? 't.estado = :e' : '1=1', { e: q.estado })
-      .orderBy('t.fecha', 'ASC')
-      .addOrderBy('t.horaInicio', 'ASC')
-      .getMany(); 
+  console.log(`Agenda query - profesional: ${q.profesionalId}, fecha: ${d}, encontrados: ${rows.length} turnos`);
+  
+  return rows;
+}
+  async listar(q: { pacienteId?: number; estado?: string }) {
+    const qb = this.turnoRepo
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.idPaciente', 'paciente')
+      .leftJoinAndSelect('t.idProfesional', 'profesional')
+      .leftJoinAndSelect('t.idRecepcionista', 'recep');
+
+    if (q.pacienteId) {
+      qb.andWhere('paciente.id_paciente = :pid', { pid: q.pacienteId });
+    }
+    if (q.estado) {
+      qb.andWhere('t.estado = :e', { e: q.estado });
     }
 
-    throw new BadRequestException("Necesito que mandes por lo menos algunos de {profesionalId,estado,desde}")
-    
-    }
-    
-  async listar(q: { pacienteId?: number; estado?: string }) {
-    const qb = this.turnoRepo.createQueryBuilder('t');
-    if (q.pacienteId) qb.andWhere('t.clienteId = :cid', { cid: q.pacienteId });
-    if (q.estado) qb.andWhere('t.estado = :e', { e: q.estado });
-    qb.orderBy('t.hora_inicio', 'DESC');
+    qb.orderBy('t.fecha', 'ASC').addOrderBy('t.horaInicio', 'ASC');
     return qb.getMany();
   }
+
   public async getById(id: number) {
     return this.getTurnoOrThrow(id);
   }
-};
+}

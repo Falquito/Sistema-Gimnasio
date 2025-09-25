@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param,ParseIntPipe , ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ProfesionalesService } from './profesionales.service';
 import { ListProfesionalesQuery } from 'src/modules/profesionales/dto/list-profesionales.query';
 import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
@@ -17,9 +17,9 @@ export class ProfesionalesController {
 
   /** GET /profesionales/:id */
   @Get(':id')
-  findOne(@Param('id', new ParseUUIDPipe()) id: number) {
-    return this.service.findOne(id);
-  }
+findOne(@Param('id', ParseIntPipe) id: number) {
+  return this.service.findOne(id);
+}
 
   /** GET /profesionales/:id/servicios */
   // @Get(':id/servicios')

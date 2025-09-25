@@ -1,9 +1,7 @@
-
+import Dashboard from "../components/turno/Dashboard"
 
 export default function Turnos(){
     return(
-        <div>
-            <p>Hola</p>
-        </div>
+        <Dashboard/>
     )
 }

@@ -10,6 +10,9 @@ export declare class TurnosService {
     private readonly profRepo;
     constructor(dataSource: DataSource, turnoRepo: Repository<Turnos>, profRepo: Repository<Profesionales>);
     private getDuracionMin;
+    private onlyDate;
+    private normHM;
+    private toMin;
     private isoToParts;
     private addMinutesHM;
     private getTurnoOrThrow;
@@ -18,8 +21,9 @@ export declare class TurnosService {
     crear(dto: CrearTurnoDto): Promise<Turnos>;
     cancelar(id: number, dto: CancelarTurnoDto): Promise<Turnos>;
     agenda(q: {
-        profesionalId: number;
-        desde: string;
+        profesionalId?: number;
+        desde?: string;
+        hasta?: string;
         estado?: string;
     }): Promise<Turnos[]>;
     listar(q: {
