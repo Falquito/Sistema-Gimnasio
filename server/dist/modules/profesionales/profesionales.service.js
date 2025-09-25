@@ -50,20 +50,14 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const Profesionales_entity_1 = require("../../entities/entities/Profesionales.entity");
-const Servicio_entity_1 = require("../../entities/entities/Servicio.entity");
-const ProfesionalesPorServicios_entity_1 = require("../../entities/entities/ProfesionalesPorServicios.entity");
 const Usuario_entity_1 = require("../../entities/entities/Usuario.entity");
 const bcrypt = __importStar(require("bcrypt"));
 let ProfesionalesService = class ProfesionalesService {
     dataSource;
     profRepo;
-    servRepo;
-    ppsRepo;
-    constructor(dataSource, profRepo, servRepo, ppsRepo) {
+    constructor(dataSource, profRepo) {
         this.dataSource = dataSource;
         this.profRepo = profRepo;
-        this.servRepo = servRepo;
-        this.ppsRepo = ppsRepo;
     }
     async hashPassword(plainPassword) {
         const saltRounds = 10;
@@ -86,7 +80,7 @@ let ProfesionalesService = class ProfesionalesService {
             const usuario = queryRunner.manager.create(Usuario_entity_1.Usuario, {
                 email,
                 contraseA: contraseñaHasheada,
-                rol: "trainer"
+                rol: "medico"
             });
             console.log(usuario);
             await queryRunner.manager.save(usuario);
@@ -98,15 +92,10 @@ let ProfesionalesService = class ProfesionalesService {
                 dni: dni,
                 telefono: telefono,
                 fechaAlta: fechaFormateada,
-                fechaUltUpd: "-"
+                fechaUltUpd: "-",
+                servicio: servicio
             });
             await queryRunner.manager.save(profesional);
-            const servicioBdd = await queryRunner.manager.findOneBy(Servicio_entity_1.Servicio, { nombre: servicio });
-            const ppS = queryRunner.manager.create(ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios, {
-                idServicio: servicioBdd,
-                idProfesional: profesional
-            });
-            await queryRunner.manager.save(ppS);
             await queryRunner.commitTransaction();
             return profesional;
         }
@@ -131,10 +120,6 @@ let ProfesionalesService = class ProfesionalesService {
             const activoBool = q.activo === 'true';
             qb.andWhere('p.activo = :activo', { activo: activoBool });
         }
-        if (q.servicioId) {
-            qb.innerJoin(ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios, 'pps', 'pps.profesional_id = p.id')
-                .andWhere('pps.servicio_id = :sid', { sid: q.servicioId });
-        }
         qb.orderBy('p.apellido', 'ASC').addOrderBy('p.nombre', 'ASC');
         qb.take(limit).skip(skip);
         const [items, total] = await qb.getManyAndCount();
@@ -154,15 +139,6 @@ let ProfesionalesService = class ProfesionalesService {
         }
         return profesional;
     }
-    async findServiciosByProfesional(id) {
-        await this.ensureProfesional(id);
-        const qb = this.servRepo
-            .createQueryBuilder('s')
-            .innerJoin(ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios, 'pps', 'pps.servicio_id = s.id')
-            .where('pps.profesional_id = :pid', { pid: id })
-            .orderBy('s.nombre', 'ASC');
-        return qb.getMany();
-    }
     async ensureProfesional(id) {
         const exists = await this.profRepo.exist({ where: { idProfesionales: id } });
         if (!exists)
@@ -174,11 +150,7 @@ exports.ProfesionalesService = ProfesionalesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectDataSource)()),
     __param(1, (0, typeorm_1.InjectRepository)(Profesionales_entity_1.Profesionales)),
-    __param(2, (0, typeorm_1.InjectRepository)(Servicio_entity_1.Servicio)),
-    __param(3, (0, typeorm_1.InjectRepository)(ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios)),
     __metadata("design:paramtypes", [typeorm_2.DataSource,
-        typeorm_2.Repository,
-        typeorm_2.Repository,
         typeorm_2.Repository])
 ], ProfesionalesService);
 //# sourceMappingURL=profesionales.service.js.map

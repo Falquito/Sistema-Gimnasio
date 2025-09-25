@@ -13,28 +13,24 @@ exports.Turnos = void 0;
 const typeorm_1 = require("typeorm");
 const Profesionales_entity_1 = require("./Profesionales.entity");
 const Recepcionista_entity_1 = require("./Recepcionista.entity");
-const Servicio_entity_1 = require("./Servicio.entity");
-const cliente_entity_1 = require("../../clientes/entities/cliente.entity");
+const paciente_entity_1 = require("../../pacientes/entities/paciente.entity");
 const swagger_1 = require("@nestjs/swagger");
 let Turnos = class Turnos {
     idTurno;
     fecha;
     horaInicio;
-    horaFin;
-    idCliente;
-    rutina;
+    idPaciente;
     observacion;
     estado;
     fechaAlta;
     fechaUltUpd;
     idProfesional;
     idRecepcionista;
-    idServicio;
 };
 exports.Turnos = Turnos;
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    (0, typeorm_1.Column)("integer", { primary: true, name: "id_turno" }),
+    (0, typeorm_1.PrimaryGeneratedColumn)("identity", { name: "id_turno" }),
     __metadata("design:type", Number)
 ], Turnos.prototype, "idTurno", void 0);
 __decorate([
@@ -48,20 +44,10 @@ __decorate([
     __metadata("design:type", String)
 ], Turnos.prototype, "horaInicio", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    (0, typeorm_1.Column)("character varying", { name: "hora_fin", nullable: true }),
-    __metadata("design:type", String)
-], Turnos.prototype, "horaFin", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ example: 1 }),
-    (0, typeorm_1.ManyToOne)(() => cliente_entity_1.Cliente, (cliente) => cliente.turnos, { eager: true }),
-    __metadata("design:type", Number)
-], Turnos.prototype, "idCliente", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    (0, typeorm_1.Column)("character varying", { name: "rutina", nullable: true }),
-    __metadata("design:type", String)
-], Turnos.prototype, "rutina", void 0);
+    (0, typeorm_1.ManyToOne)(() => paciente_entity_1.Paciente, (paciente) => paciente.turnos, { eager: true }),
+    __metadata("design:type", paciente_entity_1.Paciente)
+], Turnos.prototype, "idPaciente", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, typeorm_1.Column)("character varying", { name: "observacion", nullable: true }),
@@ -96,11 +82,6 @@ __decorate([
     ]),
     __metadata("design:type", Recepcionista_entity_1.Recepcionista)
 ], Turnos.prototype, "idRecepcionista", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => Servicio_entity_1.Servicio, (servicio) => servicio.turnos, { eager: true }),
-    (0, typeorm_1.JoinColumn)([{ name: "id_servicio", referencedColumnName: "idServicio" }]),
-    __metadata("design:type", Servicio_entity_1.Servicio)
-], Turnos.prototype, "idServicio", void 0);
 exports.Turnos = Turnos = __decorate([
     (0, typeorm_1.Entity)("turnos", { schema: "public" })
 ], Turnos);

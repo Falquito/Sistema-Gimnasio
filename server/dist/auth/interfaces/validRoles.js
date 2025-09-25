@@ -4,7 +4,7 @@ exports.validRoles = void 0;
 var validRoles;
 (function (validRoles) {
     validRoles["gerente"] = "gerente";
-    validRoles["trainer"] = "trainer";
+    validRoles["medico"] = "medico";
     validRoles["recepcionista"] = "recepcionista";
 })(validRoles || (exports.validRoles = validRoles = {}));
 //# sourceMappingURL=validRoles.js.map

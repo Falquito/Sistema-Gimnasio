@@ -16,7 +16,6 @@ exports.TurnosController = void 0;
 const common_1 = require("@nestjs/common");
 const turnos_service_1 = require("./turnos.service");
 const crear_turno_dto_1 = require("./dto/crear-turno.dto");
-const reprogramar_turno_dto_1 = require("./dto/reprogramar-turno.dto");
 const cancelar_turno_dto_1 = require("./dto/cancelar-turno.dto");
 const disponibilidad_query_1 = require("./dto/disponibilidad.query");
 const agenda_query_1 = require("./dto/agenda.query");
@@ -35,9 +34,6 @@ let TurnosController = class TurnosController {
     }
     cancelar(id, dto) {
         return this.turnosService.cancelar(id, dto);
-    }
-    reprogramar(id, dto) {
-        return this.turnosService.reprogramar(id, dto);
     }
     agenda(q) {
         return this.turnosService.agenda(q);
@@ -76,14 +72,6 @@ __decorate([
     __metadata("design:paramtypes", [Number, cancelar_turno_dto_1.CancelarTurnoDto]),
     __metadata("design:returntype", void 0)
 ], TurnosController.prototype, "cancelar", null);
-__decorate([
-    (0, common_1.Patch)(':id/reprogramar'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, reprogramar_turno_dto_1.ReprogramarTurnoDto]),
-    __metadata("design:returntype", void 0)
-], TurnosController.prototype, "reprogramar", null);
 __decorate([
     (0, common_1.Get)('agenda'),
     __param(0, (0, common_1.Query)()),

@@ -53,7 +53,7 @@ __decorate([
     __metadata("design:type", String)
 ], CreateProfesionaleDto.prototype, "contrase\u00F1a", void 0);
 __decorate([
-    (0, class_validator_1.IsIn)(["Hipertrofia", "Zumba"]),
+    (0, class_validator_1.IsIn)(["Psicologia", "Psicopedagogia", "Psiqiuatria", "Fonoaudiologia"]),
     __metadata("design:type", String)
 ], CreateProfesionaleDto.prototype, "servicio", void 0);
 //# sourceMappingURL=create-profesionale.dto.js.map

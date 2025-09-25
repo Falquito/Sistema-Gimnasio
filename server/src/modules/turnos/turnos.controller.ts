@@ -34,11 +34,6 @@ export class TurnosController {
     return this.turnosService.cancelar(id, dto);
   }
 
-  // HU-6b: reprogramar
-  @Patch(':id/reprogramar')
-  reprogramar(@Param('id', ParseIntPipe) id: number, @Body() dto: ReprogramarTurnoDto) {
-    return this.turnosService.reprogramar(id, dto);
-  }
 
   // Agenda (calendario)
   @Get('agenda')

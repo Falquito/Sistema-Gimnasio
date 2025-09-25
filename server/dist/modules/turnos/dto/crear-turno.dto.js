@@ -14,11 +14,10 @@ const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const swagger_1 = require("@nestjs/swagger");
 class CrearTurnoDto {
-    clienteId;
-    servicioId;
     profesionalId;
+    recepcionistaId;
     inicio;
-    rutina;
+    pacienteId;
     observacion;
 }
 exports.CrearTurnoDto = CrearTurnoDto;
@@ -28,31 +27,26 @@ __decorate([
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.IsPositive)(),
     __metadata("design:type", Number)
-], CrearTurnoDto.prototype, "clienteId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: 1 }),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.IsPositive)(),
-    __metadata("design:type", Number)
-], CrearTurnoDto.prototype, "servicioId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ example: 1 }),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.IsPositive)(),
-    __metadata("design:type", Number)
 ], CrearTurnoDto.prototype, "profesionalId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 1 }),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsPositive)(),
+    __metadata("design:type", Number)
+], CrearTurnoDto.prototype, "recepcionistaId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: "2011-10-05T14:48:00.000Z" }),
     (0, class_validator_1.IsISO8601)(),
     __metadata("design:type", String)
 ], CrearTurnoDto.prototype, "inicio", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CrearTurnoDto.prototype, "rutina", void 0);
+    (0, swagger_1.ApiProperty)({ example: 1 }),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsPositive)(),
+    __metadata("design:type", Number)
+], CrearTurnoDto.prototype, "pacienteId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),

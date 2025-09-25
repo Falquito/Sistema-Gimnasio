@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Usuario } from "./Usuario.entity";
-import { ProfesionalesPorServicios } from "./ProfesionalesPorServicios.entity";
+// import { ProfesionalesPorServicios } from "./ProfesionalesPorServicios.entity";
 import { Turnos } from "./Turnos.entity";
 
 @Entity("profesionales", { schema: "public" })
@@ -38,17 +38,20 @@ export class Profesionales {
   fechaAlta: string | null;
 
   @Column("character varying", { name: "fecha_ult_upd", nullable: true })
-  fechaUltUpd: string | null;
+  fechaUltUpd: string | null; 
 
   @ManyToOne(() => Usuario, (usuario) => usuario.profesionales)
   @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
   idUsuario: Usuario;
 
-  @OneToMany(
-    () => ProfesionalesPorServicios,
-    (profesionalesPorServicios) => profesionalesPorServicios.idProfesional
-  )
-  profesionalesPorServicios: ProfesionalesPorServicios[];
+  @Column({type:"text"})
+  servicio:string;
+
+  // @OneToMany(
+  //   () => ProfesionalesPorServicios,
+  //   (profesionalesPorServicios) => profesionalesPorServicios.idProfesional
+  // )
+  // profesionalesPorServicios: ProfesionalesPorServicios[];
 
   @OneToMany(() => Turnos, (turnos) => turnos.idProfesional)
   turnos: Turnos[];

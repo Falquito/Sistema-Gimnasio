@@ -22,15 +22,15 @@ export class ProfesionalesController {
   }
 
   /** GET /profesionales/:id/servicios */
-  @Get(':id/servicios')
-  findServicios(
-    @Param('id', new ParseUUIDPipe()) id: number,
-  ) {
-    return this.service.findServiciosByProfesional(id);
-  }
+  // @Get(':id/servicios')
+  // findServicios(
+  //   @Param('id', new ParseUUIDPipe()) id: number,
+  // ) {
+  //   return this.service.findServiciosByProfesional(id);
+  // }
 
   @Post()
-  @Auth(validRoles.gerente)
+  // @Auth(validRoles.gerente)
   create(@Body() createProfesionalDto:CreateProfesionaleDto){
     return this.service.create(createProfesionalDto);
   }

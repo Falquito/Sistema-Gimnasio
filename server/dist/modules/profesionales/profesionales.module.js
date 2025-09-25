@@ -12,8 +12,6 @@ const typeorm_1 = require("@nestjs/typeorm");
 const profesionales_controller_1 = require("./profesionales.controller");
 const profesionales_service_1 = require("./profesionales.service");
 const Profesionales_entity_1 = require("../../entities/entities/Profesionales.entity");
-const Servicio_entity_1 = require("../../entities/entities/Servicio.entity");
-const ProfesionalesPorServicios_entity_1 = require("../../entities/entities/ProfesionalesPorServicios.entity");
 const auth_module_1 = require("../../auth/auth.module");
 let ProfesionalesModule = class ProfesionalesModule {
 };
@@ -21,7 +19,7 @@ exports.ProfesionalesModule = ProfesionalesModule;
 exports.ProfesionalesModule = ProfesionalesModule = __decorate([
     (0, common_1.Module)({
         imports: [auth_module_1.AuthModule,
-            typeorm_1.TypeOrmModule.forFeature([Profesionales_entity_1.Profesionales, Servicio_entity_1.Servicio, ProfesionalesPorServicios_entity_1.ProfesionalesPorServicios]),
+            typeorm_1.TypeOrmModule.forFeature([Profesionales_entity_1.Profesionales]),
         ],
         controllers: [profesionales_controller_1.ProfesionalesController],
         providers: [profesionales_service_1.ProfesionalesService],

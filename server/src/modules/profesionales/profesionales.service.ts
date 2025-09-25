@@ -3,8 +3,8 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
-import { Servicio } from 'src/entities/entities/Servicio.entity';
-import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
+// import { Servicio } from 'src/entities/entities/Servicio.entity';
+// import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
 import { ListProfesionalesQuery } from 'src/modules/profesionales/dto/list-profesionales.query';
 import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
 
@@ -18,11 +18,11 @@ export class ProfesionalesService {
     @InjectRepository(Profesionales)
     private readonly profRepo: Repository<Profesionales>,
 
-    @InjectRepository(Servicio)
-    private readonly servRepo: Repository<Servicio>,
+    // @InjectRepository(Servicio)
+    // private readonly servRepo: Repository<Servicio>,
 
-    @InjectRepository(ProfesionalesPorServicios)
-    private readonly ppsRepo: Repository<ProfesionalesPorServicios>,
+    // @InjectRepository(ProfesionalesPorServicios)
+    // private readonly ppsRepo: Repository<ProfesionalesPorServicios>,
   ) {}
 
   private async hashPassword(plainPassword: string): Promise<string> {
@@ -51,7 +51,7 @@ export class ProfesionalesService {
             
             email,
             contraseA:contraseñaHasheada,
-            rol:"trainer"
+            rol:"medico"
           })
     
           console.log(usuario)
@@ -64,16 +64,17 @@ export class ProfesionalesService {
             dni:dni,
             telefono:telefono,
             fechaAlta:fechaFormateada,
-            fechaUltUpd:"-"
+            fechaUltUpd:"-",
+            servicio:servicio
           })
     
           await queryRunner.manager.save(profesional)
-          const servicioBdd = await queryRunner.manager.findOneBy(Servicio,{nombre:servicio})
-          const ppS = queryRunner.manager.create(ProfesionalesPorServicios,{
-            idServicio:servicioBdd!,
-            idProfesional:profesional
-          })
-          await queryRunner.manager.save(ppS)
+          // const servicioBdd = await queryRunner.manager.findOneBy(Servicio,{nombre:servicio})
+          // const ppS = queryRunner.manager.create(ProfesionalesPorServicios,{
+          //   idServicio:servicioBdd!,
+          //   idProfesional:profesional
+          // })
+          // await queryRunner.manager.save(ppS)
           await queryRunner.commitTransaction()
           return profesional;
     
@@ -112,10 +113,10 @@ export class ProfesionalesService {
     }
 
     // Filtro por servicio (vía tabla puente)
-    if (q.servicioId) {
-      qb.innerJoin(ProfesionalesPorServicios, 'pps', 'pps.profesional_id = p.id')
-        .andWhere('pps.servicio_id = :sid', { sid: q.servicioId });
-    }
+    // if (q.servicioId) {
+    //   qb.innerJoin(ProfesionalesPorServicios, 'pps', 'pps.profesional_id = p.id')
+    //     .andWhere('pps.servicio_id = :sid', { sid: q.servicioId });
+    // }
 
     // (Opcional) incluir relaciones livianas si querés
     // qb.leftJoinAndSelect('p.especialidades', 'esp');
@@ -148,18 +149,18 @@ export class ProfesionalesService {
   /**
    * Listar servicios que presta un profesional
    */
-  async findServiciosByProfesional(id: number) {
-    // Valida existencia
-    await this.ensureProfesional(id);
+  // async findServiciosByProfesional(id: number) {
+  //   // Valida existencia
+  //   await this.ensureProfesional(id);
 
-    const qb = this.servRepo
-      .createQueryBuilder('s')
-      .innerJoin(ProfesionalesPorServicios, 'pps', 'pps.servicio_id = s.id')
-      .where('pps.profesional_id = :pid', { pid: id })
-      .orderBy('s.nombre', 'ASC');
+  //   const qb = this.servRepo
+  //     .createQueryBuilder('s')
+  //     .innerJoin(ProfesionalesPorServicios, 'pps', 'pps.servicio_id = s.id')
+  //     .where('pps.profesional_id = :pid', { pid: id })
+  //     .orderBy('s.nombre', 'ASC');
 
-    return qb.getMany();
-  }
+  //   return qb.getMany();
+  // }
 
   private async ensureProfesional(id: number) {
     const exists = await this.profRepo.exist({ where: { idProfesionales: id } });

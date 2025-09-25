@@ -5,13 +5,13 @@ import { TurnosController } from './turnos.controller';
 
 // ⚠️ Ajusta rutas si tu path difiere
 import { Turnos } from 'src/entities/entities/Turnos.entity';
-import { Servicio } from 'src/entities/entities/Servicio.entity';
+// import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { Profesionales } from 'src/entities/entities/Profesionales.entity';
-import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
+// import { ProfesionalesPorServicios } from 'src/entities/entities/ProfesionalesPorServicios.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Turnos, Servicio, Profesionales, ProfesionalesPorServicios]),
+    TypeOrmModule.forFeature([Turnos, Profesionales]),
   ],
   controllers: [TurnosController],
   providers: [TurnosService],
