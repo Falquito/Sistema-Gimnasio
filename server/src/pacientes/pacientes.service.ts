@@ -5,6 +5,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 // import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { Paciente } from './entities/paciente.entity';
+import { ObraSocial } from 'src/entities/entities/ObraSocial.entity';
 // import { ClientesPorServicios } from 'src/entities/entities/ClientesPorServicios.entity';
 
 @Injectable()
@@ -16,7 +17,7 @@ export class PacienteService {
     private readonly pacienteRepository:Repository<Paciente>
   ){}
   async create(createPacienteDto: CreatePacienteDto) {
-    const {nombre,apellido,dni,genero,fecha_nacimiento,observaciones,telefono} = createPacienteDto
+    const {nombre,apellido,dni,genero,fecha_nacimiento,observaciones,telefono,email,nro_obraSocial,id_obraSocial} = createPacienteDto
     const queryRunner =  this.dataSource.createQueryRunner()
 
     await queryRunner.connect()
@@ -28,6 +29,9 @@ export class PacienteService {
       //   nombre:servicio
       // })
 
+      const obraSocial = await queryRunner.manager.findOneBy(ObraSocial,{
+        id_os:id_obraSocial
+      })
       const cliente = queryRunner.manager.create(Paciente,{
         nombre_paciente:nombre,
         apellido_paciente:apellido,
@@ -36,6 +40,9 @@ export class PacienteService {
         genero:genero,
         fecha_nacimiento:fecha_nacimiento,
         observaciones:observaciones,
+        email:email,
+        nro_obrasocial:nro_obraSocial,
+        obraSocial:obraSocial!
       })
 
       await queryRunner.manager.save(cliente)

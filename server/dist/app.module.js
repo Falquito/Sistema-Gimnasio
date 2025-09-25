@@ -19,6 +19,7 @@ const turnos_module_1 = require("./modules/turnos/turnos.module");
 const profesionales_module_1 = require("./modules/profesionales/profesionales.module");
 const pacientes_module_1 = require("./pacientes/pacientes.module");
 const recepcionista_module_1 = require("./recepcionista/recepcionista.module");
+const obra_social_module_1 = require("./obra-social/obra-social.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -44,7 +45,8 @@ exports.AppModule = AppModule = __decorate([
             turnos_module_1.TurnosModule,
             profesionales_module_1.ProfesionalesModule,
             pacientes_module_1.PacientesModule,
-            recepcionista_module_1.RecepcionistaModule
+            recepcionista_module_1.RecepcionistaModule,
+            obra_social_module_1.ObraSocialModule
         ],
         controllers: [app_controller_1.AppController, auth_controller_1.AuthController],
         providers: [app_service_1.AppService,

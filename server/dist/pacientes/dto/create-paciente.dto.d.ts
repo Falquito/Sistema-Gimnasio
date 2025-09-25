@@ -6,4 +6,7 @@ export declare class CreatePacienteDto {
     genero: string;
     fecha_nacimiento: string;
     observaciones: string;
+    email: string;
+    nro_obraSocial: number;
+    id_obraSocial: number;
 }

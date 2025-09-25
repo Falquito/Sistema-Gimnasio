@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppointmentsTable } from '../components/turno/AppointmentsTable';
-import { listarPacientes, type PacienteListItem } from '../services/pacientes.services';
+import { listarObrasSociales, listarPacientes, type PacienteListItem } from '../services/pacientes.services';
 import { LoadingSpinner, LoadingSpinner2 } from '../components/turno/LoadingSpinner';
 import { apiFetch } from '../lib/api';
 
@@ -14,12 +14,17 @@ interface Paciente {
   telefono_paciente: string;
   fecha_nacimiento: string;
   genero: string;
-  id_obra_social?: number;
-  nro_obra_social?: string;
   observaciones?: string;
   fecha_alta: string;
   fecha_ult_upd: string;
   estado:boolean;
+  id_obraSocial:number;
+  nro_obraSocial:number;
+}
+
+export interface ObraSocial {
+  id_os: number;
+  nombre:string;
 }
 
 const obrasSocialesCatalogo = [
@@ -32,6 +37,7 @@ const obrasSocialesCatalogo = [
 
 // === COMPONENTE PRINCIPAL ===
 const PacientesPage = () => {
+  const [obrasSociales,setObrasSociales] = useState<ObraSocial[]>([])
   const [pacientes, setPacientes] = useState<PacienteListItem[]>([]);
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState<Paciente | null>(null);
@@ -41,7 +47,10 @@ const PacientesPage = () => {
   // Estado para manejar las notificaciones (mensaje y tipo)
   const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
-
+  const getObrasSociales = async ()=>{
+    const obrasSocialesLista= await listarObrasSociales()
+    setObrasSociales(obrasSocialesLista)
+  }
   const getPacientes = async()=>{
     const pacientesLista= await listarPacientes()
     setPacientes(pacientesLista)
@@ -49,6 +58,7 @@ const PacientesPage = () => {
   }
 
   useEffect(() => {
+    getObrasSociales()
     getPacientes()
   }, []);
 
@@ -95,7 +105,10 @@ const PacientesPage = () => {
         telefono:paciente.telefono_paciente,
         genero:paciente.genero,
         dni:paciente.dni,
-        observaciones:paciente.observaciones
+        observaciones:paciente.observaciones,
+        nro_obraSocial:paciente.nro_obraSocial,
+        id_obraSocial:paciente.id_obraSocial,
+        email:paciente.email
       })
     })
 
@@ -115,7 +128,10 @@ const PacientesPage = () => {
         genero:paciente.genero[0],
         dni:paciente.dni,
         observaciones:paciente.observaciones,
-        fecha_nacimiento:paciente.fecha_nacimiento
+        fecha_nacimiento:paciente.fecha_nacimiento,
+        nro_obraSocial:paciente.nro_obraSocial,
+        id_obraSocial:paciente.id_obraSocial,
+        email:paciente.email
       })
     })
 
@@ -171,6 +187,7 @@ const PacientesPage = () => {
         pacientes={pacientesFiltrados}
         onEditar={handleOpenModalParaEditar}
         onEliminar={handleEliminarPaciente}
+        obrasSociales={obrasSociales}
       />
   
       {isModalOpen && (
@@ -179,6 +196,7 @@ const PacientesPage = () => {
             pacientesExistentes={pacientes}
             onGuardar={handleGuardarPaciente}
             onCerrar={handleCerrarModal}
+            obrasSociales={obrasSociales}
         />
       )}
     </div>
@@ -190,7 +208,7 @@ const PacientesPage = () => {
 
 // === SUB-COMPONENTES ===
 
-const TablaPacientes = ({ pacientes, onEditar, onEliminar }: { pacientes: Paciente[], onEditar: (paciente: Paciente) => void, onEliminar: (id: number) => void }) => (
+const TablaPacientes = ({ pacientes, onEditar, onEliminar,obrasSociales }: { pacientes: Paciente[], onEditar: (paciente: Paciente) => void, onEliminar: (id: number) => void ,obrasSociales:ObraSocial[]}) => (
   <table style={styles.table}>
     <thead>
       <tr>
@@ -201,6 +219,8 @@ const TablaPacientes = ({ pacientes, onEditar, onEliminar }: { pacientes: Pacien
         <th style={styles.th}>Fecha Nacimiento</th>
         <th style={styles.th}>Observaciones</th>
         <th style={styles.th}>Teléfono</th>
+        <th style={styles.th}>Obra Social</th>
+        <th style={styles.th}>Nro Afiliado</th>
         <th style={styles.th}>Acciones</th>
       </tr>
     </thead>
@@ -215,6 +235,8 @@ const TablaPacientes = ({ pacientes, onEditar, onEliminar }: { pacientes: Pacien
           <td style={styles.td}>{p.observaciones}</td>
 
           <td style={styles.td}>{p.telefono_paciente}</td>
+          <td style={styles.td}>{obrasSociales.find((item)=>item.id_os==p.obraSocial.id_os)?.nombre}</td>
+          <td style={styles.td}>{p.nro_obraSocial}</td>
           <td style={styles.td}>
             <button onClick={() => onEditar(p)} style={{...styles.actionButton, ...styles.editButton}}>Editar</button>
             <button onClick={() => onEliminar(p.id_paciente)} style={{...styles.actionButton, ...styles.deleteButton}}>Eliminar</button>
@@ -225,18 +247,18 @@ const TablaPacientes = ({ pacientes, onEditar, onEliminar }: { pacientes: Pacien
   </table>
 );
 
-const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }: { paciente: Paciente | null, pacientesExistentes: Paciente[], onGuardar: (paciente: Paciente) => void, onCerrar: () => void }) => {
-    const [formData, setFormData] = useState<Omit<Paciente, 'id_paciente' | 'id_obra_social'> & { id_paciente?: number, id_obra_social: string }>({
+const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar,obrasSociales }: { paciente: Paciente | null, pacientesExistentes: Paciente[], onGuardar: (paciente: Paciente) => void, onCerrar: () => void ,obrasSociales:ObraSocial[]}) => {
+    const [formData, setFormData] = useState<Omit<Paciente, 'id_paciente' | 'id_obraSocial'> & { id_paciente?: number, id_obraSocial: number }>({
         id_paciente: paciente?.id_paciente,
         nombre_paciente: paciente?.nombre_paciente || '',
         apellido_paciente: paciente?.apellido_paciente || '',
         dni: paciente?.dni || '',
-        email: paciente?.email || '',
+        email: paciente?.email!,
         telefono_paciente: paciente?.telefono_paciente || '',
         fecha_nacimiento: paciente?.fecha_nacimiento || '',
         genero: paciente?.genero || 'Otro',
-        id_obra_social: paciente?.id_obra_social ? String(paciente.id_obra_social) : '',
-        nro_obra_social: paciente?.nro_obra_social || '',
+        id_obraSocial: paciente?.id_obraSocial ? Number(paciente.id_obraSocial) : 0,
+        nro_obraSocial: paciente?.nro_obraSocial!,
         observaciones: paciente?.observaciones || '',
         fecha_alta: paciente?.fecha_alta || new Date().toISOString().split('T')[0],
         fecha_ult_upd: new Date().toISOString().split('T')[0],
@@ -285,7 +307,8 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validate()) {
-            const dataToSave = { ...formData, id_obra_social: formData.id_obra_social ? Number(formData.id_obra_social) : undefined };
+          console.log(formData.email)
+            const dataToSave = { ...formData, id_obra_social: formData.id_obraSocial ? Number(formData.id_obraSocial) : undefined };
             onGuardar(dataToSave as Paciente);
         }
     };
@@ -302,7 +325,7 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
                     </div>
                      <div style={styles.formRow}>
                         <div style={styles.formGroup}><label style={styles.label}>DNI (*)</label><input type="text" name="dni" value={formData.dni} onChange={handleChange} required maxLength={10} style={styles.input}/>{errors.dni && <small style={styles.errorText}>{errors.dni}</small>}</div>
-                        {/* <div style={styles.formGroup}><label style={styles.label}>Email (*)</label><input type="email" name="email" value={formData.email} onChange={handleChange} required style={styles.input}/>{errors.email && <small style={styles.errorText}>{errors.email}</small>}</div> */}
+                        <div style={styles.formGroup}><label style={styles.label}>Email (*)</label><input type="email" name="email" value={formData.email} onChange={handleChange} required style={styles.input}/>{errors.email && <small style={styles.errorText}>{errors.email}</small>}</div>
                     </div>
                      <div style={styles.formRow}>
                          <div style={styles.formGroup}><label style={styles.label}>Teléfono (*)</label><input type="tel" name="telefono_paciente" value={formData.telefono_paciente} onChange={handleChange} required maxLength={15} style={styles.input}/>{errors.telefono_paciente && <small style={styles.errorText}>{errors.telefono_paciente}</small>}</div>
@@ -310,9 +333,9 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar }:
                     </div>
                     <div style={styles.formRow}>
                         <div style={styles.formGroup}><label style={styles.label}>Género (*)</label><select name="genero" value={formData.genero} onChange={handleChange} required style={styles.input}><option value="Femenino">Femenino</option><option value="Masculino">Masculino</option><option value="Otro">Otro</option></select></div>
-                        {/* <div style={styles.formGroup}><label style={styles.label}>Obra Social</label><select name="id_obra_social" value={formData.id_obra_social} onChange={handleChange} style={styles.input}><option value="">Ninguna</option>{obrasSocialesCatalogo.map(os => (<option key={os.id} value={os.id}>{os.nombre}</option>))}</select>{errors.id_obra_social && <small style={styles.errorText}>{errors.id_obra_social}</small>}</div> */}
+                        <div style={styles.formGroup}><label style={styles.label}>Obra Social</label><select name="id_obraSocial" value={formData.id_obraSocial} onChange={handleChange} style={styles.input}><option value="">Ninguna</option>{obrasSociales.map(os => (<option key={os.id_os} value={os.id_os}>{os.nombre}</option>))}</select>{errors.id_obra_social && <small style={styles.errorText}>{errors.id_obra_social}</small>}</div>
                     </div>
-                     {/* <div style={styles.formGroup}><label style={styles.label}>Número de Afiliado</label><input type="text" name="nro_obra_social" value={formData.nro_obra_social} onChange={handleChange} style={styles.input}/>{errors.nro_obra_social && <small style={styles.errorText}>{errors.nro_obra_social}</small>}</div> */}
+                     <div style={styles.formGroup}><label style={styles.label}>Número de Afiliado</label><input type="text" name="nro_obraSocial" value={formData.nro_obraSocial} onChange={handleChange} style={styles.input}/>{errors.nro_obra_social && <small style={styles.errorText}>{errors.nro_obra_social}</small>}</div>
                     <div style={styles.formGroup}><label style={styles.label}>Observaciones</label><textarea name="observaciones" value={formData.observaciones} onChange={handleChange} rows={3} style={styles.textarea}></textarea></div>
                     <div style={styles.formActions}><button type="button" onClick={onCerrar} style={{...styles.actionButton, ...styles.cancelButton}}>Cancelar</button><button type="submit" style={{...styles.actionButton, ...styles.saveButton}}>Guardar</button></div>
                 </form>

@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const paciente_entity_1 = require("./entities/paciente.entity");
+const ObraSocial_entity_1 = require("../entities/entities/ObraSocial.entity");
 let PacienteService = class PacienteService {
     dataSource;
     pacienteRepository;
@@ -25,11 +26,14 @@ let PacienteService = class PacienteService {
         this.pacienteRepository = pacienteRepository;
     }
     async create(createPacienteDto) {
-        const { nombre, apellido, dni, genero, fecha_nacimiento, observaciones, telefono } = createPacienteDto;
+        const { nombre, apellido, dni, genero, fecha_nacimiento, observaciones, telefono, email, nro_obraSocial, id_obraSocial } = createPacienteDto;
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
+            const obraSocial = await queryRunner.manager.findOneBy(ObraSocial_entity_1.ObraSocial, {
+                id_os: id_obraSocial
+            });
             const cliente = queryRunner.manager.create(paciente_entity_1.Paciente, {
                 nombre_paciente: nombre,
                 apellido_paciente: apellido,
@@ -38,6 +42,9 @@ let PacienteService = class PacienteService {
                 genero: genero,
                 fecha_nacimiento: fecha_nacimiento,
                 observaciones: observaciones,
+                email: email,
+                nro_obrasocial: nro_obraSocial,
+                obraSocial: obraSocial
             });
             await queryRunner.manager.save(cliente);
             await queryRunner.commitTransaction();
