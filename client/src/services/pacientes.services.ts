@@ -2,20 +2,26 @@
 import { apiFetch } from "../lib/api";
 
 export type PacienteListItem = {
-  id_paciente: number;
+ id_paciente: number;
   nombre_paciente: string;
   apellido_paciente: string;
-  dni?: string;
-  telefono_paciente?: string;
-  fecha_nacimiento?:string
-
-  
+  dni: string;
+  email: string;
+  telefono_paciente: string;
+  fecha_nacimiento: string;
+  genero: string;
+  id_obra_social?: number;
+  nro_obra_social?: string;
+  observaciones?: string;
+  fecha_alta: string;
+  fecha_ult_upd: string;
+  estado:boolean;
 };
 
 const BASE = "/pacientes";
 
 export async function listarPacientes(): Promise<PacienteListItem[]> {
-  return apiFetch<PacienteListItem[]>(BASE);
+  return await apiFetch<PacienteListItem[]>(BASE);
 }
 
 export async function buscarPacientes(q: string): Promise<PacienteListItem[]> {

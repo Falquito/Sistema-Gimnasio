@@ -8,5 +8,6 @@ export declare class Paciente {
     genero: string;
     fecha_nacimiento: string;
     observaciones: string;
+    estado: boolean;
     turnos: Turnos[];
 }
