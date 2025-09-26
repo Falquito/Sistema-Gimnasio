@@ -13,6 +13,7 @@ const pacientes_controller_1 = require("./pacientes.controller");
 const auth_module_1 = require("../auth/auth.module");
 const typeorm_1 = require("@nestjs/typeorm");
 const paciente_entity_1 = require("./entities/paciente.entity");
+const ObraSocial_entity_1 = require("../entities/entities/ObraSocial.entity");
 let PacientesModule = class PacientesModule {
 };
 exports.PacientesModule = PacientesModule;
@@ -20,7 +21,7 @@ exports.PacientesModule = PacientesModule = __decorate([
     (0, common_1.Module)({
         imports: [
             auth_module_1.AuthModule,
-            typeorm_1.TypeOrmModule.forFeature([paciente_entity_1.Paciente])
+            typeorm_1.TypeOrmModule.forFeature([paciente_entity_1.Paciente, ObraSocial_entity_1.ObraSocial])
         ],
         controllers: [pacientes_controller_1.PacientesController],
         providers: [pacientes_service_1.PacienteService],
