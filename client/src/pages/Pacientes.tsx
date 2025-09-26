@@ -117,6 +117,7 @@ const PacientesPage = () => {
     getPacientes()
       mostrarNotificacion('Paciente Modificado Exitosamente');
     } else {
+      console.log(paciente)
       const nuevoPaciente = { ...paciente, id_paciente: Date.now() };
       console.log(paciente.fecha_nacimiento)
       const req = await apiFetch<Paciente>(`/pacientes/`,{
@@ -129,8 +130,8 @@ const PacientesPage = () => {
         dni:paciente.dni,
         observaciones:paciente.observaciones,
         fecha_nacimiento:paciente.fecha_nacimiento,
-        nro_obraSocial:paciente.nro_obraSocial,
-        id_obraSocial:paciente.id_obraSocial,
+        nro_obraSocial:parseInt(String(paciente.nro_obraSocial)),
+        id_obraSocial:paciente.id_obra_social,
         email:paciente.email
       })
     })
@@ -236,7 +237,7 @@ const TablaPacientes = ({ pacientes, onEditar, onEliminar,obrasSociales }: { pac
 
           <td style={styles.td}>{p.telefono_paciente}</td>
           <td style={styles.td}>{obrasSociales.find((item)=>item.id_os==p.obraSocial.id_os)?.nombre}</td>
-          <td style={styles.td}>{p.nro_obraSocial}</td>
+          <td style={styles.td}>{p.nro_obrasocial}</td>
           <td style={styles.td}>
             <button onClick={() => onEditar(p)} style={{...styles.actionButton, ...styles.editButton}}>Editar</button>
             <button onClick={() => onEliminar(p.id_paciente)} style={{...styles.actionButton, ...styles.deleteButton}}>Eliminar</button>
@@ -258,7 +259,7 @@ const ModalFormulario = ({ paciente, pacientesExistentes, onGuardar, onCerrar,ob
         fecha_nacimiento: paciente?.fecha_nacimiento || '',
         genero: paciente?.genero || 'Otro',
         id_obraSocial: paciente?.id_obraSocial ? Number(paciente.id_obraSocial) : 0,
-        nro_obraSocial: paciente?.nro_obraSocial!,
+        nro_obraSocial: Number(paciente?.nro_obraSocial!),
         observaciones: paciente?.observaciones || '',
         fecha_alta: paciente?.fecha_alta || new Date().toISOString().split('T')[0],
         fecha_ult_upd: new Date().toISOString().split('T')[0],
