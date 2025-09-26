@@ -14,7 +14,9 @@ export class PacienteService {
     @InjectDataSource()
     private readonly dataSource:DataSource,
     @InjectRepository(Paciente)
-    private readonly pacienteRepository:Repository<Paciente>
+    private readonly pacienteRepository:Repository<Paciente>,
+    @InjectRepository(ObraSocial)
+    private readonly obraSocialRepository:Repository<ObraSocial>
   ){}
   async create(createPacienteDto: CreatePacienteDto) {
     const {nombre,apellido,dni,genero,fecha_nacimiento,observaciones,telefono,email,nro_obraSocial,id_obraSocial} = createPacienteDto
@@ -75,6 +77,10 @@ export class PacienteService {
     if(!paciente){
       throw new NotFoundException(`No se encontro el paiente con el id: ${id}`)
     }
+    const obraSocial = await this.obraSocialRepository.findOneBy({
+        id_os:updatePacienteDto.id_obraSocial
+      })
+
     const pacienteUpdated = await this.pacienteRepository.preload({
       
       id_paciente:paciente.id_paciente,
@@ -85,6 +91,9 @@ export class PacienteService {
       genero:updatePacienteDto.genero?updatePacienteDto.genero:paciente.genero,
       observaciones:updatePacienteDto.observaciones?updatePacienteDto.observaciones:paciente.observaciones,
       telefono_paciente:updatePacienteDto.telefono?updatePacienteDto.telefono:paciente.telefono_paciente,
+      email:updatePacienteDto.email?updatePacienteDto.email:paciente.email,
+      obraSocial:updatePacienteDto.id_obraSocial?obraSocial!:paciente.obraSocial,
+      nro_obrasocial:updatePacienteDto.nro_obraSocial?updatePacienteDto.nro_obraSocial:paciente.nro_obrasocial
     })
 
     return this.pacienteRepository.save(pacienteUpdated!);

@@ -21,9 +21,11 @@ const ObraSocial_entity_1 = require("../entities/entities/ObraSocial.entity");
 let PacienteService = class PacienteService {
     dataSource;
     pacienteRepository;
-    constructor(dataSource, pacienteRepository) {
+    obraSocialRepository;
+    constructor(dataSource, pacienteRepository, obraSocialRepository) {
         this.dataSource = dataSource;
         this.pacienteRepository = pacienteRepository;
+        this.obraSocialRepository = obraSocialRepository;
     }
     async create(createPacienteDto) {
         const { nombre, apellido, dni, genero, fecha_nacimiento, observaciones, telefono, email, nro_obraSocial, id_obraSocial } = createPacienteDto;
@@ -67,6 +69,9 @@ let PacienteService = class PacienteService {
         if (!paciente) {
             throw new common_1.NotFoundException(`No se encontro el paiente con el id: ${id}`);
         }
+        const obraSocial = await this.obraSocialRepository.findOneBy({
+            id_os: updatePacienteDto.id_obraSocial
+        });
         const pacienteUpdated = await this.pacienteRepository.preload({
             id_paciente: paciente.id_paciente,
             apellido_paciente: updatePacienteDto.apellido ? updatePacienteDto.apellido : paciente.apellido_paciente,
@@ -76,6 +81,9 @@ let PacienteService = class PacienteService {
             genero: updatePacienteDto.genero ? updatePacienteDto.genero : paciente.genero,
             observaciones: updatePacienteDto.observaciones ? updatePacienteDto.observaciones : paciente.observaciones,
             telefono_paciente: updatePacienteDto.telefono ? updatePacienteDto.telefono : paciente.telefono_paciente,
+            email: updatePacienteDto.email ? updatePacienteDto.email : paciente.email,
+            obraSocial: updatePacienteDto.id_obraSocial ? obraSocial : paciente.obraSocial,
+            nro_obrasocial: updatePacienteDto.nro_obraSocial ? updatePacienteDto.nro_obraSocial : paciente.nro_obrasocial
         });
         return this.pacienteRepository.save(pacienteUpdated);
     }
@@ -93,7 +101,9 @@ exports.PacienteService = PacienteService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectDataSource)()),
     __param(1, (0, typeorm_1.InjectRepository)(paciente_entity_1.Paciente)),
+    __param(2, (0, typeorm_1.InjectRepository)(ObraSocial_entity_1.ObraSocial)),
     __metadata("design:paramtypes", [typeorm_2.DataSource,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], PacienteService);
 //# sourceMappingURL=pacientes.service.js.map
