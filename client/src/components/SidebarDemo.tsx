@@ -29,7 +29,7 @@ export function SidebarDemo() {
       label: "Recepcionista",
       href: "/recepcionista",
       icon: (
-        <IconHeadset className="h-5 w-5 shrink-0 text-neutral-100 dark:text-black" />
+        <IconHeadset className="h-5 w-5 shrink-0 text-black  dark:text-black" />
       ),
 
     },

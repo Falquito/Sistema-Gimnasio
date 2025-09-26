@@ -10,22 +10,24 @@ import { Gerente } from './entities/gerente.entity';
 import { validRoles } from 'src/auth/interfaces/validRoles';
 @ApiTags("Gerente")
 @Controller('gerentes')
-@Auth(validRoles.gerente)
+
 export class GerentesController {
   constructor(private readonly gerentesService: GerentesService) {}
 
   @Post()
   @ApiResponse({status:201,description:"Gerente creado",type:Gerente})
   @ApiResponse({status:401,description:"Unauthorized"})
+  @Auth(validRoles.gerente)
   create(@Body() createGerenteDto: CreateGerenteDto) {
     return this.gerentesService.create(createGerenteDto);
   }
   @ApiResponse({status:200,description:"Todos los gerentes",type:Gerente,isArray:true})
+  @Auth(validRoles.gerente)
   @Get('')
   findAll() {
     return this.gerentesService.findAll();
   }
-
+  @Auth(validRoles.gerente)
   @Get(':id')
   @ApiOkResponse({description:"Gerente por id",type:Gerente})
   findOne(@Param('id') id: string) {
