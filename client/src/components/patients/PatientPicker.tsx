@@ -1,17 +1,11 @@
 // components/PatientSelect.tsx
 "use client";
 import React, { useEffect, useState } from "react";
-import { Search, UserRound, Check, User, Phone, Mail, MapPin, Calendar, ChevronDown, X, Plus } from "lucide-react";
+import { Search, User, Check, ChevronDown, X, Plus } from "lucide-react";
 import {
-  Modal,
-  ModalTrigger,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  useModal,
+  Modal, ModalTrigger, ModalBody, ModalContent, useModal,
 } from "../ui/animated-modal";
 
-// ⬇️ cambia esta ruta si tu archivo tiene otro nombre/ubicación
 import {
   buscarPacientes,
   getPacienteById,
@@ -25,7 +19,7 @@ type Props = {
   placeholder?: string;
   error?: string;
   required?: boolean;
-  onCreateNew?: () => void; // Para poder crear paciente desde aquí
+  onCreateNew?: () => void;
 };
 
 export const PatientSelect: React.FC<Props> = ({
@@ -40,7 +34,6 @@ export const PatientSelect: React.FC<Props> = ({
   const [display, setDisplay] = useState(placeholder);
   const [loading, setLoading] = useState(false);
 
-  // Si viene un id preseleccionado, traigo el nombre para mostrar
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -51,18 +44,14 @@ export const PatientSelect: React.FC<Props> = ({
       try {
         setLoading(true);
         const p = await getPacienteById(value);
-        if (mounted) {
-          setDisplay(`${p.apellido_paciente} ${p.nombre_paciente}`.trim());
-        }
+        if (mounted) setDisplay(`${p.apellido_paciente} ${p.nombre_paciente}`.trim());
       } catch {
         if (mounted) setDisplay(`ID: ${value}`);
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [value, placeholder]);
 
   const handleClear = (e: React.MouseEvent) => {
@@ -80,39 +69,37 @@ export const PatientSelect: React.FC<Props> = ({
       </label>
 
       <Modal>
-        <ModalTrigger 
+        <ModalTrigger
           className={`w-full flex items-center justify-between px-4 py-3 bg-white border-2 rounded-xl transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-            error 
-              ? 'border-red-300 bg-red-50' 
-              : value 
-                ? 'border-green-300 bg-green-50' 
-                : 'border-gray-200'
+            error
+              ? "border-red-300 bg-red-50"
+              : value
+              ? "border-green-300 bg-green-50"
+              : "border-gray-200"
           }`}
         >
           <div className="flex items-center gap-3 flex-1">
             {value ? (
               <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {display.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                {display.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
               </div>
             ) : (
               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-gray-500" />
               </div>
             )}
-            <span className={`${value ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+            <span className={`${value ? "text-gray-900 font-medium" : "text-gray-500"}`}>
               {loading ? "Cargando..." : display}
             </span>
           </div>
-          
           <div className="flex items-center gap-2">
             {value && (
-              <button
+              <div
                 onClick={handleClear}
-                className="p-1 hover:bg-red-100 rounded-full transition-colors"
-                title="Limpiar selección"
+                className="p-1 hover:bg-red-100 rounded-full transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4 text-red-500" />
-              </button>
+              </div>
             )}
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </div>
@@ -149,47 +136,55 @@ const InnerPatientPicker = ({
   const { setOpen } = useModal();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<PacienteListItem[]>([]);
+  const [allPacientes, setAllPacientes] = useState<PacienteListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
-  // Carga inicial: si no hay término, traigo todos
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         setLoading(true);
-        const data = await buscarPacientes(""); // ← lista todo si q=""
-        if (mounted) setResults(data);
+        const data = await buscarPacientes(""); // backend trae todo
+        if (mounted) {
+          setAllPacientes(data);
+          setResults(data);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
-  const search = async (term: string) => {
+  // Filtro en memoria por nombre, apellido y DNI
+  const search = (term: string) => {
     setQ(term);
     setSelectedIndex(-1);
-    try {
-      setLoading(true);
-      const data = await buscarPacientes(term); // server-side (si hay ?q) o client-side fallback
-      setResults(data);
-    } finally {
-      setLoading(false);
+
+    if (!term) {
+      setResults(allPacientes);
+      return;
     }
+    const needle = term.toLowerCase().trim();
+
+    const filtrados = allPacientes.filter((p) => {
+      const nombreCompleto = `${p.apellido_paciente ?? ""} ${p.nombre_paciente ?? ""}`.toLowerCase();
+      const dni = (p.dni ?? "").toLowerCase();
+      return nombreCompleto.includes(needle) || dni.includes(needle);
+    });
+
+    setResults(filtrados);
   };
 
-  // Navegación con teclado
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex(prev => Math.min(prev + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex(prev => Math.max(prev - 1, -1));
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+    } else if (e.key === "Enter" && selectedIndex >= 0) {
       e.preventDefault();
       const selected = results[selectedIndex];
       if (selected) {
@@ -199,24 +194,14 @@ const InnerPatientPicker = ({
     }
   };
 
-  const getInitials = (nombre: string, apellido: string) => {
-    return `${apellido?.[0] || ''}${nombre?.[0] || ''}`.toUpperCase();
-  };
+  const getInitials = (nombre: string, apellido: string) =>
+    `${apellido?.[0] || ""}${nombre?.[0] || ""}`.toUpperCase();
 
-  const calculateAge = (fechaNacimiento?: string) => {
-    if (!fechaNacimiento) return null;
-    const today = new Date();
-    const birth = new Date(fechaNacimiento);
-    const age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      return age - 1;
-    }
-    return age;
-  };
+  const found = results.length;
+  const total = allPacientes.length;
 
   return (
-    <ModalContent className="p- bg-white">
+    <ModalContent className="p-0 bg-white">
       {/* Header */}
       <div className="p-6 pb-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
         <div className="flex items-center justify-between">
@@ -226,10 +211,10 @@ const InnerPatientPicker = ({
               Seleccionar Paciente
             </h3>
             <p className="text-gray-600 text-sm mt-1">
-              {results.length > 0 ? `${results.length} pacientes disponibles` : 'Busca por nombre, apellido o DNI'}
+              {total === 0 ? "No hay pacientes registrados" : `${found} / ${total} pacientes`}
             </p>
           </div>
-          
+
           {onCreateNew && (
             <button
               onClick={() => {
@@ -266,6 +251,12 @@ const InnerPatientPicker = ({
             </button>
           )}
         </div>
+        {total > 0 && (
+          <div className="mt-2 text-xs text-gray-500">
+            Mostrando <span className="font-semibold text-gray-700">{found}</span> de{" "}
+            <span className="font-semibold text-gray-700">{total}</span>
+          </div>
+        )}
       </div>
 
       {/* Lista de resultados */}
@@ -283,26 +274,13 @@ const InnerPatientPicker = ({
               <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-900 font-medium mb-2">No se encontraron pacientes</p>
               <p className="text-gray-500 text-sm">
-                {q ? `No hay resultados para "${q}"` : 'No hay pacientes registrados'}
+                {q ? `No hay coincidencias para “${q}”` : "No hay pacientes registrados"}
               </p>
-              {onCreateNew && (
-                <button
-                  onClick={() => {
-                    onCreateNew();
-                    setOpen(false);
-                  }}
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
-                >
-                  Crear Nuevo Paciente
-                </button>
-              )}
             </div>
           )}
 
           {results.map((p, index) => {
-            const age = calculateAge(p.fecha_nacimiento);
             const isSelected = selectedIndex === index;
-            
             return (
               <button
                 key={p.id_paciente}
@@ -312,18 +290,13 @@ const InnerPatientPicker = ({
                 }}
                 onMouseEnter={() => setSelectedIndex(index)}
                 className={`w-full text-left p-3 rounded-lg border transition-all duration-200 ${
-                  isSelected 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  isSelected ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  {/* Avatar más pequeño */}
                   <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                     {getInitials(p.nombre_paciente, p.apellido_paciente)}
                   </div>
-
-                  {/* Información principal */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-semibold text-gray-900 text-base truncate">
@@ -335,16 +308,9 @@ const InnerPatientPicker = ({
                         </div>
                       )}
                     </div>
-                    
-                    {/* Información adicional compacta */}
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <span>DNI: {p.dni ?? "—"}</span>
-                      {p.telefono_paciente && (
-                        <span>{p.telefono_paciente}</span>
-                      )}
-                      {age !== null && (
-                        <span>{age} años</span>
-                      )}
+                      {p.telefono_paciente && <span>{p.telefono_paciente}</span>}
                     </div>
                   </div>
                 </div>
@@ -354,43 +320,10 @@ const InnerPatientPicker = ({
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer con contador */}
       <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            {results.length > 0 && (
-              <span>
-                {results.length} {results.length === 1 ? 'paciente encontrado' : 'pacientes encontrados'}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex gap-3">
-            <button
-              onClick={() => setOpen(false)}
-              className="px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-        
-        {/* Ayuda de teclado */}
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">↑↓</kbd>
-              Navegar
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Enter</kbd>
-              Seleccionar
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Esc</kbd>
-              Cerrar
-            </span>
-          </div>
+        <div className="text-sm text-gray-600">
+          {total > 0 && `${found} / ${total} pacientes`}
         </div>
       </div>
     </ModalContent>

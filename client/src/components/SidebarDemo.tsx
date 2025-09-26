@@ -28,14 +28,14 @@ export function SidebarDemo() {
       label: "Usuarios",
       href: "/user",
       icon: (
-        <IconUser className="h-5 w-5 shrink-0 text-white dark:text-[#e4e4e4]" />
+        <IconUser className="h-5 w-5 shrink-0 text-black dark:text-black" />
       ),
     },
     {
       label: "Recepcionista",
       href: "/recepcionista",
       icon: (
-        <IconHeadset className="h-5 w-5 shrink-0 text-neutral-100 dark:text-white" />
+        <IconHeadset className="h-5 w-5 shrink-0 text-neutral-100 dark:text-black" />
       ),
 
     },
@@ -43,7 +43,7 @@ export function SidebarDemo() {
       label: "Turnos",
       href: "/turnos",
       icon: (
-        <IconCalendar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-white" />
+        <IconCalendar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
       ),
       
     },
@@ -51,7 +51,7 @@ export function SidebarDemo() {
       label: "Pacientes",
       href: "/pacientes",
       icon: (
-        <IconCalendar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-white" />
+        <IconCalendar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
       ),
       
     },
@@ -60,7 +60,7 @@ export function SidebarDemo() {
       label: "Logout",
       href: "#",
       icon: (
-        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-white" />
+        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
       ),
       onClick: handleLogout,
     },
@@ -112,7 +112,7 @@ export const Logo = () => {
   return (
     <a
       href="#"
-      className="relative z-20 flex items-center gap-2 py-1 text-sm font-normal text-white"
+      className="relative z-20 flex items-center gap-2 py-1 text-sm font-normal text-black"
     >
       <img
         src={logo}
@@ -122,9 +122,9 @@ export const Logo = () => {
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-white"
+        className="font-medium whitespace-pre text-black"
       >
-        SharkFit
+      NeuroSalud
       </motion.span>
     </a>
   );
@@ -135,7 +135,7 @@ export const LogoIcon = () => {
   return (
     <a
       href="#"
-      className="relative z-20 items-center justify-center py-1 text-sm font-normal text-white w-full h-9"
+      className="relative z-20 items-center justify-center py-1 text-sm font-normal text-black w-full h-9"
     >
       <img
         src={logo}
