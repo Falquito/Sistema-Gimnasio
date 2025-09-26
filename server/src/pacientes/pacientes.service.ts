@@ -5,6 +5,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 // import { Servicio } from 'src/entities/entities/Servicio.entity';
 import { Paciente } from './entities/paciente.entity';
+import { ObraSocial } from 'src/entities/entities/ObraSocial.entity';
 // import { ClientesPorServicios } from 'src/entities/entities/ClientesPorServicios.entity';
 
 @Injectable()
@@ -13,10 +14,12 @@ export class PacienteService {
     @InjectDataSource()
     private readonly dataSource:DataSource,
     @InjectRepository(Paciente)
-    private readonly pacienteRepository:Repository<Paciente>
+    private readonly pacienteRepository:Repository<Paciente>,
+    @InjectRepository(ObraSocial)
+    private readonly obraSocialRepository:Repository<ObraSocial>
   ){}
   async create(createPacienteDto: CreatePacienteDto) {
-    const {nombre,apellido,dni,genero,fecha_nacimiento,observaciones,telefono} = createPacienteDto
+    const {nombre,apellido,dni,genero,fecha_nacimiento,observaciones,telefono,email,nro_obraSocial,id_obraSocial} = createPacienteDto
     const queryRunner =  this.dataSource.createQueryRunner()
 
     await queryRunner.connect()
@@ -28,6 +31,9 @@ export class PacienteService {
       //   nombre:servicio
       // })
 
+      const obraSocial = await queryRunner.manager.findOneBy(ObraSocial,{
+        id_os:id_obraSocial
+      })
       const cliente = queryRunner.manager.create(Paciente,{
         nombre_paciente:nombre,
         apellido_paciente:apellido,
@@ -36,6 +42,9 @@ export class PacienteService {
         genero:genero,
         fecha_nacimiento:fecha_nacimiento,
         observaciones:observaciones,
+        email:email,
+        nro_obrasocial:nro_obraSocial,
+        obraSocial:obraSocial!
       })
 
       await queryRunner.manager.save(cliente)
@@ -68,6 +77,10 @@ export class PacienteService {
     if(!paciente){
       throw new NotFoundException(`No se encontro el paiente con el id: ${id}`)
     }
+    const obraSocial = await this.obraSocialRepository.findOneBy({
+        id_os:updatePacienteDto.id_obraSocial
+      })
+
     const pacienteUpdated = await this.pacienteRepository.preload({
       
       id_paciente:paciente.id_paciente,
@@ -78,6 +91,9 @@ export class PacienteService {
       genero:updatePacienteDto.genero?updatePacienteDto.genero:paciente.genero,
       observaciones:updatePacienteDto.observaciones?updatePacienteDto.observaciones:paciente.observaciones,
       telefono_paciente:updatePacienteDto.telefono?updatePacienteDto.telefono:paciente.telefono_paciente,
+      email:updatePacienteDto.email?updatePacienteDto.email:paciente.email,
+      obraSocial:updatePacienteDto.id_obraSocial?obraSocial!:paciente.obraSocial,
+      nro_obrasocial:updatePacienteDto.nro_obraSocial?updatePacienteDto.nro_obraSocial:paciente.nro_obrasocial
     })
 
     return this.pacienteRepository.save(pacienteUpdated!);

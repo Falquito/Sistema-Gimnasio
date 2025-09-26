@@ -1,5 +1,6 @@
 // src/services/pacientes.api.ts
 import { apiFetch } from "../lib/api";
+import type { ObraSocial } from "../pages/Pacientes";
 
 export type PacienteListItem = {
  id_paciente: number;
@@ -10,12 +11,12 @@ export type PacienteListItem = {
   telefono_paciente: string;
   fecha_nacimiento: string;
   genero: string;
-  id_obra_social?: number;
-  nro_obra_social?: string;
   observaciones?: string;
   fecha_alta: string;
   fecha_ult_upd: string;
   estado:boolean;
+  id_obraSocial:number;
+  nro_obraSocial:number;
 };
 
 const BASE = "/pacientes";
@@ -24,6 +25,9 @@ export async function listarPacientes(): Promise<PacienteListItem[]> {
   return await apiFetch<PacienteListItem[]>(BASE);
 }
 
+export async function listarObrasSociales(): Promise<ObraSocial[]> {
+  return await apiFetch<ObraSocial[]>("/obra-social");
+}
 export async function buscarPacientes(q: string): Promise<PacienteListItem[]> {
   const term = (q ?? "").trim();
 

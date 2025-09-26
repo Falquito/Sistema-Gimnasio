@@ -1,6 +1,7 @@
 // import { ClientesPorServicios } from "src/entities/entities/ClientesPorServicios.entity";
+import { ObraSocial } from "src/entities/entities/ObraSocial.entity";
 import { Turnos } from "src/entities/entities/Turnos.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Paciente {
@@ -26,6 +27,12 @@ export class Paciente {
     @Column("boolean",{default:true})
     estado:boolean
 
+    @Column("text",{default:""})
+    email:string;
+
+    @Column("int",{default:0})
+    nro_obrasocial:number;
+
 
 
     // @OneToMany(
@@ -38,5 +45,8 @@ export class Paciente {
     @OneToMany(()=>Turnos,(turnos)=>turnos.idPaciente)
     turnos:Turnos[]
 
+    @ManyToOne(()=>ObraSocial,(obraSocial)=>obraSocial.paciente,{eager:true})
+    obraSocial:ObraSocial
+
     
-}
+} 
