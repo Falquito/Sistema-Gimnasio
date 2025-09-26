@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsNumber, IsString } from "class-validator";
+import { IsIn, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
 
 export class CreatePacienteDto {
     @ApiProperty()
     @IsString()
+    @MinLength(3)
     nombre:string;
     @ApiProperty()
+    @MinLength(3)
     @IsString()
     apellido:string;
     @ApiProperty()
@@ -13,6 +15,7 @@ export class CreatePacienteDto {
     telefono:string;
     @ApiProperty()
     @IsString()
+    @MaxLength(9)
     dni:string; 
     @ApiProperty()
     @IsString()
@@ -28,9 +31,9 @@ export class CreatePacienteDto {
     @IsString()
     email:string;
     @ApiProperty()
-    @IsString()
+    @IsNumber()
     nro_obraSocial:number;
     @ApiProperty()
-    @IsString()
+    @IsNumber()
     id_obraSocial:number;
 }

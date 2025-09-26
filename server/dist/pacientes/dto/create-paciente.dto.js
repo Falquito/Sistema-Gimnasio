@@ -28,10 +28,12 @@ exports.CreatePacienteDto = CreatePacienteDto;
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(3),
     __metadata("design:type", String)
 ], CreatePacienteDto.prototype, "nombre", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.MinLength)(3),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreatePacienteDto.prototype, "apellido", void 0);
@@ -43,6 +45,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(9),
     __metadata("design:type", String)
 ], CreatePacienteDto.prototype, "dni", void 0);
 __decorate([
@@ -68,12 +71,12 @@ __decorate([
 ], CreatePacienteDto.prototype, "email", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreatePacienteDto.prototype, "nro_obraSocial", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreatePacienteDto.prototype, "id_obraSocial", void 0);
 //# sourceMappingURL=create-paciente.dto.js.map
