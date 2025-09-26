@@ -14,22 +14,26 @@ import { validRoles } from 'src/auth/interfaces/validRoles';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('turnos')
-@Auth(validRoles.gerente,validRoles.recepcionista)
 export class TurnosController {
   constructor(private readonly turnosService: TurnosService) {}
 
   // HU-4: disponibilidad
+  @Auth(validRoles.medico,validRoles.recepcionista)
+
   @Get('disponibles')
   getDisponibles(@Query() q: DisponibilidadQuery) {
     return this.turnosService.disponibilidad(q);
   }
 
   // HU-5: crear (registrar turno)
+  @Auth(validRoles.medico,validRoles.recepcionista)
+
   @Post()
   @ApiOkResponse({description:"Devuelve turno creado",type:Turnos})
   crear(@Body() dto: CrearTurnoDto) {
     return this.turnosService.crear(dto);
   }
+  @Auth(validRoles.medico,validRoles.recepcionista)
 
   // HU-6a: cancelar
   @Patch(':id/cancelar')
@@ -37,6 +41,7 @@ export class TurnosController {
     return this.turnosService.cancelar(id, dto);
   }
 
+  @Auth(validRoles.medico,validRoles.recepcionista)
 
   // Agenda (calendario)
   @Get('agenda')
@@ -44,17 +49,20 @@ export class TurnosController {
     return this.turnosService.agenda(q);
   }
 
+  @Auth(validRoles.medico,validRoles.recepcionista)
 
   // Utilidades de lectura
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.turnosService.getById(id);
   }
+  @Auth(validRoles.medico,validRoles.recepcionista)
 
   @Patch(':id/completar')
 completar(@Param('id', ParseIntPipe) id: number) {
   return this.turnosService.completar(id);
 }
+  @Auth(validRoles.medico,validRoles.recepcionista)
 
   @Get()
   @ApiOkResponse({type:Turnos,isArray:true})

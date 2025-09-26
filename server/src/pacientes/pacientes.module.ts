@@ -5,10 +5,11 @@ import { AuthModule } from 'src/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Paciente } from './entities/paciente.entity';
 import { ObraSocial } from 'src/entities/entities/ObraSocial.entity';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports:[
-    AuthModule,
+    AuthModule,PassportModule,
     TypeOrmModule.forFeature([Paciente,ObraSocial])
   ],
   controllers: [PacientesController],

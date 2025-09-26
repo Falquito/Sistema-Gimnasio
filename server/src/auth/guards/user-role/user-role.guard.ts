@@ -19,7 +19,7 @@ export class UserRoleGuard implements CanActivate {
 
     const validRoles:string[] =this.reflector.get(META_ROLES,context.getHandler())
     const req = context.switchToHttp().getRequest()
-
+    console.log(validRoles)
     if(!validRoles || validRoles.length===0){
       return true;
     }
@@ -31,6 +31,7 @@ export class UserRoleGuard implements CanActivate {
     }
 
     for (const role of validRoles){
+      console.log(user.rol===role)
       if(user.rol===role){
         return true;
       }
