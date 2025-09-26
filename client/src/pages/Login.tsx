@@ -33,7 +33,7 @@ const Login: React.FC = () => {
       localStorage.setItem("token", data.token);
 
       // Redirigir al dashboard (ejemplo: /user)
-      navigate("/user");
+      navigate("/");
     } catch (err: any) {
       setError(err.message);
     }
