@@ -11,7 +11,10 @@ import { PatientsTable } from '../components/patients/PatientsTable';
 import { Notification } from '../components/patients/Notification';
 import { SimplePatientModal } from '../components/patients/PatientModal';
 
-// Tipos
+// Tipos corregidos para mayor consistencia
+type FiltroEstado = 'todos' | 'activos' | 'inactivos';
+type FiltroGenero = 'todos' | 'Femenino' | 'Masculino' | 'Otro';
+
 interface Paciente {
   id_paciente: number;
   nombre_paciente: string;
@@ -25,8 +28,8 @@ interface Paciente {
   fecha_alta: string;
   fecha_ult_upd: string;
   estado: boolean;
-  id_obraSocial: number;
-  nro_obraSocial: number;
+  id_obraSocial: number | null;
+  nro_obraSocial: number | null;
 }
 
 export interface ObraSocial {
@@ -35,12 +38,12 @@ export interface ObraSocial {
 }
 
 const PacientesPage = () => {
-  // Estados
+  // Estados con tipos específicos
   const [obrasSociales, setObrasSociales] = useState<ObraSocial[]>([]);
   const [pacientes, setPacientes] = useState<PacienteListItem[]>([]);
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
-  const [filtroEstado, setFiltroEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
-  const [filtroGenero, setFiltroGenero] = useState<'todos' | 'Femenino' | 'Masculino' | 'Otro'>('todos');
+  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todos');
+  const [filtroGenero, setFiltroGenero] = useState<FiltroGenero>('todos');
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState<Paciente | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -48,14 +51,25 @@ const PacientesPage = () => {
 
   // Carga inicial
   const getObrasSociales = async () => {
-    const obrasSocialesLista = await listarObrasSociales();
-    setObrasSociales(obrasSocialesLista);
+    try {
+      const obrasSocialesLista = await listarObrasSociales();
+      setObrasSociales(obrasSocialesLista);
+    } catch (error) {
+      console.error('Error cargando obras sociales:', error);
+      mostrarNotificacion('Error al cargar obras sociales', 'error');
+    }
   };
 
   const getPacientes = async () => {
-    const pacientesLista = await listarPacientes();
-    setPacientes(pacientesLista);
-    setLoading(false);
+    try {
+      const pacientesLista = await listarPacientes();
+      setPacientes(pacientesLista);
+    } catch (error) {
+      console.error('Error cargando pacientes:', error);
+      mostrarNotificacion('Error al cargar pacientes', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -70,7 +84,7 @@ const PacientesPage = () => {
   };
 
   // Helpers
-  const generoAPIaLabel = (g: string | undefined) => {
+  const generoAPIaLabel = (g: string | undefined): FiltroGenero => {
     if (!g) return 'Otro';
     const v = g.toUpperCase();
     if (v === 'F') return 'Femenino';
@@ -78,12 +92,15 @@ const PacientesPage = () => {
     return 'Otro';
   };
 
-  // Filtrado de pacientes
+  // Filtrado de pacientes mejorado
   const pacientesFiltrados = useMemo(() => {
+    console.log('Filtros aplicados:', { terminoBusqueda, filtroEstado, filtroGenero });
+    
     let filtrados = pacientes;
 
-    if (terminoBusqueda) {
-      const q = terminoBusqueda.toLowerCase();
+    // Filtro por término de búsqueda
+    if (terminoBusqueda.trim()) {
+      const q = terminoBusqueda.toLowerCase().trim();
       filtrados = filtrados.filter(
         (p) =>
           p.nombre_paciente.toLowerCase().includes(q) ||
@@ -93,28 +110,49 @@ const PacientesPage = () => {
       );
     }
 
+    // Filtro por estado
     if (filtroEstado !== 'todos') {
-      filtrados = filtrados.filter((p) => (filtroEstado === 'activos' ? p.estado : !p.estado));
+      filtrados = filtrados.filter((p) => 
+        filtroEstado === 'activos' ? p.estado : !p.estado
+      );
     }
 
+    // Filtro por género
     if (filtroGenero !== 'todos') {
       filtrados = filtrados.filter((p) => generoAPIaLabel(p.genero) === filtroGenero);
     }
 
+    console.log('Pacientes filtrados:', filtrados.length, 'de', pacientes.length);
     return filtrados;
   }, [pacientes, terminoBusqueda, filtroEstado, filtroGenero]);
 
-  // Stats
+  // Stats corregido
   const stats = useMemo(
     () => ({
       totalPacientes: pacientes.length,
       pacientesActivos: pacientes.filter((p) => p.estado).length,
-      pacientesConObraSocial: pacientes.filter((p) => p.obraSocial).length,
+      pacientesConObraSocial: pacientes.filter((p) => p.id_obraSocial && p.id_obraSocial > 0).length,
     }),
     [pacientes]
   );
 
-  // Handlers
+  // Handlers de filtros con tipos específicos
+  const handleTerminoBusquedaChange = (value: string) => {
+    console.log('Término búsqueda changed:', value);
+    setTerminoBusqueda(value);
+  };
+
+  const handleFiltroEstadoChange = (value: FiltroEstado) => {
+    console.log('Filtro estado changed:', value);
+    setFiltroEstado(value);
+  };
+
+  const handleFiltroGeneroChange = (value: FiltroGenero) => {
+    console.log('Filtro género changed:', value);
+    setFiltroGenero(value);
+  };
+
+  // Handlers del modal
   const handleOpenModalParaCrear = () => {
     setPacienteSeleccionado(null);
     setIsModalOpen(true);
@@ -133,30 +171,29 @@ const PacientesPage = () => {
   const handleGuardarPaciente = async (paciente: any) => {
     const isEditing = !!paciente.id_paciente;
 
-    // --- Normalizaciones seguras ---
-    // genero: UI usa etiquetas, back espera 1 letra
+    // Normalizaciones seguras
     const mapGenero = (g: string) => {
       const v = (g || '').toLowerCase();
       if (v.startsWith('f')) return 'F';
       if (v.startsWith('m')) return 'M';
-      return 'O'; // si tu back acepta 'O'
+      return 'O';
     };
 
     const genero = mapGenero(paciente.genero);
-
-    // dni: recortar a 9 por si acaso
     const dni = String(paciente.dni || '').slice(0, 9);
 
-    // obra social: number | null
-    const idObra =
-      paciente.id_obraSocial === '' || paciente.id_obraSocial === null || paciente.id_obraSocial === undefined
-        ? null
-        : Number(paciente.id_obraSocial);
+    // Obra social: usar 0 en lugar de null para evitar errores del backend
+    const idObra = paciente.id_obraSocial === '' || 
+                   paciente.id_obraSocial === null || 
+                   paciente.id_obraSocial === undefined
+      ? 0
+      : Number(paciente.id_obraSocial);
 
-    const nroObra =
-      paciente.nro_obraSocial === '' || paciente.nro_obraSocial === null || paciente.nro_obraSocial === undefined
-        ? null
-        : Number(paciente.nro_obraSocial);
+    const nroObra = paciente.nro_obraSocial === '' || 
+                    paciente.nro_obraSocial === null || 
+                    paciente.nro_obraSocial === undefined
+      ? 0
+      : Number(paciente.nro_obraSocial);
 
     try {
       if (isEditing) {
@@ -166,11 +203,11 @@ const PacientesPage = () => {
             nombre: paciente.nombre_paciente,
             apellido: paciente.apellido_paciente,
             telefono: paciente.telefono_paciente,
-            genero, // 'M' | 'F' | 'O'
-            dni, // <= 9
+            genero,
+            dni,
             observaciones: paciente.observaciones,
-            nro_obraSocial: nroObra, // number | null
-            id_obraSocial: idObra, // number | null
+            nro_obraSocial: nroObra,
+            id_obraSocial: idObra,
             email: paciente.email,
           }),
         });
@@ -182,12 +219,12 @@ const PacientesPage = () => {
             nombre: paciente.nombre_paciente,
             apellido: paciente.apellido_paciente,
             telefono: paciente.telefono_paciente,
-            genero, // 'M' | 'F' | 'O'
-            dni, // <= 9
+            genero,
+            dni,
             observaciones: paciente.observaciones,
             fecha_nacimiento: paciente.fecha_nacimiento,
-            nro_obraSocial: nroObra, // number | null
-            id_obraSocial: idObra, // nombre correcto
+            nro_obraSocial: nroObra,
+            id_obraSocial: idObra,
             email: paciente.email,
           }),
         });
@@ -208,7 +245,7 @@ const PacientesPage = () => {
         await apiFetch<Paciente>(`/pacientes/${id}`, {
           method: 'DELETE',
         });
-        getPacientes();
+        await getPacientes();
         mostrarNotificacion('Paciente eliminado exitosamente', 'error');
       } catch (error) {
         mostrarNotificacion('Error al eliminar paciente', 'error');
@@ -224,7 +261,7 @@ const PacientesPage = () => {
   if (loading) return <LoadingSpinner2 />;
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       {/* Notificaciones */}
       <Notification notification={notification} onClose={() => setNotification(null)} />
 
@@ -243,9 +280,9 @@ const PacientesPage = () => {
           terminoBusqueda={terminoBusqueda}
           filtroEstado={filtroEstado}
           filtroGenero={filtroGenero}
-          onTerminoBusquedaChange={setTerminoBusqueda}
-          onFiltroEstadoChange={setFiltroEstado}
-          onFiltroGeneroChange={setFiltroGenero}
+          onTerminoBusquedaChange={handleTerminoBusquedaChange}
+          onFiltroEstadoChange={handleFiltroEstadoChange}
+          onFiltroGeneroChange={handleFiltroGeneroChange}
         />
 
         {/* Tabla */}
@@ -273,7 +310,5 @@ const PacientesPage = () => {
     </div>
   );
 };
-
-// (Opcional) Podés eliminar el ModalFormulario viejo si ya usás SimplePatientModal.
 
 export default PacientesPage;

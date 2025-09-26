@@ -228,34 +228,41 @@ const handleSubmit: React.FormEventHandler = async (e) => {
 
   return (
     <ModalContent className="p-6 md:p-8 bg-white">
-      {/* Header */}
+     {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-500 rounded-xl flex items-center justify-center shadow-sm">
             <Plus className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-black">Nueva Sesión de Entrenamiento</h2>
+            <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
+              Nuevo Turno
+            </h2>
             <p className="text-gray-600 text-sm">Programa una nueva cita</p>
           </div>
         </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="pt-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+     {/* Form */}
+      <form onSubmit={handleSubmit} className="pt-6 space-y-5">
+        {/* Paciente y Profesional en una fila */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Paciente */}
           <div>
+            <label className="block text-sm font-medium text-black mb-2">
+              Paciente <span className="text-red-500">*</span>
+            </label>
             <PatientSelect
               value={formData.clienteId ?? null}
               onChange={(id) => setFormData((prev) => ({ ...prev, clienteId: id }))}
             />
           </div>
 
-      
-
           {/* Profesional */}
-          <div className="md:col-span-2">
+          <div>
+            <label className="block text-sm font-medium text-black mb-2">
+              Profesional <span className="text-red-500">*</span>
+            </label>
             <ProfessionalSelect
               value={formData.profesionalId ?? null}
               onChange={(id) => {
@@ -273,66 +280,70 @@ const handleSubmit: React.FormEventHandler = async (e) => {
             {profesionalSel?.servicio && (
               <p className="mt-2 text-sm text-gray-600">
                 Especialidad:
-                <span className="inline-flex ml-2 px-2 py-0.5 rounded-md bg-blue-100 text-blue-700">
+                <span className="inline-flex ml-2 px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs">
                   {profesionalSel.servicio}
                 </span>
               </p>
             )}
           </div>
+        </div>
 
-          {/* Fecha y hora */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-black mb-2">Fecha y hora *</label>
-            <div className="flex items-center gap-3">
-              <DateTimePickerButton
-                profesionalId={formData.profesionalId ?? undefined}
-                onConfirm={handleCalendarConfirm}
-                durationMin={SESSION_MIN}
-                onDateChange={(dateISO) => {
-                  if (!busyByDate[dateISO]) fetchBusyForDay(dateISO);
-                }}
-                isSlotDisabled={isSlotDisabled}
-              />
+        {/* Fecha y hora */}
+        <div>
+          <label className="block text-sm font-medium text-black mb-2">
+            Fecha y hora <span className="text-red-500">*</span>
+          </label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <DateTimePickerButton
+              profesionalId={formData.profesionalId ?? undefined}
+              onConfirm={handleCalendarConfirm}
+              durationMin={SESSION_MIN}
+              onDateChange={(dateISO) => {
+                if (!busyByDate[dateISO]) fetchBusyForDay(dateISO);
+              }}
+              isSlotDisabled={isSlotDisabled}
+            />
 
-              {formData.fecha && formData.horaInicio ? (
-                <div className="px-3 py-2 rounded-lg bg-gray-100 border border-gray-300 text-sm">
-                  <div className="text-black capitalize">{fechaPreview}</div>
-                  <div className="text-gray-600">
-                    {formData.horaInicio} – {formData.horaFin}
-                  </div>
+            {formData.fecha && formData.horaInicio ? (
+              <div className="flex-1 px-4 py-2.5 rounded-lg bg-green-50 border border-green-200">
+                <div className="text-sm font-medium text-green-800 capitalize">{fechaPreview}</div>
+                <div className="text-sm text-green-600">
+                  {formData.horaInicio} – {formData.horaFin}
                 </div>
-              ) : (
-                <span className="text-gray-500 text-sm">Sin seleccionar</span>
-              )}
-            </div>
+              </div>
+            ) : (
+              <span className="text-gray-500 text-sm italic">Selecciona fecha y hora</span>
+            )}
           </div>
         </div>
 
         {/* Observaciones */}
         <div>
-          <label className="block text-sm font-medium text-black mb-2">Rutina/Observaciones</label>
+          <label className="block text-sm font-medium text-black mb-2">
+            Rutina/Observaciones
+          </label>
           <textarea
-            rows={4}
+            rows={3}
             value={formData.rutina ?? ""}
             onChange={(e) => handleInputChange("rutina", e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black text-black placeholder-gray-400 resize-none"
+            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-black placeholder-gray-400 resize-none transition-colors"
             placeholder="Detalles de la rutina o notas adicionales..."
           />
         </div>
 
-        <ModalFooter className="border-t border-gray-200 bg-white pt-4">
+        <ModalFooter className="border-t border-gray-200 bg-white pt-4 mt-6">
           <button
             type="button"
             onClick={() => setOpen(false)}
             disabled={loading}
-            className="px-6 py-2.5 bg-white hover:bg-gray-100 text-black border border-gray-300 rounded-xl transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="ml-3 px-6 py-2.5 bg-black hover:bg-gray-800 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50"
+            className="ml-3 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 disabled:opacity-50"
           >
             {loading ? "Creando..." : "Programar Sesión"}
           </button>
@@ -357,20 +368,28 @@ const DateTimePickerButton = ({
   isSlotDisabled?: (dateISO: string, start24: string, end24: string) => boolean;
 }) => {
   const disabled = !profesionalId;
-  return (
-    <Modal>
-      <ModalTrigger
-        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border ${
-          disabled
-            ? "bg-gray-100 text-gray-400 border-gray-200 pointer-events-none"
-            : "bg-white hover:bg-gray-100 text-black border-gray-300"
-        }`}
+  
+  if (disabled) {
+    // Mostrar botón deshabilitado sin Modal
+    return (
+      <button
+        type="button"
+        disabled
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border font-medium bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
       >
         <CalendarIcon className="w-4 h-4" />
-        <p>Elegir fecha y hora</p>
+        <span className="text-sm">Selecciona un profesional primero</span>
+      </button>
+    );
+  }
+  
+  return (
+    <Modal>
+      <ModalTrigger className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border font-medium transition-colors bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400">
+        <CalendarIcon className="w-4 h-4 text-black" />
+        <span className="text-sm text-black">Elegir fecha y hora</span>
       </ModalTrigger>
 
-      {/* DateTimePickerButton */}
       <ModalBody className="md:max-w-[840px] bg-white border-0 md:rounded-2xl">
         <InnerCalendar
           onConfirm={onConfirm}

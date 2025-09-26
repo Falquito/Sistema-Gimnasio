@@ -368,23 +368,7 @@ const InnerProfessionalPicker = ({
           </div>
         </div>
 
-        {/* Ayuda de teclado */}
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">↑↓</kbd>
-              Navegar
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Enter</kbd>
-              Seleccionar
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Esc</kbd>
-              Cerrar
-            </span>
-          </div>
-        </div>
+     
       </div>
     </ModalContent>
   );

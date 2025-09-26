@@ -26,7 +26,7 @@ export const SimplePatientModal: React.FC<SimplePatientModalProps> = ({
     email: paciente?.email || '',
     telefono_paciente: paciente?.telefono_paciente || '',
     fecha_nacimiento: paciente?.fecha_nacimiento || '',
-     genero: paciente?.genero === 'M' ? 'Masculino' : paciente?.genero === 'F' ? 'Femenino' : 'Femenino',
+    genero: paciente?.genero === 'M' ? 'Masculino' : paciente?.genero === 'F' ? 'Femenino' : 'Femenino',
     id_obraSocial: paciente?.id_obraSocial ? Number(paciente.id_obraSocial) : null,
     nro_obraSocial: paciente?.nro_obraSocial ?? '',
     observaciones: paciente?.observaciones || '',
@@ -63,6 +63,7 @@ export const SimplePatientModal: React.FC<SimplePatientModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -75,26 +76,38 @@ export const SimplePatientModal: React.FC<SimplePatientModalProps> = ({
     } else if (name === 'telefono_paciente') {
       processedValue = value.replace(/[^0-9+\-() ]/g, '');
     } else if (name === 'id_obraSocial') {
-      processedValue = value === '' ? null : Number(value);
+      // CORREGIDO: manejar mejor la conversión
+      processedValue = value === '' || value === '0' ? null : Number(value);
+    } else if (name === 'nro_obraSocial') {
+      // CORREGIDO: mantener como string para evitar problemas de tipo
+      processedValue = value;
     }
 
     setFormData((prev) => ({ ...prev, [name]: processedValue }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const dataToSave = {
-      ...formData,
-      id_obraSocial: formData.id_obraSocial ?? null, // number | null
-      nro_obraSocial:
-        formData.nro_obraSocial === '' || formData.nro_obraSocial === undefined
-          ? null
-          : Number(formData.nro_obraSocial) // number | null
-    };
 
+    const dataToSave: any = {
+      ...formData,
+
+      id_obraSocial: formData.id_obraSocial || 0,
+      nro_obraSocial: formData.nro_obraSocial ? Number(formData.nro_obraSocial) : 0,
+    };
+    if (formData.genero === 'Masculino') {
+      dataToSave.genero = 'M';
+    } else if (formData.genero === 'Femenino') {
+      dataToSave.genero = 'F';
+    } else {
+      dataToSave.genero = 'O'; // Otro
+    }
+
+    console.log('Datos a enviar:', dataToSave);
     onGuardar(dataToSave);
   };
 

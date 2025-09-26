@@ -325,7 +325,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                   <tr
                     className={`border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
                       isSelected ? 'bg-green-50' : ''
-                    } ${isHighlighted ? 'border-l-4 border-l-green-500' : ''}`}
+                    } `}
                     onClick={() => setSelectedTurno(isSelected ? null : turno.idTurno)}
                   >
                     {/* Estado */}
@@ -334,9 +334,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         <StatusIcon className="w-3 h-3" />
                         <span>{statusConfig.label}</span>
                       </div>
-                      {isHighlighted && (
-                        <div className="text-xs text-green-600 font-medium mt-1">¡Hoy!</div>
-                      )}
+                    
                     </td>
 
                     {/* Cliente */}
