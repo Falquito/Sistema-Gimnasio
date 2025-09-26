@@ -65,6 +65,18 @@ const toUIEstado = (estado: Turno['estado'] | string): UIEstado => {
       return 'PROGRAMADO';
   }
 };
+interface AppointmentsTableProps {
+  turnos: Turno[];
+  totalTurnos: number; // NUEVO: total antes de filtrar
+  loading: boolean;
+  searchTerm: string;
+  statusFilter: string;
+  onCancelTurno: (id: number) => Promise<void>;
+  onCompleteTurno?: (id: number) => Promise<void>;
+  onEditTurno?: (turno: Turno) => void;
+  onViewDetails?: (turno: Turno) => void;
+}
+
 
 const getImprovedStatusConfig = (estado: UIEstado) => {
   const configs: Record<UIEstado, {
@@ -122,15 +134,19 @@ const getImprovedStatusConfig = (estado: UIEstado) => {
 
 export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
   turnos,
+  totalTurnos, // NUEVO: desestructurado
   loading,
   searchTerm,
   statusFilter,
   onCancelTurno,
-  onCompleteTurno, // ← desestructurado
+  onCompleteTurno,
   onEditTurno,
   onViewDetails,
 }) => {
   const [selectedTurno, setSelectedTurno] = useState<number | null>(null);
+
+  // Determinar si hay filtros activos
+  const hayFiltrosActivos = searchTerm || statusFilter !== 'todos';
 
   if (turnos.length === 0 && !loading) {
     return (
@@ -139,7 +155,12 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Sesiones de Entrenamiento</h2>
-              <p className="text-gray-600 text-sm mt-1">0 sesiones encontradas</p>
+              <p className="text-gray-600 text-sm mt-1">
+                {hayFiltrosActivos 
+                  ? `0 de ${totalTurnos} sesiones encontradas`
+                  : '0 sesiones registradas'
+                }
+              </p>
             </div>
           </div>
         </div>
@@ -147,7 +168,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
           <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-900 text-lg font-medium mb-2">No se encontraron sesiones</p>
           <p className="text-gray-500 text-sm max-w-md mx-auto">
-            {searchTerm || statusFilter !== 'todos'
+            {hayFiltrosActivos
               ? 'Ajusta los filtros de búsqueda para ver más resultados'
               : 'No hay turnos registrados aún. Crea tu primera sesión para comenzar.'}
           </p>
@@ -179,11 +200,31 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     return { nombre, apellido, especialidad };
   };
 
-  const pickServicio = (t: any) => {
-    const s = t?.idServicio ?? t?.servicio;
-    const nombre = s?.nombre ?? '—';
+ const pickServicio = (t: any) => {
+    // Buscar servicio desde varias fuentes posibles
+    const servicioDirecto = t?.idServicio ?? t?.servicio;
+    const servicioProfesional = t?.idProfesional?.servicio;
+    
+    // Priorizar servicio directo, luego el del profesional
+    const s = servicioDirecto || servicioProfesional;
+    
+    let nombre = 'Consulta General'; // Default más descriptivo
+    if (s) {
+      if (typeof s === 'object') {
+        // Si tenemos un objeto servicio
+        nombre = s.nombre || s.tipoServicio || s.especialidad || 'Consulta General';
+      } else if (typeof s === 'string') {
+        // Si es solo un string
+        nombre = s;
+      }
+    } else if (servicioProfesional && typeof servicioProfesional === 'string') {
+      // Si es solo un string en el profesional
+      nombre = servicioProfesional;
+    }
+    
     const duracionMin = s?.duracionMin;
     const precio = s?.precio ?? 0;
+    
     return { nombre, duracionMin, precio };
   };
 
@@ -215,7 +256,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
     return formatearFecha(fecha);
   };
 
-  return (
+ return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="px-6 py-5 border-b border-gray-200">
@@ -226,7 +267,20 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
               Sesiones de Entrenamiento
             </h2>
             <p className="text-gray-600 text-sm mt-1">
-              {turnos.length} {turnos.length === 1 ? 'sesión encontrada' : 'sesiones encontradas'}
+              {hayFiltrosActivos ? (
+                <>
+                  <span className="font-semibold text-gray-900">{turnos.length}</span> de{' '}
+                  <span className="font-semibold text-gray-900">{totalTurnos}</span> sesiones encontradas
+                  {searchTerm && (
+                    <span className="text-gray-500"> • Búsqueda: "{searchTerm}"</span>
+                  )}
+                  {statusFilter !== 'todos' && (
+                    <span className="text-gray-500"> • Estado: {statusFilter}</span>
+                  )}
+                </>
+              ) : (
+                `${turnos.length} ${turnos.length === 1 ? 'sesión registrada' : 'sesiones registradas'}`
+              )}
             </p>
           </div>
 
@@ -306,6 +360,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                     <td className="py-4 px-6">
                       <div>
                         <p className="font-medium text-gray-900">{servicio.nombre}</p>
+
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-gray-500 text-sm">{duracion} min</span>
                           {servicio.precio > 0 && (
@@ -442,10 +497,22 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         </table>
       </div>
 
+     
       {/* Footer */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm text-gray-600">
-          <span>Mostrando {turnos.length} sesiones</span>
+          <span>
+            {hayFiltrosActivos ? (
+              <>Mostrando {turnos.length} de {totalTurnos} sesiones</>
+            ) : (
+              <>Mostrando {turnos.length} sesiones</>
+            )}
+          </span>
+          {hayFiltrosActivos && (
+            <span className="text-green-600 font-medium">
+              {((turnos.length / totalTurnos) * 100).toFixed(0)}% coincidencias
+            </span>
+          )}
         </div>
       </div>
     </div>

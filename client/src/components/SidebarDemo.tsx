@@ -6,7 +6,7 @@ import {
   IconUser,
   IconCalendar ,
   IconHeadset,
-  IconHistory
+ 
 } from "@tabler/icons-react"
 import { motion } from "motion/react";
 import { cn } from "../lib/utils";
@@ -24,13 +24,7 @@ export function SidebarDemo() {
   };
 
   const links = [
-    {
-      label: "Usuarios",
-      href: "/user",
-      icon: (
-        <IconUser className="h-5 w-5 shrink-0 text-black dark:text-black" />
-      ),
-    },
+   
     {
       label: "Recepcionista",
       href: "/recepcionista",
@@ -47,13 +41,12 @@ export function SidebarDemo() {
       ),
       
     },
-    {
+     {
       label: "Pacientes",
       href: "/pacientes",
       icon: (
-        <IconCalendar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
+        <IconUser className="h-5 w-5 shrink-0 text-black dark:text-black" />
       ),
-      
     },
     
     {
@@ -71,7 +64,7 @@ export function SidebarDemo() {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-full flex-1 flex-col overflow-hidden rounded-md bg-gray-100 md:flex-row dark:bg-gray-100",
+        "mx-auto flex w-full max-w-full flex-1 flex-col overflow-hidden rounded-md bg-black md:flex-row dark:bg-gray-100",
         "h-dvh", // for your use case, use `h-screen` instead of `h-[60vh]`
       )}
     >

@@ -71,10 +71,10 @@ export const calcularEstadisticas = (turnos: Turno[]): DashboardStats => {
   const esHoy = (fecha: string) => fecha === hoy;
 
   const total = turnos.length;
-  const pendientes = turnos.filter(t => upper((t as any).estado) === 'PENDIENTE').length;
-  const completados = turnos.filter(t => upper((t as any).estado) === 'COMPLETADO').length;
-  const cancelados = turnos.filter(t => upper((t as any).estado) === 'CANCELADO').length;
-  const hoyTurnos = turnos.filter(t => esHoy((t as any).fecha)).length;
+  const pendientes = turnos.filter(t => upper(t.estado) === 'PENDIENTE').length;
+  const completados = turnos.filter(t => upper(t.estado) === 'COMPLETADO').length;
+  const cancelados = turnos.filter(t => upper(t.estado) === 'CANCELADO').length;
+  const hoyTurnos = turnos.filter(t => esHoy(t.fecha)).length;
 
   return { total, pendientes, completados, cancelados, hoyTurnos };
 };
@@ -87,9 +87,10 @@ export const getInitials = (nombre: string, apellido: string): string => {
 
 /**
  * Filtro principal (por texto + estado)
- * - Busca por nombre, apellido, DNI, email del paciente
+ * - Busca por nombre, apellido, DNI, email del cliente/paciente
  * - También por profesional y servicio
  * - Mapea "PROGRAMADO" a ['PENDIENTE','CONFIRMADO']
+ * - Compatible con tipos Turno (idCliente) y datos backend (idPaciente)
  */
 export const filterTurnos = (
   turnos: Turno[],
@@ -108,21 +109,48 @@ export const filterTurnos = (
     // ---- match texto ----
     if (!needle) return true;
 
-    const paciente = t.paciente || t.idPaciente || {};
-    const profesional = t.profesional || t.idProfesional || {};
+    // Mapear los datos del backend a la estructura del tipo
+    // Backend viene con idPaciente, pero el tipo espera idCliente
+    const cliente = t.idPaciente || t.idCliente || {};
+    const profesional = t.idProfesional || {};
     const servicio = t.servicio || t.idServicio || {};
+    
+    // Obtener nombre del servicio (igual que en AppointmentsTable)
+    const servicioDirecto = t?.idServicio ?? t?.servicio;
+    const servicioProfesional = t?.idProfesional?.servicio;
+    const s = servicioDirecto || servicioProfesional;
+    
+    let nombreServicio = '';
+    if (s) {
+      if (typeof s === 'object') {
+        nombreServicio = s.nombre || s.tipoServicio || s.especialidad || '';
+      } else if (typeof s === 'string') {
+        nombreServicio = s;
+      }
+    }
 
     const campos = [
-      paciente.nombre,
-      paciente.apellido,
-      paciente.nombre_paciente,
-      paciente.apellido_paciente,
-      paciente.dni,
-      paciente.documento,
-      paciente.email,
-      profesional.nombre,
-      profesional.apellido,
+      // Cliente/Paciente - adaptando nombres del backend a tipo
+      cliente.nombre_paciente || cliente.nombre,
+      cliente.apellido_paciente || cliente.apellido,
+      cliente.dni,
+      cliente.email,
+      
+      // Profesional - adaptando nombres del backend a tipo  
+      profesional.nombreProfesional || profesional.nombre,
+      profesional.apellidoProfesional || profesional.apellido,
+      profesional.email,
+      
+      // Servicio - NUEVO: búsqueda por servicio
+      nombreServicio,
       servicio.nombre,
+      
+      // Otros campos
+      t.observacion,
+      
+      // Búsqueda por nombre completo
+      `${cliente.nombre_paciente || cliente.nombre || ''} ${cliente.apellido_paciente || cliente.apellido || ''}`.trim(),
+      `${profesional.nombreProfesional || profesional.nombre || ''} ${profesional.apellidoProfesional || profesional.apellido || ''}`.trim(),
     ];
 
     return campos.some((c) => lower(c).includes(needle));
