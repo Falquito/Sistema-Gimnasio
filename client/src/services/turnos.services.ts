@@ -240,6 +240,14 @@ export class TurnosApiService {
     });
     return adaptTurno(apiResp);
   }
+  
+  async completarTurno(id: number): Promise<Turno> {
+  const apiResp = await apiFetch<ApiTurno>(`${this.base}/${id}/completar`, {
+    method: "PATCH"
+  });
+  return adaptTurno(apiResp);
 }
+}
+
 
 export const turnosApi = new TurnosApiService();

@@ -4,7 +4,6 @@ import {
   Clock, 
   Search, 
   Plus, 
-  RotateCcw, 
   Eye,
   Filter,
   Users,
@@ -75,6 +74,18 @@ interface StatusConfig {
   icon: LucideIcon;
 }
 
+// ---------- NUEVO: tipos y opciones del selector de estados ----------
+type EstadoTurno = 'PENDIENTE' | 'CONFIRMADO' | 'CANCELADO' | 'COMPLETADO';
+type StatusFilter = 'todos' | EstadoTurno;
+
+const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
+  { value: 'todos',       label: 'Todos los estados' },
+  { value: 'CONFIRMADO',  label: 'Confirmados' },
+  { value: 'PENDIENTE',   label: 'Pendientes' },
+  { value: 'COMPLETADO',  label: 'Completados' },
+  { value: 'CANCELADO',   label: 'Cancelados' },
+];
+
 // API Service integrado
 class TurnosApiService {
   private baseUrl = 'http://localhost:3000/turnos';
@@ -129,7 +140,9 @@ const formatearHora = (hora: string): string => {
 
 const GymAppointmentsDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('todos');
+  // ---------- NUEVO: tipado del filtro ----------
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('todos');
+
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +154,6 @@ const GymAppointmentsDashboard: React.FC = () => {
     setError(null);
     try {
       const data = await turnosApi.listarTurnos(undefined, statusFilter);
-      console.log('Turnos recibidos:', data); // Para debug
       setTurnos(data);
     } catch (err) {
       setError('Error al cargar los turnos');
@@ -171,46 +183,18 @@ const GymAppointmentsDashboard: React.FC = () => {
 
   const stats = calcularEstadisticas(turnos);
 
-  // Comentado temporalmente - estadísticas superiores
-  /*
-  const statsData: StatData[] = [
-    { 
-      title: 'Total Sesiones', 
-      value: stats.total.toString(), 
-      subtitle: 'Este mes',
-      trend: '+23%',
-      color: '',
-      icon: Activity
+  // ---------- NUEVO: contadores para mostrar en el <select> ----------
+  const countsByStatus: Record<EstadoTurno, number> = turnos.reduce<Record<EstadoTurno, number>>(
+    (acc, t) => {
+      acc[t.estado] = (acc[t.estado] ?? 0) + 1;
+      return acc;
     },
-    { 
-      title: 'Miembros Activos', 
-      value: stats.pendientes.toString(), 
-      subtitle: 'Entrenamientos programados',
-      trend: '+8%',
-      color: '',
-      icon: Users
-    },
-    { 
-      title: 'Sesiones Hoy', 
-      value: stats.hoyTurnos.toString(), 
-      subtitle: 'Programadas para hoy',
-      trend: `${stats.pendientes} pendientes`,
-      color: '',
-      icon: Clock
-    },
-    { 
-      title: 'Completadas', 
-      value: stats.completados.toString(), 
-      subtitle: 'Este mes',
-      trend: '+15%',
-      color: '',
-      icon: CheckCircle
-    }
-  ];
-  */
+    { PENDIENTE: 0, CONFIRMADO: 0, CANCELADO: 0, COMPLETADO: 0 }
+  );
+  const totalCount = turnos.length;
 
-  const getStatusConfig = (status: Turno['estado']): StatusConfig => {
-    const configs = {
+  const getStatusConfig = (status: EstadoTurno): StatusConfig => {
+    const configs: Record<EstadoTurno, StatusConfig> = {
       CONFIRMADO: {
         color: 'text-green-400 border-green-500/50 bg-green-500/10',
         label: 'Confirmado',
@@ -232,50 +216,20 @@ const GymAppointmentsDashboard: React.FC = () => {
         icon: UserX
       }
     };
-    return configs[status] || configs.PENDIENTE;
+    return configs[status];
   };
-
-  // Comentado temporalmente - acciones rápidas
-  /*
-  const quickActions: QuickAction[] = [
-    {
-      title: 'Nueva Sesión',
-      subtitle: 'Agendar entrenamiento',
-      icon: Plus,
-      color: '',
-      iconColor: ''
-    },
-    {
-      title: 'Ver Calendario',
-      subtitle: 'Vista semanal/mensual',
-      icon: Calendar,
-      color: '',
-      iconColor: ''
-    },
-    {
-      title: 'Gestionar Clases',
-      subtitle: 'Clases grupales',
-      icon: Users,
-      color: '',
-      iconColor: ''
-    },
-    {
-      title: 'Reportes',
-      subtitle: 'Estadísticas y análisis',
-      icon: TrendingUp,
-      color: '',
-      iconColor: ''
-    }
-  ];
-  */
 
   const filteredSessions: Turno[] = turnos.filter(turno => {
     const nombreCompleto = `${turno.idProfesional?.nombreProfesional || ''} ${turno.idProfesional?.apellidoProfesional || ''}`.toLowerCase();
     const servicioNombre = turno.idServicio?.nombre?.toLowerCase() || '';
     
     const matchesSearch = nombreCompleto.includes(searchTerm.toLowerCase()) ||
-                         servicioNombre.includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || turno.estado.toLowerCase() === statusFilter.toLowerCase();
+                          servicioNombre.includes(searchTerm.toLowerCase());
+
+    // ---------- NUEVO: comparación directa (sin toLowerCase) ----------
+    const matchesStatus =
+      statusFilter === 'todos' || turno.estado === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -307,7 +261,7 @@ const GymAppointmentsDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header mejorado */}
+      {/* Header */}
       <div className="border-b border-gray-800/50 backdrop-blur-sm bg-black/90">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
@@ -350,34 +304,6 @@ const GymAppointmentsDashboard: React.FC = () => {
             <span className="text-red-300">{error}</span>
           </div>
         )}
-
-        {/* Comentado temporalmente - Stats superiores */}
-        {/*
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsData.map((stat, index) => {
-            const IconComponent = stat.icon;
-            return (
-              <div key={index} className="relative p-6 rounded-2xl bg-gray-900/50 border border-gray-800/50 backdrop-blur-sm transition-all duration-200 hover:scale-[1.02] hover:bg-gray-900/70 hover:border-gray-700/50 group">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-10 h-10 bg-gray-800/70 rounded-xl flex items-center justify-center group-hover:bg-gray-700/70 transition-colors">
-                        <IconComponent className="w-5 h-5 text-gray-300 group-hover:text-white transition-colors" />
-                      </div>
-                      <span className="text-gray-400 text-sm font-medium">{stat.title}</span>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-3xl font-bold text-white">{stat.value}</p>
-                      <p className="text-gray-500 text-sm">{stat.subtitle}</p>
-                      <p className="text-green-400 text-xs font-medium">{stat.trend}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        */}
 
         {/* Resumen del día actual */}
         <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
@@ -443,16 +369,22 @@ const GymAppointmentsDashboard: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* ---------- NUEVO: select con opciones correctas + contadores ---------- */}
               <select
                 value={statusFilter}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setStatusFilter(e.target.value as StatusFilter)
+                }
                 className="bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3.5 text-white focus:ring-2 focus:ring-green-500/50 backdrop-blur-sm"
               >
-                <option value="todos">Todos los estados</option>
-                <option value="confirmado">Confirmados</option>
-                <option value="pendiente">Pendientes</option>
-                <option value="completado">Completados</option>
-                <option value="cancelado">Cancelados</option>
+                {STATUS_OPTIONS.map(opt => {
+                  const count = opt.value === 'todos' ? totalCount : countsByStatus[opt.value] ?? 0;
+                  return (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label} ({count})
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
@@ -491,7 +423,7 @@ const GymAppointmentsDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {filteredSessions.map((turno) => {
-                  const statusConfig = getStatusConfig(turno.estado);
+                  const statusConfig = getStatusConfig(turno.estado as EstadoTurno);
                   const StatusIcon = statusConfig.icon;
                   
                   return (
@@ -580,7 +512,7 @@ const GymAppointmentsDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal Nueva Sesión con animación */}
+      {/* Modal Nueva Sesión */}
       {showNewSessionModal && (
         <div 
           className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -702,7 +634,6 @@ const GymAppointmentsDashboard: React.FC = () => {
         </div>
       )}
 
-    
     </div>
   );
 };

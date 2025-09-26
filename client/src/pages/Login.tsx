@@ -66,7 +66,7 @@ const Login: React.FC = () => {
             placeholder="Correo electrónico"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mb-4 p-3 rounded-lg border border-gray-700 bg-[#101010] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mb-4 p-3 rounded-lg border border-gray-700 bg-white text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
@@ -74,7 +74,7 @@ const Login: React.FC = () => {
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mb-6 p-3 rounded-lg border border-gray-700 bg-[#101010] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mb-6 p-3 rounded-lg border border-gray-700 bg-white text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
