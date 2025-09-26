@@ -6,9 +6,18 @@ import Turnos from "./pages/Turnos"
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PacientesPage from "./pages/Pacientes";
+import { isTokenExpired } from "./lib/auth";
+
 
 
 function App() {
+  const token = localStorage.getItem("token");
+
+  if (token && isTokenExpired(token)) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  }
+
   return (
     <>
       <BrowserRouter >

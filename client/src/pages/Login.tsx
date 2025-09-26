@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../img/logo/b2c0709b7e3fd5b4d48dcdfecac9a5e1-removebg-preview.png";
+import logo from "../img/logo/Logo_Muestra Sin fondo.png";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -33,7 +33,7 @@ const Login: React.FC = () => {
       localStorage.setItem("token", data.token);
 
       // Redirigir al dashboard (ejemplo: /user)
-      navigate("/user");
+      navigate("/");
     } catch (err: any) {
       setError(err.message);
     }
@@ -42,11 +42,11 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#0d0d0d] via-[#111827] to-[#1e3a8a]">
-      <div className="bg-[#1f1f1f]/90 backdrop-blur-md p-10 rounded-2xl shadow-2xl w-96 border border-[#2d2d2d]">
+    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-[#a7d7c5] via-[#c7d9f4] to-[#f0f4f8]">
+      <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl shadow-2xl w-96 border border-[#e0e0e0]   mt-13">
         
         {/* Logo flotante */}
-        <div className="flex justify-center -mt-44">
+        <div className="flex justify-center -mt-40">
           <img
             src={logo}
             alt="Shark Fit"
@@ -55,8 +55,8 @@ const Login: React.FC = () => {
         </div>
 
         {/* Título */}
-        <h1 className="text-2xl font-bold text-center text-white mb-6">
-          Bienvenido a <span className="text-blue-500">Shark Fit</span> 🦈
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Bienvenido a <span className="text-[#4aa398]">Neuro Salud</span>
         </h1>
 
         {/* Formulario */}
@@ -66,7 +66,7 @@ const Login: React.FC = () => {
             placeholder="Correo electrónico"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mb-4 p-3 rounded-lg border border-gray-700 bg-white text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mb-4 p-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4aa398]"
           />
 
           <input
@@ -74,14 +74,14 @@ const Login: React.FC = () => {
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mb-6 p-3 rounded-lg border border-gray-700 bg-white text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mb-6 p-3 rounded-lg border border-gray-300 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4aa398]"
           />
 
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors duration-300"
+            className="w-full py-3 bg-[#4aa398] hover:bg-[#3a8279] text-white font-bold rounded-lg transition-colors duration-300"
           >
             Ingresar
           </button>

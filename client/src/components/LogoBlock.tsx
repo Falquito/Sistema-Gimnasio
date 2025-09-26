@@ -1,7 +1,7 @@
 // LogoBlock.tsx
 import { motion } from "motion/react";
 import { useSidebar } from "../components/ui/sidebar";
-import logo from "../img/logo/b2c0709b7e3fd5b4d48dcdfecac9a5e1-removebg-preview.png";
+import logo from "../img/logo/Logo_Muestra Sin fondo.png";
 
 export function LogoBlock() {
   const { open } = useSidebar();
