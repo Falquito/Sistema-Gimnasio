@@ -27,10 +27,10 @@ export class Paciente {
     @Column("boolean",{default:true})
     estado:boolean
 
-    @Column("text",{default:"",nullable:true})
+    @Column("text",{default:""})
     email:string;
 
-    @Column("int",{nullable:true})
+    @Column("int",{default:0})
     nro_obrasocial:number;
 
 

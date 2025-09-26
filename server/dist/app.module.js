@@ -36,7 +36,7 @@ exports.AppModule = AppModule = __decorate([
                     rejectUnauthorized: false
                 },
                 autoLoadEntities: true,
-                synchronize: true,
+                synchronize: false,
                 entities: [
                     __dirname + '/**/*.entity{.ts,.js}'
                 ]

@@ -66,11 +66,11 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Paciente.prototype, "estado", void 0);
 __decorate([
-    (0, typeorm_1.Column)("text", { default: "", nullable: true }),
+    (0, typeorm_1.Column)("text", { default: "" }),
     __metadata("design:type", String)
 ], Paciente.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)("int", { nullable: true }),
+    (0, typeorm_1.Column)("int", { default: 0 }),
     __metadata("design:type", Number)
 ], Paciente.prototype, "nro_obrasocial", void 0);
 __decorate([
