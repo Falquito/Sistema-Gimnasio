@@ -18,7 +18,6 @@ export const SimplePatientModal: React.FC<SimplePatientModalProps> = ({
   onCerrar,
   obrasSociales
 }) => {
-  // 🔧 Estado inicial normalizado (number | null, nunca string vacío)
   const [formData, setFormData] = useState({
     id_paciente: paciente?.id_paciente ?? null,
     nombre_paciente: paciente?.nombre_paciente || '',
@@ -76,7 +75,6 @@ export const SimplePatientModal: React.FC<SimplePatientModalProps> = ({
     } else if (name === 'telefono_paciente') {
       processedValue = value.replace(/[^0-9+\-() ]/g, '');
     } else if (name === 'id_obraSocial') {
-      // ⬇️ casteo a number o null (no dejamos '')
       processedValue = value === '' ? null : Number(value);
     }
 
@@ -88,7 +86,6 @@ export const SimplePatientModal: React.FC<SimplePatientModalProps> = ({
     e.preventDefault();
     if (!validate()) return;
 
-    // ⬇️ Normalizo antes de enviar al backend
     const dataToSave = {
       ...formData,
       id_obraSocial: formData.id_obraSocial ?? null, // number | null
