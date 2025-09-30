@@ -28,9 +28,9 @@ function App() {
           {/* Rutas con Layout */}
           <Route path="/" element={<Layout/>}>
             <Route path="user" element={<ProtectedRoute><User /></ProtectedRoute>} />
-            <Route path="recepcionista" element={<ProtectedRoute><Recepcionista /></ProtectedRoute>} />
+            <Route path="recepcionista" element={<ProtectedRoute allowedRoles={["gerente", "recepcionista"]}><Recepcionista /></ProtectedRoute>} />
             <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
-            <Route path="/pacientes" element={<PacientesPage />} />
+            <Route path="pacientes" element={<ProtectedRoute allowedRoles={["gerente", "medico"]}><PacientesPage /></ProtectedRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>
