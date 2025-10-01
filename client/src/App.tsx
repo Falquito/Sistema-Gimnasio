@@ -26,7 +26,7 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Rutas con Layout */}
-          <Route path="/" element={<Layout/>}>
+          <Route path="/" element={<ProtectedRoute><Layout/></ProtectedRoute>}>
             <Route path="user" element={<ProtectedRoute><User /></ProtectedRoute>} />
             <Route path="recepcionista" element={<ProtectedRoute allowedRoles={["gerente", "recepcionista"]}><Recepcionista /></ProtectedRoute>} />
             <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
