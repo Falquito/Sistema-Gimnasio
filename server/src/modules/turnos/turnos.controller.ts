@@ -18,7 +18,7 @@ export class TurnosController {
   constructor(private readonly turnosService: TurnosService) {}
 
   // HU-4: disponibilidad
-  @Auth(validRoles.medico,validRoles.recepcionista)
+  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   @Get('disponibles')
   getDisponibles(@Query() q: DisponibilidadQuery) {
@@ -26,14 +26,14 @@ export class TurnosController {
   }
 
   // HU-5: crear (registrar turno)
-  @Auth(validRoles.medico,validRoles.recepcionista)
+  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   @Post()
   @ApiOkResponse({description:"Devuelve turno creado",type:Turnos})
   crear(@Body() dto: CrearTurnoDto) {
     return this.turnosService.crear(dto);
   }
-  @Auth(validRoles.medico,validRoles.recepcionista)
+  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   // HU-6a: cancelar
   @Patch(':id/cancelar')
@@ -41,7 +41,7 @@ export class TurnosController {
     return this.turnosService.cancelar(id, dto);
   }
 
-  @Auth(validRoles.medico,validRoles.recepcionista)
+  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   // Agenda (calendario)
   @Get('agenda')
