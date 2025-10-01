@@ -8,3 +8,12 @@ export function isTokenExpired(token: string): boolean {
     return true; // si algo falla, tratamos el token como inválido
   }
 }
+
+export function getUserRole(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.rol || null; // 👈 depende de cómo generes el token en tu backend
+  } catch {
+    return null;
+  }
+}

@@ -12,6 +12,7 @@ import { motion } from "motion/react";
 import { cn } from "../lib/utils";
 import logo from "../img/logo/Logo_Muestra Sin fondo.png"
 import { useNavigate } from "react-router-dom";
+import { getUserRole } from "../lib/auth";
 
 
 
@@ -23,6 +24,9 @@ export function SidebarDemo() {
     navigate("/login"); // redirige al login
   };
 
+  const token = localStorage.getItem("token");
+  const userRole = token ? getUserRole(token) : null;
+
   const links = [
    
     {
@@ -31,6 +35,7 @@ export function SidebarDemo() {
       icon: (
         <IconHeadset className="h-5 w-5 shrink-0 text-black  dark:text-black" />
       ),
+      roles: ["gerente", "recepcionista"],
 
     },
       {
@@ -39,7 +44,7 @@ export function SidebarDemo() {
       icon: (
         <IconCalendar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
       ),
-      
+      roles: ["gerente", "medico","recepcionista"],
     },
      {
       label: "Pacientes",
@@ -47,6 +52,7 @@ export function SidebarDemo() {
       icon: (
         <IconUser className="h-5 w-5 shrink-0 text-black dark:text-black" />
       ),
+      roles: ["gerente", "medico"],
     },
     
     {
@@ -55,12 +61,13 @@ export function SidebarDemo() {
       icon: (
         <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
       ),
+      roles: ["gerente", "medico","recepcionista"],
       onClick: handleLogout,
     },
-    
-    
   ];
+
   const [open, setOpen] = useState(false);
+
   return (
     <div
       className={cn(
@@ -73,9 +80,11 @@ export function SidebarDemo() {
           <div className="flex flex-col overflow-x-hidden overflow-y-auto">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-4 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
+              {links
+                .filter((link) => !link.roles || link.roles.includes(userRole ?? ""))
+                .map((link, idx) => (
+                  <SidebarLink key={idx} link={link} />
+                ))}
             </div>
           </div>
           <div>
