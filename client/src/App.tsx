@@ -30,7 +30,7 @@ function App() {
             <Route path="user" element={<ProtectedRoute><User /></ProtectedRoute>} />
             <Route path="recepcionista" element={<ProtectedRoute allowedRoles={["gerente", "recepcionista"]}><Recepcionista /></ProtectedRoute>} />
             <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
-            <Route path="pacientes" element={<ProtectedRoute allowedRoles={["gerente", "medico"]}><PacientesPage /></ProtectedRoute>} />
+            <Route path="pacientes" element={<ProtectedRoute allowedRoles={["gerente", "medico","recepcionista"]}><PacientesPage /></ProtectedRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>

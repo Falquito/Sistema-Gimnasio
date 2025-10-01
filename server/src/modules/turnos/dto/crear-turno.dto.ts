@@ -1,4 +1,4 @@
-import { IsISO8601, IsInt, IsPositive, IsString } from 'class-validator';
+import { IsISO8601, IsInt, IsOptional, IsPositive, IsString, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -19,5 +19,6 @@ export class CrearTurnoDto {
   pacienteId: number;
   @ApiProperty()
   @IsString()
+  @IsOptional()
   observacion:string;
 }
