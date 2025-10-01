@@ -17,7 +17,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 export class TurnosController {
   constructor(private readonly turnosService: TurnosService) {}
 
-  // HU-4: disponibilidad
+  // HU-4: disponibili dad
   @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   @Get('disponibles')
@@ -49,20 +49,20 @@ export class TurnosController {
     return this.turnosService.agenda(q);
   }
 
-  @Auth(validRoles.medico,validRoles.recepcionista)
+  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   // Utilidades de lectura
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.turnosService.getById(id);
   }
-  @Auth(validRoles.medico,validRoles.recepcionista)
+  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   @Patch(':id/completar')
 completar(@Param('id', ParseIntPipe) id: number) {
   return this.turnosService.completar(id);
 }
-  @Auth(validRoles.medico,validRoles.recepcionista)
+  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   @Get()
   @ApiOkResponse({type:Turnos,isArray:true})

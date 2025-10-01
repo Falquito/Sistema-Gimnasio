@@ -52,7 +52,7 @@ export function SidebarDemo() {
       icon: (
         <IconUser className="h-5 w-5 shrink-0 text-black dark:text-black" />
       ),
-      roles: ["gerente", "medico"],
+      roles: ["gerente", "medico","recepcionista"],
     },
     
     {

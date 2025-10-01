@@ -55,7 +55,7 @@ interface Props {
   triggerLabel?: string;
 }
 
-export const NewSessionModal: React.FC<Props> = ({ onSubmit, triggerLabel = "Nueva sesión" }) => {
+export const NewSessionModal: React.FC<Props> = ({ onSubmit, triggerLabel = "Nuevo Turno" }) => {
   const [formData, setFormData] = useState<Partial<NewSessionFormData>>({
     fecha: "", horaInicio: "", horaFin: "", rutina: "",
   });
@@ -320,14 +320,14 @@ const handleSubmit: React.FormEventHandler = async (e) => {
         {/* Observaciones */}
         <div>
           <label className="block text-sm font-medium text-black mb-2">
-            Rutina/Observaciones
+            Observaciones
           </label>
           <textarea
             rows={3}
             value={formData.rutina ?? ""}
             onChange={(e) => handleInputChange("rutina", e.target.value)}
             className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-black placeholder-gray-400 resize-none transition-colors"
-            placeholder="Detalles de la rutina o notas adicionales..."
+            placeholder="Detalles o notas adicionales..."
           />
         </div>
 
