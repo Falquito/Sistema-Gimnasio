@@ -10,12 +10,12 @@ export class ProfesionalesController {
   constructor(private readonly service: ProfesionalesService) {}
 
   /** GET /profesionales */
-  @Auth(validRoles.gerente)
+  @Auth()
   @Get()
   findAll(@Query() q: ListProfesionalesQuery) {
     return this.service.findAll(q);
   }
-  @Auth(validRoles.gerente)
+  @Auth()
   /** GET /profesionales/:id */
   @Get(':id')
 findOne(@Param('id', ParseIntPipe) id: number) {

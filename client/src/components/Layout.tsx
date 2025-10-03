@@ -14,7 +14,7 @@ export function Layout({ children }: LayoutProps) {
       <aside className="bg-white "><SidebarDemo /></aside>
 
       {/* Contenido dinámico */}
-      <main className="flex-1 overflow-auto p-6 bg-gray-100 rounded-4xl mt-1">
+      <main className="flex-1 overflow-auto">
         {children ?? <Outlet />}
       </main>
     </div>
