@@ -6,6 +6,7 @@ import {
   IconUser,
   IconCalendar ,
   IconHeadset,
+  IconHome,
  
 } from "@tabler/icons-react"
 import { motion } from "motion/react";
@@ -28,7 +29,15 @@ export function SidebarDemo() {
   const userRole = token ? getUserRole(token) : null;
 
   const links = [
-   
+   {
+      label: "Inicio",
+      href: "/",
+      icon: (
+        <IconHome className="h-5 w-5 shrink-0 text-black  dark:text-black" />
+      ),
+      roles: ["gerente", "recepcionista","medico"],
+
+    },
     {
       label: "Recepcionista",
       href: "/recepcionista",
