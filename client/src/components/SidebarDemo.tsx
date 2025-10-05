@@ -7,13 +7,16 @@ import {
   IconCalendar ,
   IconHeadset,
   IconHome,
+  IconMedicalCrossCircle,
  
 } from "@tabler/icons-react"
 import { motion } from "motion/react";
 import { cn } from "../lib/utils";
 import logo from "../img/logo/Logo_Muestra Sin fondo.png"
-import { useNavigate } from "react-router-dom";
+import { href, useNavigate } from "react-router-dom";
 import { getUserRole } from "../lib/auth";
+import { label } from "framer-motion/client";
+import { BriefcaseMedical } from "lucide-react";
 
 
 
@@ -33,7 +36,7 @@ export function SidebarDemo() {
       label: "Inicio",
       href: "/",
       icon: (
-        <IconHome className="h-5 w-5 shrink-0 text-black  dark:text-black" />
+        <IconHome className="h-5 w-5 shrink-0" />
       ),
       roles: ["gerente", "recepcionista","medico"],
 
@@ -42,7 +45,7 @@ export function SidebarDemo() {
       label: "Recepcionista",
       href: "/recepcionista",
       icon: (
-        <IconHeadset className="h-5 w-5 shrink-0 text-black  dark:text-black" />
+        <IconHeadset className="h-5 w-5 shrink-0" />
       ),
       roles: ["gerente", "recepcionista"],
 
@@ -51,7 +54,7 @@ export function SidebarDemo() {
       label: "Turnos",
       href: "/turnos",
       icon: (
-        <IconCalendar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
+        <IconCalendar className="h-5 w-5 shrink-0" />
       ),
       roles: ["gerente", "medico","recepcionista"],
     },
@@ -59,16 +62,23 @@ export function SidebarDemo() {
       label: "Pacientes",
       href: "/pacientes",
       icon: (
-        <IconUser className="h-5 w-5 shrink-0 text-black dark:text-black" />
+        <IconUser className="h-5 w-5 shrink-0" />
       ),
       roles: ["gerente", "medico","recepcionista"],
     },
     
     {
+      label:"Profesionales",
+      href:"profesionales",
+      icon:(
+        <BriefcaseMedical></BriefcaseMedical>
+      )
+    },
+    {
       label: "Logout",
       href: "#",
       icon: (
-        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-black" />
+        <IconArrowLeft className="h-5 w-5 shrink-0" />
       ),
       roles: ["gerente", "medico","recepcionista"],
       onClick: handleLogout,
@@ -80,19 +90,19 @@ export function SidebarDemo() {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-full flex-1 flex-col overflow-hidden rounded-md bg-black md:flex-row dark:bg-gray-100",
+        "mx-auto flex w-full max-w-full flex-1 flex-col overflow-hidden  bg-black md:flex-row dark:bg-gray-100",
         "h-dvh", // for your use case, use `h-screen` instead of `h-[60vh]`
       )}
     >
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-2">
+      <Sidebar  open={open} setOpen={setOpen} >
+        <SidebarBody className="shadow-2xl border-r border-gray-300 backdrop-blur-lg justify-between gap-2 bg-white ">
           <div className="flex flex-col overflow-x-hidden overflow-y-auto">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-4 flex flex-col gap-2">
               {links
                 .filter((link) => !link.roles || link.roles.includes(userRole ?? ""))
                 .map((link, idx) => (
-                  <SidebarLink key={idx} link={link} />
+                  <SidebarLink className="hover:bg-emerald-500 hover:rounded-2xl hover:scale-95 hover:text-white" key={idx} link={link} />
                 ))}
             </div>
           </div>
@@ -123,7 +133,7 @@ export const Logo = () => {
   return (
     <a
       href="#"
-      className="relative z-20 flex items-center gap-2 py-1 text-sm font-normal text-black"
+      className="bg-emerald-500 rounded-2xl  relative z-20 flex items-center gap-2 py-1 text-sm font-bold text-white"
     >
       <img
         src={logo}
@@ -133,7 +143,7 @@ export const Logo = () => {
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-black"
+        className="font-medium whitespace-pre "
       >
       NeuroSalud
       </motion.span>

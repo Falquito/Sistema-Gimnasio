@@ -10,6 +10,8 @@ import { isTokenExpired } from "./lib/auth";
 import { Home } from "./pages/Home"
 import { BackgroundBeamsWithCollision } from "./components/ui/background-beams-with-collision"
 import { BackgroundGradientAnimation } from "./components/ui/background-gradient-animation"
+import { Profesionales } from "./pages/Profesionales"
+import { NewLogin } from "./pages/NewLogin"
 
 
 
@@ -26,7 +28,7 @@ function App() {
       <BrowserRouter >
         <Routes>
           {/* Login sin sidebar */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<NewLogin />} />
 
           {/* Rutas con Layout */}
           <Route path="/" element={<ProtectedRoute><Layout/></ProtectedRoute>}>
@@ -57,6 +59,7 @@ function App() {
             <Route path="recepcionista" element={<ProtectedRoute allowedRoles={["gerente", "recepcionista"]}><Recepcionista /></ProtectedRoute>} />
             <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
             <Route path="pacientes" element={<ProtectedRoute allowedRoles={["gerente", "medico","recepcionista"]}><PacientesPage /></ProtectedRoute>} />
+            <Route path="profesionales" element={<ProtectedRoute allowedRoles={["gerente", "medico"]}><Profesionales /></ProtectedRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>

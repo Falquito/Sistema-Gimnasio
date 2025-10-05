@@ -197,7 +197,7 @@ export const SidebarLink = ({
       className={({ isActive }) =>
         cn(
           "flex items-center justify-start gap-2 text-black group/sidebar py-2 px-1 semibold rounded-lg  transition-all duration-200",
-          isActive && "bg-gray-200 text-black d backdrop-blur-sm",
+          isActive && "bg-emerald-500 text-white d backdrop-blur-sm",
           !isActive && "hover:bg-gray-100",
           className
         )
