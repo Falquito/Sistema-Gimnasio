@@ -10,12 +10,12 @@ export class ProfesionalesController {
   constructor(private readonly service: ProfesionalesService) {}
 
   /** GET /profesionales */
-  @Auth(validRoles.gerente)
+  @Auth(validRoles.gerente ,validRoles.medico,validRoles.recepcionista)
   @Get()
   findAll(@Query() q: ListProfesionalesQuery) {
     return this.service.findAll(q);
   }
-  @Auth(validRoles.gerente)
+  @Auth(validRoles.gerente ,validRoles.medico,validRoles.recepcionista)
   /** GET /profesionales/:id */
   @Get(':id')
 findOne(@Param('id', ParseIntPipe) id: number) {
@@ -35,4 +35,6 @@ findOne(@Param('id', ParseIntPipe) id: number) {
   create(@Body() createProfesionalDto:CreateProfesionaleDto){
     return this.service.create(createProfesionalDto);
   }
+
+
 }

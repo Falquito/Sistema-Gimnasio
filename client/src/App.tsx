@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PacientesPage from "./pages/Pacientes";
 import { isTokenExpired } from "./lib/auth";
+import ProfessionalDashboard from "./pages/ProfessionalDashboard"
 
 
 
@@ -31,6 +32,7 @@ function App() {
             <Route path="recepcionista" element={<ProtectedRoute><Recepcionista /></ProtectedRoute>} />
             <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
             <Route path="/pacientes" element={<PacientesPage />} />
+            <Route path="/professional/dashboard" element={<ProfessionalDashboard/>} />
           </Route>
         </Routes>
       </BrowserRouter>
