@@ -23,6 +23,7 @@ export type BodyProfesional={
   dni:string;
   email:string;
   servicio:string;
+  genero:string;
 }
 
 type Paged<T> = { page: number; limit: number; total: number; items: T[] };
@@ -51,3 +52,24 @@ export async function createProfesional(Body:BodyProfesional){
     body:JSON.stringify(Body)
   })
 }
+
+export async function updateProfesional(id: number, body: any) {
+  return apiFetch(`/profesionales/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function softDeleteProfesional(id: number) {
+  return apiFetch(`/profesionales/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    }
+  });
+}
+
+
