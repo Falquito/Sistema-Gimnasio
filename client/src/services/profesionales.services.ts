@@ -10,6 +10,21 @@ export type ProfesionalListItem = {
   servicio?: string;
 };
 
+export type BodyObraSocial ={
+  idObraSocial:number;
+}
+
+export type BodyProfesional={
+  nombre:string;
+  apellido:string;
+  telefono:string;
+  contraseña:string;
+  ObrasSociales:BodyObraSocial[],
+  dni:string;
+  email:string;
+  servicio:string;
+}
+
 type Paged<T> = { page: number; limit: number; total: number; items: T[] };
 
 /** Busca por texto (q) o lista primeros n si q="" */
@@ -25,4 +40,14 @@ export async function buscarProfesionales(q: string): Promise<ProfesionalListIte
 
 export async function getProfesionalById(id: number): Promise<ProfesionalListItem> {
   return apiFetch(`/profesionales/${id}`);
+}
+
+export async function createProfesional(Body:BodyProfesional){
+  return apiFetch("/profesionales",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify(Body)
+  })
 }

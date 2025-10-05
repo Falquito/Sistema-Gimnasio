@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@tabler/icons-react": "^3.35.0",
     "@tailwindcss/vite": "^4.1.12",
     "antd": "^5.27.1",
