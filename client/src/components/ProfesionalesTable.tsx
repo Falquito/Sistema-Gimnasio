@@ -203,7 +203,7 @@ import { useState, useMemo } from "react";
 
 interface ProfesionalesTableProps {
   profesionales: ProfesionalListItem[];
-  onEditar: (profesional: any) => void;
+  onEditar: (profesional:any) => void;
   onEliminar: (id: number) => void;
   onVerDetalles?: (profesional: any) => void;
   filtroEstado?: string;
@@ -231,28 +231,29 @@ export const ProfesionalesTable: React.FC<ProfesionalesTableProps> = ({
 
   // --- 🧮 Función para calcular tiempo activo ---
   const calcularTiempoActivo = (fechaInicio: string) => {
-    const [dia, mes, año] = fechaInicio.split('-').map(Number);
-    const añoCompleto = año < 100 ? 2000 + año : año;
-    const inicio = new Date(añoCompleto, mes - 1, dia);
-    const hoy = new Date();
+  const [año, mes, dia] = fechaInicio.split('-').map(Number); // 👈 invertido
+  const añoCompleto = año < 100 ? 2000 + año : año;
+  const inicio = new Date(añoCompleto, mes - 1, dia);
+  const hoy = new Date();
 
-    let años = hoy.getFullYear() - inicio.getFullYear();
-    let meses = hoy.getMonth() - inicio.getMonth();
-    let dias = hoy.getDate() - inicio.getDate();
+  let años = hoy.getFullYear() - inicio.getFullYear();
+  let meses = hoy.getMonth() - inicio.getMonth();
+  let dias = hoy.getDate() - inicio.getDate();
 
-    if (dias < 0) {
-      meses--;
-      const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate();
-      dias += ultimoDiaMesAnterior;
-    }
+  if (dias < 0) {
+    meses--;
+    const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate();
+    dias += ultimoDiaMesAnterior;
+  }
 
-    if (meses < 0) {
-      años--;
-      meses += 12;
-    }
+  if (meses < 0) {
+    años--;
+    meses += 12;
+  }
 
-    return `${años} años, ${meses} meses y ${dias} días activo.`;
-  };
+  return `${años} años, ${meses} meses y ${dias} días activo.`;
+};
+
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

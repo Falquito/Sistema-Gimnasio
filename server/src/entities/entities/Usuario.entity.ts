@@ -3,6 +3,7 @@ import { Profesionales } from "./Profesionales.entity";
 import { Gerente } from '../../gerentes/entities/gerente.entity';
 import { Recepcionista } from "./Recepcionista.entity";
 import { ApiProperty } from '@nestjs/swagger';
+import { Auditoria } from "./auditorias.entity";
 
 @Entity("usuario", { schema: "public" })
 export class Usuario {
@@ -27,5 +28,8 @@ export class Usuario {
 
   @OneToMany(() => Recepcionista, (recepcionista) => recepcionista.idUsuario)
   recepcionistas: Recepcionista[];
+
+  @OneToMany(()=>Auditoria,(auditoria)=>auditoria.usuario)
+  auditorias:Auditoria[];
 
 }

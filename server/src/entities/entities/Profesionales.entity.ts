@@ -59,4 +59,7 @@ export class Profesionales {
 
   @OneToMany(()=>ObraSocialPorProfesional,(obrp)=>obrp.profesional)
   obraSocialPorProfesional:ObraSocialPorProfesional
+
+  @Column({type:"boolean",default:true})
+  estado:boolean;
 }

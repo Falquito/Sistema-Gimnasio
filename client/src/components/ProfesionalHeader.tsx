@@ -34,6 +34,7 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
   const idObraSocialRef = useRef(0);
   const dniRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
+  const generoRef = useRef<HTMLInputElement>(null)
   const servicioRef = useRef<HTMLSelectElement>(null);
   const [error,setError] = useState("")
 
@@ -47,6 +48,7 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
       dni: dniRef.current?.value.trim()!,
       email: emailRef.current?.value.trim()!,
       servicio: servicioRef.current?.value!,
+      genero:generoRef.current?.value!,
       ObrasSociales: [
         {
             idObraSocial:parseInt(idObraSocialRef.current.value)
@@ -153,9 +155,9 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
                 </LabelInputContainer>
 
                 {/* Servicio / Obras sociales */}
-                <LabelInputContainer className="flex-col gap-2">
+                <LabelInputContainer className="flex-col flex-wrap gap-2 items-center ">
                   <Label>Servicio</Label>
-                  <select ref={servicioRef} defaultValue="" className="select select-success bg-white border border-emerald-500">
+                  <select ref={servicioRef} defaultValue="" className=" select select-success bg-white border border-emerald-500">
                     <option value="" disabled>
                       Selecciona un servicio
                     </option>
@@ -163,6 +165,16 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
                     <option value="Psiquiatria">Psiquiatria</option>
                     <option value="Psicopedagogia">Psicopedagogia</option>
                     <option value="Fonoaudiologia">Fonoaudiologia</option>
+                  </select>
+                  <Label>Genero</Label>
+                  <select ref={generoRef} defaultValue="" className="select select-success bg-white border border-emerald-500">
+                    <option value="" disabled>
+                      Selecciona un genero
+                    </option>
+                    <option value="M">M</option>
+                    <option value="F">F</option>
+                    <option value="X">X</option>
+                    
                   </select>
 
                   <Label>Obra Social</Label>

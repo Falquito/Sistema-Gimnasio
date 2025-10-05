@@ -12,6 +12,9 @@ export class CreateProfesionaleDto {
     @ApiProperty()
     @IsString()
     telefono:string;
+    @IsString()
+    @IsIn(["M","F","X"])
+    genero:string;
     @ApiProperty()
     @IsString()
     dni:string;
