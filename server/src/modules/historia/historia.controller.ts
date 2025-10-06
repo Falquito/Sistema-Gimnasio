@@ -38,11 +38,6 @@ export class HistoriaController {
     return this.historia.historialPaciente(pacienteId);
   }
 
-  @Auth(validRoles.medico, validRoles.gerente)
-  @Get("turnos/:turnoId/diagnostico")
-  porTurno(@Param("turnoId", ParseIntPipe) turnoId: number) {
-    return this.historia.porTurno(turnoId);
-  }
 
   @Auth(validRoles.medico, validRoles.gerente)
   @Get('pacientes/:pacienteId/diagnosticos')

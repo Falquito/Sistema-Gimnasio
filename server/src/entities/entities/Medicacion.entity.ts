@@ -41,17 +41,9 @@ export class Medicacion {
   @Column("character varying", { name: "fecha_fin", nullable: true })
   fechaFin?: string; // YYYY-MM-DD
 
-  @ApiProperty({ required: false })
-  @Column("character varying", { name: "ultima_admin", nullable: true })
-  ultimaAdmin?: string; // YYYY-MM-DD
-
   @ApiProperty({ enum: EstadoMedicacion, default: EstadoMedicacion.ACTIVO })
   @Column("character varying", { name: "estado", default: EstadoMedicacion.ACTIVO })
   estado: EstadoMedicacion;
-
-  @ManyToOne(() => Turnos, { eager: true, nullable: true })
-  @JoinColumn([{ name: "id_turno", referencedColumnName: "idTurno" }])
-  idTurno?: Turnos | null;
 
   @ManyToOne(() => Paciente, { eager: true })
   @JoinColumn([{ name: "id_paciente", referencedColumnName: "id_paciente" }])

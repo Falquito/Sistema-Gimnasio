@@ -18,7 +18,7 @@ export class CrearDiagnosticoDto {
   @IsString() @IsNotEmpty()
   codigoCIE: string;
 
-  @IsString() @MinLength(10)
+  @IsString() @MinLength(5)
   sintomasPrincipales: string;
 
   @IsOptional() @IsString()

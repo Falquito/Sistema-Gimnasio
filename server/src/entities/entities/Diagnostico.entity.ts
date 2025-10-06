@@ -67,10 +67,6 @@ export class Diagnostico {
   @Column("text", { name: "observaciones", nullable: true })
   observaciones?: string;
 
-  @ManyToOne(() => Turnos, { eager: true })
-  @JoinColumn([{ name: "id_turno", referencedColumnName: "idTurno" }])
-  idTurno: Turnos;
-
   @ManyToOne(() => Paciente, { eager: true })
   @JoinColumn([{ name: "id_paciente", referencedColumnName: "id_paciente" }])
   idPaciente: Paciente;

@@ -19,6 +19,7 @@ import { UpdateMedicacionDto } from "./dto/update-medicacion.dto";
 
 
 
+
 @Injectable()
 export class HistoriaService {
   constructor(
@@ -149,7 +150,6 @@ export class HistoriaService {
     if (!m) throw new NotFoundException("Medicacion no encontrada");
     const fecha = dto.fecha ?? this.hoyYYYYMMDD();
     this.hoyYYYYMMDD();
-    m.ultimaAdmin = fecha;
     return this.medRepo.save(m);
   }
 
@@ -208,7 +208,6 @@ export class HistoriaService {
     const anot = this.anotRepo.create({
       fecha,
       texto: dto.texto,
-      idTurno: turno ?? null,
       idPaciente: paciente!,
       idProfesional: profesional!,
     });
@@ -270,13 +269,6 @@ export class HistoriaService {
     await this.assertNoDuplicadoActivo(dto.codigoCIE, pacienteId);
 
     const diag = this.diagRepo.create({
-      fecha,
-      estado,
-      certeza,
-      codigoCIE: dto.codigoCIE,
-      sintomasPrincipales: dto.sintomasPrincipales,
-      observaciones: dto.observaciones,
-      idTurno: turno,
       idPaciente: turno.idPaciente,
       idProfesional: turno.idProfesional,
     });
@@ -342,9 +334,7 @@ export class HistoriaService {
       .getMany();
   }
 
-  async porTurno(turnoId: number) {
-    return this.diagRepo.findOne({ where: { idTurno: { idTurno: turnoId } } });
-  }
+
 
 
   async listarDiagnosticos(pacienteId: number, f: { from?: string; to?: string; profesionalId?: number; servicio?: string; q?: string; }) {
