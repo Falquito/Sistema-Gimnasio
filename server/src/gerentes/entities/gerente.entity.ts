@@ -26,7 +26,7 @@ export class Gerente {
   @Column("character varying", { name: "fecha_ult_upd", nullable: true })
   fechaUltUpd: string | null;
   
-  @ManyToOne(() => Usuario, (usuario) => usuario.gerentes,{eager:true})
+  @ManyToOne(() => Usuario, (usuario) => usuario.gerentes)
   @JoinColumn([{ name: "id_usuario", referencedColumnName: "idUsuario" }])
   idUsuario: Usuario;
 }

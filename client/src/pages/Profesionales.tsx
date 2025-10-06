@@ -252,24 +252,119 @@ export const Profesionales = ()=>{
                     </div>
                 </div>
             )
-        },
-        {
-            title:"Dashboard",
-            value:"Dashboard",
-            content:(
-                <div className="mx-auto w-[95%] h-full overflow-hidden relative  rounded-2xl p-10 text-xl md:text-4xl font-bold text-white bg-gradient-to-br from-emerald-100 to-emerald-500">
-                    <p>DashBoard</p>
-                    <DummyContent />
-                </div>
-            )
         }
     ]
 
     if(profesionales.length===0) return <LoadingSpinner3></LoadingSpinner3>
     return (
-        <div className=" [perspective:1000px] relative b flex flex-col  mx-auto  h-full  items-start justify-start my-10">
-                <Tabs key={profesionales.length} tabs={tabs} />
-        </div>
+        // <div className=" [perspective:1000px] relative b flex flex-col  mx-auto  h-full  items-start justify-start my-10">
+        //         <Tabs key={profesionales.length} tabs={tabs} />
+        // </div>
+        <div className="mx-auto px-2 h-full relative overflow-y-auto  rounded-2xl  text-xl md:text-4xl font-bold text-white bg-gradient-to-br bg-white">
+                    <div className="flex flex-col gap-10">
+                       
+                       
+
+                        {/* Modal */}
+          <dialog id="editarProfesional" className="modal">
+            <div className="modal-box bg-white text-gray-600">
+              <div className="flex flex-col gap-5">
+                <h3 className="font-bold text-lg">Editar Profesional</h3>
+                <hr />
+
+                {/* Nombre / Apellido */}
+                <LabelInputContainer className="flex-row items-center gap-2">
+                  <Label>Nombre</Label>
+                  <Input ref={nombreEditadoRef} type="text"  placeholder={selectedProfesional?.nombreProfesional} />
+                  <Label>Apellido</Label>
+                  <Input ref={apellidoEditadoRef} type="text" placeholder={selectedProfesional?.apellidoProfesional}  />
+                </LabelInputContainer>
+
+                {/* Contraseña / Teléfono */}
+                <LabelInputContainer className="flex-row items-center gap-2">
+                  <Label>Contraseña</Label>
+                  <Input ref={contraseñaEditadoRef} type="password" placeholder="******" />
+                  <Label>Teléfono</Label>
+                  <Input ref={telefonoEditadoRef} type="text" placeholder={selectedProfesional?.telefono}   />
+                </LabelInputContainer>
+
+                {/* DNI / Email */}
+                <LabelInputContainer className="flex-row items-center gap-2">
+                  <Label>DNI</Label>
+                  <Input ref={dniEditadoRef} type="text" value={selectedProfesional?.dni} placeholder="Sin puntos ni comillas" />
+                  <Label>Correo electrónico</Label>
+                  <Input ref={emailEditadoRef} type="email" placeholder={selectedProfesional?.email}  />
+                </LabelInputContainer>
+
+                {/* Servicio / Obras sociales */}
+                <LabelInputContainer className="flex-col gap-2">
+                  <Label>Servicio</Label>
+                  <select  ref={servicioEditadoRef} defaultValue="" className="select select-success bg-white border border-emerald-500">
+                    <option value="" disabled>
+                      Selecciona un servicio
+                    </option>
+                    <option value="Psicologia">Psicologia</option>
+                    <option value="Psiquiatria">Psiquiatria</option>
+                    <option value="Psicopedagogia">Psicopedagogia</option>
+                    <option value="Fonoaudiologia">Fonoaudiologia</option>
+                  </select>
+                  <Label>Genero</Label>
+                  <select ref={generoEditadoRef} defaultValue="" className="select select-success bg-white border border-emerald-500">
+                    <option value="" disabled>
+                      Selecciona un genero
+                    </option>
+                    <option value="M">M</option>
+                    <option value="F">F</option>
+                    <option value="X">X</option>
+                    
+                  </select>
+
+                  <Label>Obra Social</Label>
+                  <select ref={idObraSocialEditadoRef} defaultValue="" className="select select-success bg-white border border-emerald-500">
+                    <option value="" disabled>
+                      Selecciona una obra social
+                    </option>
+                    {obrasSociales.map((obraSocial) => (
+                      <option value={obraSocial.id_os} key={obraSocial.id_os}>
+                        {obraSocial.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </LabelInputContainer>
+              </div>
+
+              {/* Botones */}
+              <div className="modal-action flex justify-center items-center flex-wrap">
+                <form method="dialog" className="flex justify-center items-center">
+                  <button className="btn btn-error text-white">Cancelar</button>
+                </form>
+                <button
+                  className="btn border-none bg-emerald-500 text-white"
+                  onClick={handleEditarProfesional}
+                  disabled={loading}
+                >
+                  {loading ? (<FullScreenLoader></FullScreenLoader>):"Crear"}
+                  
+                </button>
+                {error.length>1 ?(
+            <div role="alert" className="alert alert-error  z-100">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{error}</span>
+            </div>
+        ):""}
+              </div>
+            </div>
+          </dialog>
+
+                        {loading?(<FullScreenLoader></FullScreenLoader>):""}
+
+                        <ProfesionalHeader getProfesionales={getProfesionales} obrasSociales={obrasSociales} setProfesionales={setProfesionales} profesionales={profesionales} onOpenModalNuevoProfesional={onOpenModalNuevoProfesional} totalProfesionales={profesionales.length}></ProfesionalHeader>
+                        <ProfesionalesTable onEliminar={onEliminar} onEditar={onEditar} profesionales={profesionales} />
+                    </div>
+                </div>
+
     )
 }
 
