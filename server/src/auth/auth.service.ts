@@ -24,10 +24,23 @@ export class AuthService {
 
     const match = await bcrypt.compare(password, user.contraseA!);
     if (!match) throw new UnauthorizedException('Contraseña invalida');
-
+    let nombre = '';
+    
+    switch (user.rol) {
+      case 'medico':
+        nombre = user.profesionales?.[0]?.nombreProfesional ?? '';
+        break;
+      case 'gerente':
+        nombre = user.gerentes?.[0]?.nombreGerente ?? '';
+        break;
+      case 'recepcionista':
+        nombre = user.recepcionistas?.[0]?.nombreRecepcionista ?? '';
+        break;
+    }
+    
     return {
       ...user,
-      token:this.getJwtToken({id:user.idUsuario,rol:user.rol!})
+      token:this.getJwtToken({id:user.idUsuario,rol:user.rol!,nombre:nombre})
     }
   }
 

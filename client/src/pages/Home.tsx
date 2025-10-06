@@ -17,6 +17,7 @@ export const Home = ()=>{
 
     const getPacientes =async ()=>{
         const res = await buscarPacientes("")
+        console.log(JSON.parse(atob(token!.split(".")[1])))
         setPacientes(res)
     }
     useEffect(()=>{
@@ -42,7 +43,7 @@ export const Home = ()=>{
     return (
         <div className="relative z-50 flex flex-col items-center justify-center gap-10 py-10 w-full">
             {/* Header animado */}
-            <HeaderBienvenida usuario={JSON.parse(atob(token!.split(".")[1])).rol} />
+            <HeaderBienvenida usuario={JSON.parse(atob(token!.split(".")[1])).nombre} />
 
             {/* Card con animación 3D */}
             <div className="flex flex-col justify-center w-full">

@@ -36,7 +36,7 @@ import { ObraSocialModule } from './obra-social/obra-social.module';
         rejectUnauthorized:false
       },
       autoLoadEntities:true,
-      synchronize:false,
+      synchronize:true,
       entities:[
         // __dirname + '/**/entities/*.entity.{ts,js}'
         __dirname + '/**/*.entity{.ts,.js}'
