@@ -4,7 +4,7 @@ import { UpdateRecepcionistaDto } from './dto/update-recepcionista.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Recepcionista } from 'src/entities/entities/Recepcionista.entity';
-import { Usuario } from 'src/entities/entities/Usuario.entity';
+import { RolUsuario, Usuario } from 'src/entities/entities/Usuario.entity';
 import * as bcrypt from 'bcrypt'
 @Injectable()
 export class RecepcionistaService {
@@ -26,7 +26,7 @@ export class RecepcionistaService {
       const usuario = queryRunner.manager.create(Usuario,{
         email:email,
         contraseA:contraseñaHasheada,
-        rol:"recepcionista"
+        rol:RolUsuario.RECEPCIONISTA
       })
 
       await queryRunner.manager.save(usuario)

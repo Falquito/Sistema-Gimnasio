@@ -8,7 +8,7 @@ import { Profesionales } from 'src/entities/entities/Profesionales.entity';
 import { ListProfesionalesQuery } from 'src/modules/profesionales/dto/list-profesionales.query';
 import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
 
-import { Usuario } from 'src/entities/entities/Usuario.entity';
+import { RolUsuario, Usuario } from 'src/entities/entities/Usuario.entity';
 import * as bcrypt from "bcrypt"
 import { ObraSocialPorProfesional } from 'src/entities/entities/ObraSocialPorProfesional.entity';
 import { ObraSocial } from 'src/entities/entities/ObraSocial.entity';
@@ -59,7 +59,7 @@ export class ProfesionalesService {
             
             email,
             contraseA:contraseñaHasheada,
-            rol:"medico"
+            rol:RolUsuario.MEDICO
           })
     
           console.log(usuario)
@@ -206,7 +206,7 @@ export class ProfesionalesService {
 
 
   async softDelete(id:number,user){
-    console.log(user)
+    console.log(`Usuario Eliminador: ${user}`)
     const fecha = new Date();
     
     const year = fecha.getFullYear() % 100; // últimos 2 dígitos
@@ -216,13 +216,17 @@ export class ProfesionalesService {
     const fechaFormateada = `${year.toString().padStart(2,'0')}-${month.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
     const profesional = await this.findOne(id)
 
+    const queryRunner = this.dataSource.createQueryRunner()
+
+    
+    console.log(`Profesional a eliminar: ${profesional}`)
     const profSoftDelete= await this.profRepo.preload({
       idProfesionales:id,
       estado:false,
     })
     await this.profRepo.save(profSoftDelete!)
     const usuarioEliminador = await this.usuarioRepo.findOneBy({idUsuario:user.id})
-    const usuarioEliminado = await this.usuarioRepo.findOneBy({profesionales:profesional})
+    const usuarioEliminado = await this.usuarioRepo.findOneBy({idUsuario:profesional.idProfesionales})
     console.log(usuarioEliminado)
 
     const auditoria = this.auditoriaRepo.create({

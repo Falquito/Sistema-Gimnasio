@@ -219,15 +219,30 @@ export const ProfesionalesTable: React.FC<ProfesionalesTableProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   // --- 🔍 Filtro dinámico ---
-  const filteredProfesionales = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return profesionales.filter((p) =>
-      p.nombreProfesional.toLowerCase().includes(term) ||
-      p.apellidoProfesional.toLowerCase().includes(term) ||
-      p.servicio.toLowerCase().includes(term) ||
-      p.dni.toString().includes(term)
-    );
-  }, [searchTerm, profesionales]);
+  // const filteredProfesionales = useMemo(() => {
+  //   const term = searchTerm.toLowerCase();
+  //   return profesionales.filter((p) =>
+  //     (p.nombreProfesional.toLowerCase().includes(term) ||
+  //     p.apellidoProfesional.toLowerCase().includes(term) ||
+  //     p.servicio.toLowerCase().includes(term) ||
+  //     p.dni.toString().includes(term) &&
+  //     p.estado===true
+  //   );
+  // }, [searchTerm, profesionales]);
+
+
+const filteredProfesionales = useMemo(() => {
+  const term = searchTerm.toLowerCase();
+  return profesionales.filter((p) =>
+    (p.nombreProfesional.toLowerCase().includes(term) ||
+     p.apellidoProfesional.toLowerCase().includes(term) ||
+     p.servicio.toLowerCase().includes(term) ||
+     p.dni.toString().includes(term)) &&
+     p.estado === true
+  );
+}, [searchTerm, profesionales]);
+
+
 
   // --- 🧮 Función para calcular tiempo activo ---
   const calcularTiempoActivo = (fechaInicio: string) => {
@@ -331,7 +346,7 @@ export const ProfesionalesTable: React.FC<ProfesionalesTableProps> = ({
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <User className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">{profesional.genero}</span>
+                          <span className="text-gray-600">Genero: {profesional.genero}</span>
                         </div>
                       </div>
                     </td>
