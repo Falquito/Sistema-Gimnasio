@@ -235,7 +235,7 @@ export class HistoriaService {
     f: { from?: string; to?: string; profesionalId?: number; servicio?: string; q?: string }
   ) {
     const qb = this.anotRepo.createQueryBuilder("a")
-      .leftJoinAndSelect("a.idTurno", "t")
+      // .leftJoinAndSelect("a.idTurno", "t")
       .leftJoinAndSelect("a.idProfesional", "p")
       .where("a.id_paciente = :pid", { pid: pacienteId });
 
@@ -326,8 +326,8 @@ export class HistoriaService {
   }
 
   async historialPaciente(pacienteId: number) {
+    console.log("HISTORIAL")
     return this.diagRepo.createQueryBuilder("d")
-      .leftJoinAndSelect("d.idTurno", "t")
       .leftJoinAndSelect("d.idProfesional", "p")
       .where("d.id_paciente = :pid", { pid: pacienteId })
       .orderBy("d.creado_en", "DESC")
@@ -339,7 +339,7 @@ export class HistoriaService {
 
   async listarDiagnosticos(pacienteId: number, f: { from?: string; to?: string; profesionalId?: number; servicio?: string; q?: string; }) {
     const qb = this.diagRepo.createQueryBuilder('d')
-      .leftJoinAndSelect('d.idTurno', 't')
+      // .leftJoinAndSelect('d.idTurno', 't')
       .leftJoinAndSelect('d.idProfesional', 'p')
       .where('d.id_paciente = :pid', { pid: pacienteId });
 
