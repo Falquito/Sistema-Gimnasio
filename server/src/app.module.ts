@@ -22,6 +22,7 @@ import { ProfesionalesModule } from './modules/profesionales/profesionales.modul
 import { PacientesModule } from './pacientes/pacientes.module';
 import { RecepcionistaModule } from './recepcionista/recepcionista.module';
 import { ObraSocialModule } from './obra-social/obra-social.module';
+import { HistoriaModule } from './modules/historia/historia.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -48,7 +49,9 @@ import { ObraSocialModule } from './obra-social/obra-social.module';
     ProfesionalesModule,
     PacientesModule,
     RecepcionistaModule,
-    ObraSocialModule
+    ObraSocialModule,
+    HistoriaModule,
+    
   ],
   controllers: [AppController, AuthController],
   providers: [AppService,

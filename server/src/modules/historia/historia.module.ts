@@ -8,9 +8,10 @@ import { HistoriaService } from "./historia.service";
 import { HistoriaController } from "./historia.controller";
 import { AnotacionClinica } from "src/entities/entities/AnotacionClinica.entity";
 import { Medicacion } from "src/entities/entities/Medicacion.entity";
+import { AuthModule } from "src/auth/auth.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Diagnostico,AnotacionClinica,Turnos, Profesionales, Paciente, Medicacion])],
+  imports: [AuthModule,TypeOrmModule.forFeature([Diagnostico,AnotacionClinica,Turnos, Profesionales, Paciente, Medicacion])],
   providers: [HistoriaService],
   controllers: [HistoriaController],
 })

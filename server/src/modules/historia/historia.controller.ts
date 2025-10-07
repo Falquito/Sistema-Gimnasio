@@ -35,6 +35,7 @@ export class HistoriaController {
   @Auth(validRoles.medico, validRoles.gerente)
   @Get("pacientes/:pacienteId")
   historial(@Param("pacienteId", ParseIntPipe) pacienteId: number) {
+    console.log("historial")
     return this.historia.historialPaciente(pacienteId);
   }
 
