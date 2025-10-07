@@ -1,11 +1,9 @@
-import { Body, Controller, Delete, Get, Param,ParseIntPipe , ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param,ParseIntPipe , ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ProfesionalesService } from './profesionales.service';
 import { ListProfesionalesQuery } from 'src/modules/profesionales/dto/list-profesionales.query';
 import { CreateProfesionaleDto } from './dto/create-profesionale.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { validRoles } from 'src/auth/interfaces/validRoles';
-import { UpdateProfesionaleDto } from './dto/update-profesionale.dto';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 @Controller('profesionales')
 export class ProfesionalesController {
@@ -36,20 +34,5 @@ findOne(@Param('id', ParseIntPipe) id: number) {
   // @Auth(validRoles.gerente)
   create(@Body() createProfesionalDto:CreateProfesionaleDto){
     return this.service.create(createProfesionalDto);
-  }
-
-  @Auth(validRoles.gerente)
-  @Patch(":id")
-  update(@Param("id",ParseIntPipe) id:number,@Body() updateProfesionaleDto:UpdateProfesionaleDto){
-    return this.service.update(id,updateProfesionaleDto)
-  }
-
-  @Auth(validRoles.gerente)
-  @Delete(":id")
-  
-  softDelete(
-    @Param("id",ParseIntPipe) id:number,
-    @GetUser() user){
-    return this.service.softDelete(id,user)
   }
 }

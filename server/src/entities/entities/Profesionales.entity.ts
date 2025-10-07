@@ -11,8 +11,6 @@ import { Usuario } from "./Usuario.entity";
 // import { ProfesionalesPorServicios } from "./ProfesionalesPorServicios.entity";
 import { Turnos } from "./Turnos.entity";
 import { ObraSocialPorProfesional } from "./ObraSocialPorProfesional.entity";
-import { registerDecorator, ValidationArguments, ValidationOptions } from "class-validator";
-
 
 @Entity("profesionales", { schema: "public" })
 export class Profesionales {
@@ -61,13 +59,4 @@ export class Profesionales {
 
   @OneToMany(()=>ObraSocialPorProfesional,(obrp)=>obrp.profesional)
   obraSocialPorProfesional:ObraSocialPorProfesional
-
-  @Column({type:"boolean",default:true})
-  estado:boolean;
-
-  @Column({type:"time",default:"09:00"})
-  hora_inicio_laboral:string;
-
-  @Column({type:"time",default:"21:00"})
-  hora_fin_laboral:string;
 }

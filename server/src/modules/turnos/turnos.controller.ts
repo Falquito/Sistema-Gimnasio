@@ -1,7 +1,5 @@
 // src/modules/turnos/turnos.controller.ts
-import {
-  Controller, Get, Post, Patch, Body, Param, Query, ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, ParseIntPipe } from '@nestjs/common';
 import { TurnosService } from './turnos.service';
 import { CrearTurnoDto } from './dto/crear-turno.dto';
 import { ReprogramarTurnoDto } from './dto/reprogramar-turno.dto';
@@ -19,6 +17,7 @@ export class TurnosController {
 
   // HU-4: disponibili dad
   @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
+
 
   @Get('disponibles')
   getDisponibles(@Query() q: DisponibilidadQuery) {
@@ -41,6 +40,14 @@ export class TurnosController {
     return this.turnosService.cancelar(id, dto);
   }
 
+  //  HU-6-02 Cambiar fecha y hora del turno
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
+  @Patch(':id/reprogramar')
+  reprogramar( @Param('id', ParseIntPipe) id: number, @Body() dto: ReprogramarTurnoDto,) { 
+    return this.turnosService.reprogramar(id, dto);
+  }
+
+
   @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   // Agenda (calendario)
@@ -48,6 +55,8 @@ export class TurnosController {
   agenda(@Query() q: AgendaQuery) {
     return this.turnosService.agenda(q);
   }
+
+  
 
   @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
@@ -58,10 +67,10 @@ export class TurnosController {
   }
   @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
-  @Patch(':id/completar')
-completar(@Param('id', ParseIntPipe) id: number) {
-  return this.turnosService.completar(id);
-}
+    @Patch(':id/completar')
+  completar(@Param('id', ParseIntPipe) id: number) {
+    return this.turnosService.completar(id);
+  }
   @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
   @Get()

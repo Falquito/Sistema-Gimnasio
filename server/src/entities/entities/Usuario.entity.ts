@@ -20,13 +20,13 @@ export class Usuario {
   @Column("character varying", { name: "contraseña", nullable: true })
   contraseA: string | null;
 
-  @OneToMany(() => Gerente, (gerente) => gerente.idUsuario,{eager:true})
+  @OneToMany(() => Gerente, (gerente) => gerente.idUsuario)
   gerentes: Gerente[];
 
-  @OneToMany(() => Profesionales, (profesionales) => profesionales.idUsuario,{eager:true})
+  @OneToMany(() => Profesionales, (profesionales) => profesionales.idUsuario)
   profesionales: Profesionales[];
 
-  @OneToMany(() => Recepcionista, (recepcionista) => recepcionista.idUsuario,{eager:true})
+  @OneToMany(() => Recepcionista, (recepcionista) => recepcionista.idUsuario)
   recepcionistas: Recepcionista[];
 
   @OneToMany(()=>Auditoria,(auditoria)=>auditoria.usuario)

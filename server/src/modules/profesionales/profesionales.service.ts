@@ -12,8 +12,6 @@ import { Usuario } from 'src/entities/entities/Usuario.entity';
 import * as bcrypt from "bcrypt"
 import { ObraSocialPorProfesional } from 'src/entities/entities/ObraSocialPorProfesional.entity';
 import { ObraSocial } from 'src/entities/entities/ObraSocial.entity';
-import { UpdateProfesionaleDto } from './dto/update-profesionale.dto';
-import { Auditoria } from 'src/entities/entities/auditorias.entity';
 @Injectable()
 export class ProfesionalesService {
   constructor(
@@ -21,10 +19,6 @@ export class ProfesionalesService {
     private readonly dataSource:DataSource,
     @InjectRepository(Profesionales)
     private readonly profRepo: Repository<Profesionales>,
-    @InjectRepository(Auditoria)
-    private readonly auditoriaRepo:Repository<Auditoria>,
-    @InjectRepository(Usuario)
-    private readonly usuarioRepo:Repository<Usuario>
 
     // @InjectRepository(Servicio)
     // private readonly servRepo: Repository<Servicio>,
@@ -40,7 +34,7 @@ export class ProfesionalesService {
     return hashed
   }
   async create(createProfesionalDto:CreateProfesionaleDto){
-        const {ObrasSociales,apellido,dni,nombre,telefono,email,contraseña,servicio,genero} = createProfesionalDto
+        const {ObrasSociales,apellido,dni,nombre,telefono,email,contraseña,servicio} = createProfesionalDto
         const queryRunner = this.dataSource.createQueryRunner()
         const fecha = new Date();
         const contraseñaHasheada = await this.hashPassword(contraseña)
@@ -73,8 +67,7 @@ export class ProfesionalesService {
             telefono:telefono,
             fechaAlta:fechaFormateada,
             fechaUltUpd:"-",
-            servicio:servicio,
-            genero:genero
+            servicio:servicio
           })
     
           await queryRunner.manager.save(profesional)
@@ -189,49 +182,5 @@ export class ProfesionalesService {
   private async ensureProfesional(id: number) {
     const exists = await this.profRepo.exist({ where: { idProfesionales: id } });
     if (!exists) throw new NotFoundException('Profesional no encontrado');
-  }
-
-  async update(id:number,updateProfesionaleDto:UpdateProfesionaleDto){
-    const profesional = await this.findOne(id)
-    
-    const profesionalUpdated = await this.profRepo.preload({
-      idProfesionales:id,
-      apellidoProfesional:updateProfesionaleDto.apellido,
-      nombreProfesional:updateProfesionaleDto.nombre,
-      ...updateProfesionaleDto
-    })
-
-    return await this.profRepo.save(profesionalUpdated!);
-  }
-
-
-  async softDelete(id:number,user){
-    console.log(user)
-    const fecha = new Date();
-    
-    const year = fecha.getFullYear() % 100; // últimos 2 dígitos
-    const month = fecha.getMonth() + 1; // los meses van de 0 a 11
-    const day = fecha.getDate();
-     
-    const fechaFormateada = `${year.toString().padStart(2,'0')}-${month.toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-    const profesional = await this.findOne(id)
-
-    const profSoftDelete= await this.profRepo.preload({
-      idProfesionales:id,
-      estado:false
-    })
-    await this.profRepo.save(profSoftDelete!)
-    const usuarioEliminador = await this.usuarioRepo.findOneBy({idUsuario:user.id})
-    const usuarioEliminado = await this.usuarioRepo.findOneBy({profesionales:profesional})
-    console.log(usuarioEliminado)
-
-    const auditoria = this.auditoriaRepo.create({
-      usuario:usuarioEliminador!,
-      fecha:fechaFormateada ,
-      idUsuarioModificado:usuarioEliminado?.idUsuario,
-    })
-
-    await this.auditoriaRepo.save(auditoria)
-    return profSoftDelete;
   }
 }
