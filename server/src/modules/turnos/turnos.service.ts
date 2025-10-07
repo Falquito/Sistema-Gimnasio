@@ -114,6 +114,9 @@ export class TurnosService {
     // (lógica de slots ocupados/commentado)
   }
 
+
+
+
   // ====== HU-5: CREAR ======
   async crear(dto: CrearTurnoDto) {
     const { fecha, hora: horaInicio } = this.isoToParts(dto.inicio);
@@ -186,6 +189,8 @@ export class TurnosService {
       await queryRunner.release();
     }
   }
+
+
 
   // ====== HU-6a: CANCELAR ======
   async cancelar(id: number, dto: CancelarTurnoDto) {
@@ -263,4 +268,65 @@ export class TurnosService {
   public async getById(id: number) {
     return this.getTurnoOrThrow(id);
   }
+  
+
+
+  //HU-6-02 Cambiar fecha y hora del turno, Reprogramar.
+  async reprogramar(id: number, dto: ReprogramarTurnoDto) {
+  if (!dto.nuevoInicio) {
+    throw new BadRequestException('Nuevo inicio es requerido (ISO-8601)');
+  }
+
+  // 1) Traer turno y validar estado actual
+  const turno = await this.getTurnoOrThrow(id);
+  if (turno.estado === 'CANCELADO') {
+    throw new ConflictException('No se puede reprogramar un turno cancelado');
+  }
+  if (turno.estado === 'COMPLETADO') {
+    throw new ConflictException('No se puede reprogramar un turno completado');
+  }
+
+  // 2) Parsear nueva fecha/hora
+  const { fecha, hora } = this.isoToParts(dto.nuevoInicio);       // Usamos: {fecha:"YYYY-MM-DD", hora:"HH:mm"}
+  const hInicioNorm = this.normHM(hora);
+
+  // 3) Definir duración efectiva para chequeo de solape
+  // (60 min).
+  const DURACION_MIN = 60; 
+  const hFinNorm = this.addMinutesHM(hInicioNorm, DURACION_MIN);
+
+  // 4) Chequear conflictos en el mismo profesional/día, excluyendo este turno y los cancelados
+  const profesionalId = this.getProfesionalId(turno);
+  const existentes = await this.turnoRepo
+    .createQueryBuilder('t')
+    .where('t.id_turno <> :id', { id })
+    .andWhere('t.id_profesional = :pid', { pid: profesionalId })
+    .andWhere('t.fecha = :f', { f: fecha })
+    .andWhere('t.estado <> :cancel', { cancel: 'CANCELADO' })
+    .getMany();
+
+  const bStart = this.toMin(hInicioNorm);
+  const bEnd   = this.toMin(hFinNorm);
+
+  const solapa = existentes.some((t) => {
+    const ini = this.normHM(t.horaInicio);
+    const fin = this.addMinutesHM(ini, DURACION_MIN); // derivado por duración fija
+    const aStart = this.toMin(ini);
+    const aEnd   = this.toMin(fin);
+    return aStart < bEnd && aEnd > bStart;
+  });
+
+  if (solapa) {
+    throw new ConflictException('El horario ya está ocupado para el profesional');
+  }
+
+  // 5) Actualizar y guardar
+  turno.fecha = fecha;                   // "YYYY-MM-DD"
+  turno.horaInicio = hInicioNorm;        // "HH:mm"
+  turno.fechaUltUpd = new Date().toISOString().slice(0, 10);
+
+  return await this.turnoRepo.save(turno);
+}
+
+
 }

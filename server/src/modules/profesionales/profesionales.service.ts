@@ -218,7 +218,7 @@ export class ProfesionalesService {
 
     const profSoftDelete= await this.profRepo.preload({
       idProfesionales:id,
-      estado:false
+      estado:false,
     })
     await this.profRepo.save(profSoftDelete!)
     const usuarioEliminador = await this.usuarioRepo.findOneBy({idUsuario:user.id})
