@@ -3,7 +3,7 @@ import { CreateGerenteDto } from './dto/create-gerente.dto';
 import { UpdateGerenteDto } from './dto/update-gerente.dto';
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Usuario } from 'src/entities/entities/Usuario.entity';
+import { RolUsuario, Usuario } from 'src/entities/entities/Usuario.entity';
 import { Gerente } from './entities/gerente.entity';
 
 import * as bcrypt from 'bcrypt';
@@ -39,7 +39,7 @@ export class GerentesService {
         
         email,
         contraseA:contraseñaHasheada,
-        rol:"gerente"
+        rol:RolUsuario.GERENTE
       })
 
       console.log(usuario)

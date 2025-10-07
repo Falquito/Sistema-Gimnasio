@@ -5,6 +5,13 @@ import { Recepcionista } from "./Recepcionista.entity";
 import { ApiProperty } from '@nestjs/swagger';
 import { Auditoria } from "./auditorias.entity";
 
+
+export enum RolUsuario {
+  MEDICO = "medico",
+  GERENTE = "gerente",
+  RECEPCIONISTA = "recepcionista",
+}
+
 @Entity("usuario", { schema: "public" })
 export class Usuario {
   @ApiProperty()
@@ -14,8 +21,12 @@ export class Usuario {
   @Column("character varying", { name: "email", nullable: true })
   email: string | null;
 
-  @Column("character varying", { name: "rol", nullable: true })
-  rol: string | null;
+  @Column({
+    type: "enum",
+    enum: RolUsuario,
+    nullable:true
+  })
+  rol: RolUsuario;
 
   @Column("character varying", { name: "contraseña", nullable: true })
   contraseA: string | null;

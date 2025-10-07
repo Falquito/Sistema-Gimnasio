@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsEmail, IsIn, IsNumber, IsString, Matches, registerDecorator, ValidationOptions,ValidationArguments } from "class-validator";
+import { IsArray, IsEmail, IsIn, IsNumber, IsString, Matches, registerDecorator, ValidationOptions,ValidationArguments, IsOptional } from "class-validator";
 // 👉 Validador personalizado
 export function IsAfter(property: string, validationOptions?: ValidationOptions) {
   return function (object: Record<string, any>, propertyName: string) {
@@ -64,11 +64,13 @@ export class CreateProfesionaleDto {
     ObrasSociales:ObraSocialDto[]
 
     @IsString()
+    @IsOptional()
     @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
     message: 'La hora debe tener el formato HH:mm (ejemplo: 09:00 o 21:30)',
   })
   hora_inicio_laboral: string;
   @IsString()
+  @IsOptional()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
     message: 'La hora debe tener el formato HH:mm (ejemplo: 09:00 o 21:30)',
   })
