@@ -1,19 +1,40 @@
 // src/lib/auth.ts
-export function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const now = Date.now() / 1000; // tiempo actual en segundos
-    return payload.exp < now;
-  } catch {
-    return true; // si algo falla, tratamos el token como inválido
-  }
+function base64UrlDecode(input: string): string {
+  input = input.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = input.length % 4;
+  if (pad) input += '='.repeat(4 - pad);
+  return atob(input);
 }
 
-export function getUserRole(token: string): string | null {
+export function decodeJwt<T = any>(token: string | null): T | null {
+  if (!token) return null;
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.rol || null; // 👈 depende de cómo generes el token en tu backend
+    const [, payloadB64] = token.split('.');
+    return JSON.parse(base64UrlDecode(payloadB64)) as T;
   } catch {
     return null;
   }
+}
+
+export function isTokenExpired(token: string): boolean {
+  const p = decodeJwt<any>(token);
+  if (!p?.exp) return false; 
+  const now = Date.now() / 1000;
+  return p.exp < now;
+}
+
+export function getUserRole(token: string): string | null {
+  const p = decodeJwt<any>(token);
+ 
+  return p?.rol ?? null;
+}
+
+export function getProfessionalIdFromToken(token: string): number | null {
+  const p = decodeJwt<any>(token);
+  return typeof p?.professionalId === 'number' ? p.professionalId : null;
+}
+
+export function getProfessionalNameFromToken(token: string): string | null {
+  const p = decodeJwt<any>(token);
+  return p?.nombre ?? null;
 }
