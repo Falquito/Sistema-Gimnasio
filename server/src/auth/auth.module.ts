@@ -8,10 +8,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from 'src/entities/entities/Usuario.entity';
 import { Gerente } from 'src/gerentes/entities/gerente.entity';
+import { Recepcionista } from 'src/entities/entities/Recepcionista.entity';
+import { Profesionales } from 'src/entities/entities/Profesionales.entity';
 
 @Module({
   imports: [ConfigModule,
-    TypeOrmModule.forFeature([Usuario]),
+    TypeOrmModule.forFeature([Usuario,Recepcionista,Profesionales]),
     PassportModule.register({defaultStrategy:"jwt"}),
     //ASync me asegura que esto espere a que se cargue la variable de entorno
     JwtModule.registerAsync({

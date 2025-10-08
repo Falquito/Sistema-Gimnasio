@@ -10,11 +10,13 @@ interface Props {
 }
 
 export function MedicacionModal({ open, onClose, pacienteId, onSaved }: Props) {
+  const token = localStorage.getItem("token");
   // ---------- ESTADOS ----------
   const [farmaco, setFarmaco] = useState("");
   const [dosis, setDosis] = useState("");
   const [frecuencia, setFrecuencia] = useState("");
   const [indicacion, setIndicacion] = useState("");
+  // const [profesionalId,setProfesionalId] = useState(null)
   const [fechaInicio, setFechaInicio] = useState(() => {
     const hoy = new Date();
     const local = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000);
@@ -51,15 +53,22 @@ export function MedicacionModal({ open, onClose, pacienteId, onSaved }: Props) {
 
     try {
       setLoading(true);
+      // 1. Obtenemos el payload del token (la parte del medio)
+      const payloadB64 = token!.split(".")[1];
+      // 2. Decodificamos de Base64 a un string JSON
+      const decodedPayloadString = atob(payloadB64);
+      // 3. Parseamos el string JSON para convertirlo en un objeto
+      const profesionalData = JSON.parse(decodedPayloadString);
 
       const payload = {
-        id_paciente: pacienteId,
+        pacienteId: pacienteId,
+        profesionalId:profesionalData.idProfesional,
         farmaco,
         dosis,
         frecuencia,
         indicacion,
-        fecha_inicio: fechaInicio,
-        fecha_fin: fechaFin || null,
+        fechaInicio: fechaInicio,
+        fechaFin: fechaFin || null,
         estado: estado.toUpperCase(), // "ACTIVO", "SUSPENDIDO", "COMPLETADO"
       };
 
