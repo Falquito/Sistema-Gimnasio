@@ -14,6 +14,9 @@ import { AppointmentsTable } from './AppointmentsTable';
 import { NewSessionModal } from './NewSessionModal';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorAlert } from './ErrorAlert';
+import { ConfirmModal } from './ConfirmModal';
+import { CancelAppointmentModal } from './CancelAppointmentModal';
+import { ToastContainer, useToast } from './ToastNotification'; // ✅ NUEVO
 
 /* ====================== Helpers & constantes ====================== */
 const RECEPCIONISTA_ID = 1;
@@ -24,6 +27,9 @@ function toISOWithTZ(dateISO: string, hhmm: string) {
 /* ================================================================= */
 
 const Dashboard: React.FC = () => {
+  // ✅ NUEVO: Hook para las notificaciones toast
+  const { toasts, removeToast, success, error: showError } = useToast();
+
   // Estados locales
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: '',
@@ -31,6 +37,25 @@ const Dashboard: React.FC = () => {
   });
   const [actionError, setActionError] = useState<string | null>(null);
   const [showNewSessionModal, setShowNewSessionModal] = useState(false);
+  
+  // ✅ Estados para los modales de confirmación
+  const [confirmCompleteModal, setConfirmCompleteModal] = useState<{
+    isOpen: boolean;
+    turnoId: number | null;
+  }>({
+    isOpen: false,
+    turnoId: null
+  });
+
+  const [cancelModal, setCancelModal] = useState<{
+    isOpen: boolean;
+    turnoId: number | null;
+    patientName: string | null;
+  }>({
+    isOpen: false,
+    turnoId: null,
+    patientName: null
+  });
 
   // SOLUCIÓN: Solo traer todos los turnos sin filtro en el hook
   const { turnos, loading, error, refetch } = useTurnos(undefined, 'todos');
@@ -41,12 +66,12 @@ const Dashboard: React.FC = () => {
 
   // Handlers
   const handleSearchChange = (searchTerm: string) => {
-    console.log('Cambiando búsqueda a:', searchTerm); // Debug
+    console.log('Cambiando búsqueda a:', searchTerm);
     setFilters(prev => ({ ...prev, searchTerm }));
   };
 
   const handleStatusChange = (statusFilter: string) => {
-    console.log('Cambiando filtro de estado a:', statusFilter); // Debug
+    console.log('Cambiando filtro de estado a:', statusFilter);
     setFilters(prev => ({ ...prev, statusFilter }));
   };
 
@@ -56,41 +81,51 @@ const Dashboard: React.FC = () => {
   };
 
   const handleCompleteTurno = async (id: number): Promise<void> => {
-    try {
-      console.log(`Completando turno ID: ${id}`);
-      
-      const confirmed = confirm(
-        '¿Marcar esta sesión como completada?\n\n' +
-        'Esta acción confirmará que la sesión de entrenamiento fue realizada exitosamente.'
-      );
-      
-      if (!confirmed) return;
-      
-      await turnosApi.completarTurno(id);
-      
-      console.log('Turno completado exitosamente');
-      alert('¡Sesión marcada como completada!');
-      refetch();
-      setActionError(null);
-      
-    } catch (error) {
-      console.error('Error al completar turno:', error);
-      const message = error instanceof Error ? error.message : 'Error desconocido al completar turno';
-      setActionError(message);
-      alert(`Error al completar: ${message}`);
-    }
+    setConfirmCompleteModal({
+      isOpen: true,
+      turnoId: id
+    });
   };
 
   const handleCancelTurno = async (id: number): Promise<void> => {
-    if (!confirm('¿Estás seguro de que quieres cancelar este turno?')) return;
+    const turno = turnos.find(t => t.id === id);
+    setCancelModal({
+      isOpen: true,
+      turnoId: id,
+      patientName: turno?.paciente?.nombre || null
+    });
+  };
+
+  const handleConfirmComplete = async () => {
+    if (!confirmCompleteModal.turnoId) return;
 
     try {
-      await turnosApi.cancelarTurno(id, { motivo: 'Cancelado desde dashboard' });
+      console.log(`Completando turno ID: ${confirmCompleteModal.turnoId}`);
+      await turnosApi.completarTurno(confirmCompleteModal.turnoId);
+      console.log('Turno completado exitosamente');
+      success('¡Sesión marcada como completada exitosamente!');
+      refetch();
+      setActionError(null);
+    } catch (error) {
+      console.error('Error al ejecutar acción:', error);
+      const message = error instanceof Error ? error.message : 'Error desconocido';
+      setActionError(message);
+      showError(`Error al completar: ${message}`);
+    }
+  };
+
+  const handleConfirmCancel = async (motivo: string) => {
+    if (!cancelModal.turnoId) return;
+
+    try {
+      await turnosApi.cancelarTurno(cancelModal.turnoId, { motivo });
+      success('Turno cancelado exitosamente');
       refetch();
       setActionError(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al cancelar turno';
       setActionError(message);
+      showError(`Error al cancelar: ${message}`); 
     }
   };
 
@@ -118,12 +153,12 @@ const Dashboard: React.FC = () => {
       const turnoCreado = await turnosApi.crearTurno(turnoRequest);
       
       console.log('Turno creado:', turnoCreado);
-      alert('¡Sesión programada exitosamente!');
+      success('¡Sesión programada exitosamente!');
       refetch();
       
     } catch (error) {
       console.error('Error:', error);
-      alert(`Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      showError(`Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
       throw error;
     }
   };
@@ -144,6 +179,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen text-white">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+
       {/* Header con el modal integrado */}
       <div className="bg-white border-b border-gray-200 rounded-3xl shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -198,10 +235,27 @@ const Dashboard: React.FC = () => {
           onCompleteTurno={handleCompleteTurno} 
         />
       </div>
+
+      <ConfirmModal
+        isOpen={confirmCompleteModal.isOpen}
+        onClose={() => setConfirmCompleteModal({ isOpen: false, turnoId: null })}
+        onConfirm={handleConfirmComplete}
+        title="¿Marcar sesión como completada?"
+        message="Esta acción confirmará que la sesión de entrenamiento fue realizada exitosamente."
+        confirmText="Completar"
+        cancelText="Volver"
+        type="success"
+      />
+
+      <CancelAppointmentModal
+        isOpen={cancelModal.isOpen}
+        onClose={() => setCancelModal({ isOpen: false, turnoId: null, patientName: null })}
+        onConfirm={handleConfirmCancel}
+        patientName={cancelModal.patientName || undefined}
+        onValidationError={(msg) => showError(msg)} 
+      />
     </div>
   );
 };
 
 export default Dashboard;
-
-
