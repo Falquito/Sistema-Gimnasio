@@ -1,10 +1,7 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, MinLength } from "class-validator";
+import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, MinLength } from "class-validator";
 import { CertezaDiagnostico, EstadoDiagnostico } from "src/entities/entities/Diagnostico.entity";
 
 export class CrearDiagnosticoDto {
-  @IsInt() @Min(1)
-  turnoId: number;
-
   // si no viene, se setea hoy (YYYY-MM-DD) en el service
   @IsOptional() @IsString()
   fecha?: string;
@@ -23,4 +20,9 @@ export class CrearDiagnosticoDto {
 
   @IsOptional() @IsString()
   observaciones?: string;
+
+  @IsNumber()
+  idPaciente:number
+  @IsNumber()
+  idProfesional:number
 }

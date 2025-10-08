@@ -255,9 +255,10 @@ export class HistoriaService {
       // ---- DIAGNOSTICO ----
 
   async crear(dto: CrearDiagnosticoDto) {
-    const turno = await this.turnoRepo.findOne({ where: { idTurno: dto.turnoId } });
-    if (!turno) throw new NotFoundException("Turno no encontrado");
-    if (turno.estado === "CANCELADO") throw new ConflictException("No se puede diagnosticar un turno cancelado");
+    const {codigoCIE,sintomasPrincipales,observaciones} = dto
+    // const turno = await this.turnoRepo.findOne({ where: { idTurno: dto.turnoId } });
+    // if (!turno) throw new NotFoundException("Turno no encontrado");
+    // if (turno.estado === "CANCELADO") throw new ConflictException("No se puede diagnosticar un turno cancelado");
 
     const fecha = dto.fecha ?? this.hoyYYYYMMDD();
     this.assertFechaNoFutura(fecha);
@@ -265,23 +266,30 @@ export class HistoriaService {
     const { estado, certeza } = this.aplicarReglasEstadoCerteza(dto);
 
     // validación de duplicado activo por paciente + CIE
-    const pacienteId = turno.idPaciente.id_paciente;
-    await this.assertNoDuplicadoActivo(dto.codigoCIE, pacienteId);
+    const profesional = await this.profRepo.findOneBy({idProfesionales:dto.idProfesional})
+    // await this.assertNoDuplicadoActivo(dto.codigoCIE, pacienteId);
+    const paciente = await this.pacRepo.findOneBy({id_paciente:dto.idPaciente})
 
     const diag = this.diagRepo.create({
-      idPaciente: turno.idPaciente,
-      idProfesional: turno.idProfesional,
+      idPaciente: paciente!,
+      idProfesional: profesional!,
+      certeza,
+      codigoCIE,
+      fecha,
+      observaciones,
+      sintomasPrincipales
+
     });
     
     
 
     const saved = await this.diagRepo.save(diag);
 
-    // marca turno como COMPLETADO
-    if (turno.estado !== "COMPLETADO") {
-      turno.estado = "COMPLETADO";
-      await this.turnoRepo.save(turno);
-    }
+    // // marca turno como COMPLETADO
+    // if (turno.estado !== "COMPLETADO") {
+    //   turno.estado = "COMPLETADO";
+    //   await this.turnoRepo.save(turno);
+    // }
 
     return saved;
   }
@@ -353,6 +361,6 @@ export class HistoriaService {
         COALESCE(d.observaciones,'') ILIKE :q
       )`, { q: `%${f.q}%` });
 
-    return qb.orderBy('d.fecha', 'DESC').addOrderBy('t.horaInicio', 'DESC').getMany();
+    return qb.orderBy('d.fecha', 'DESC').getMany();
 }
 }
