@@ -114,7 +114,6 @@ export class HistoriaService {
       fechaFin,
       ultimaAdmin: dto.ultimaAdmin ?? null,
       estado,
-      idTurno: turno ?? null,
       idPaciente: paciente,
       idProfesional: profesional,
     } as DeepPartial<Medicacion>);
@@ -160,7 +159,6 @@ export class HistoriaService {
   ) {
     const qb = this.medRepo.createQueryBuilder("m")
       .leftJoinAndSelect("m.idProfesional", "p")
-      .leftJoinAndSelect("m.idTurno", "t")
       .where("m.id_paciente = :pid", { pid: pacienteId });
 
     if (f.from) qb.andWhere("m.fecha_inicio >= :from", { from: f.from });
@@ -250,6 +248,7 @@ export class HistoriaService {
              .addOrderBy("a.hora", "DESC", "NULLS LAST")
              .getMany();
   }
+
 
 
       // ---- DIAGNOSTICO ----

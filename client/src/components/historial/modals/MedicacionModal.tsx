@@ -53,29 +53,30 @@ export function MedicacionModal({ open, onClose, pacienteId, onSaved }: Props) {
       setLoading(true);
 
       const payload = {
-        id_paciente: pacienteId,
+        pacienteId,
+        profesionalId: 1, // ajustar según corresponda
         farmaco,
         dosis,
         frecuencia,
         indicacion,
-        fecha_inicio: fechaInicio,
-        fecha_fin: fechaFin || null,
-        estado: estado.toUpperCase(), // "ACTIVO", "SUSPENDIDO", "COMPLETADO"
+        fechaInicio,
+        fechaFin: fechaFin || null,
+        estado: estado.toUpperCase(),
       };
 
       console.log("📤 Enviando medicación:", payload);
 
-      const res = await apiFetch("/historia/medicaciones", {
+      const result = await apiFetch("/historia/medicaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-
+      console.log("✅ Medicación guardada:", result);
       alert("✅ Medicación registrada correctamente.");
       onClose();
       onSaved?.();
+
     } catch (err: any) {
       console.error("❌ Error registrando medicación:", err);
       alert("Ocurrió un error al registrar la medicación.");
@@ -83,6 +84,7 @@ export function MedicacionModal({ open, onClose, pacienteId, onSaved }: Props) {
       setLoading(false);
     }
   };
+
 
   // ---------- UI ----------
   return (

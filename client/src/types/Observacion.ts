@@ -1,7 +1,7 @@
 export interface Observacion {
-  id_observacion: number;
+  id: number;
   fecha: string;
+  texto: string;
   profesional: string;
   servicio?: string;
-  texto: string;
 }

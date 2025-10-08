@@ -3,14 +3,21 @@ import { apiFetch } from "@/lib/api";
 import { IconCalendar, IconSearch } from "@tabler/icons-react";
 
 interface Turno {
-  id_turno: number;
-  fecha: string; // YYYY-MM-DD
-  hora_inicio: string;
-  hora_fin: string;
+  idTurno: number;
+  fecha: string;
+  horaInicio: string;
   estado: "Programado" | "Completado" | "Cancelado";
-  servicio: string;
-  profesional: string;
-  duracion: string;
+  idPaciente?: {
+    id_paciente: number;
+    nombre_paciente: string;
+    apellido_paciente: string;
+  };
+  idProfesional?: {
+    idProfesionales: number;
+    nombreProfesional: string;
+    apellidoProfesional: string;
+    servicio: string;
+  };
 }
 
 interface Props {
@@ -33,21 +40,52 @@ export function TurnosTab({ pacienteId }: Props) {
   const getTurnos = async () => {
     try {
       setLoading(true);
-      const query = new URLSearchParams({
-        from: desde,
-        to: hasta,
-        servicio,
-        profesional,
+
+      const data = await apiFetch(`/turnos`);
+      console.log("🔍 Turnos recibidos:", data);
+
+      const desdeDate = new Date(desde);
+      const hastaDate = new Date(hasta);
+
+      const filtrados = data.filter((t: any) => {
+        // 🔹 Filtrar por paciente
+        const turnoPaciente = t.idPaciente?.id_paciente === pacienteId;
+
+        // 🔹 Filtrar por rango de fechas
+        const fechaTurno = new Date(t.fecha);
+        const dentroRango = fechaTurno >= desdeDate && fechaTurno <= hastaDate;
+
+        // 🔹 Filtrar por servicio
+        const servicioCoincide = servicio
+          ? t.idProfesional?.servicio
+              ?.toLowerCase()
+              .includes(servicio.toLowerCase())
+          : true;
+
+        // 🔹 Filtrar por profesional (nombre o apellido)
+        const profesionalCoincide = profesional
+          ? (
+              `${t.idProfesional?.nombreProfesional || ""} ${
+                t.idProfesional?.apellidoProfesional || ""
+              }`
+            )
+              .toLowerCase()
+              .includes(profesional.toLowerCase())
+          : true;
+
+        return (
+          turnoPaciente && dentroRango && servicioCoincide && profesionalCoincide
+        );
       });
-      const res = await apiFetch(`/historia/pacientes/${pacienteId}/turnos?${query.toString()}`);
-      const data = await res.json();
-      setTurnos(data);
+
+      setTurnos(filtrados);
     } catch (err) {
       console.error("Error cargando turnos:", err);
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (pacienteId) getTurnos();
@@ -142,7 +180,6 @@ export function TurnosTab({ pacienteId }: Props) {
               <tr>
                 <th className="p-2 text-left">Fecha</th>
                 <th className="p-2 text-left">Hora</th>
-                <th className="p-2 text-left">Duración</th>
                 <th className="p-2 text-left">Estado</th>
                 <th className="p-2 text-left">Servicio</th>
                 <th className="p-2 text-left">Profesional</th>
@@ -150,17 +187,20 @@ export function TurnosTab({ pacienteId }: Props) {
             </thead>
             <tbody>
               {turnos.map((t) => (
-                <tr key={t.id_turno} className="border-b">
-                  <td className="p-2 whitespace-nowrap">{t.fecha}</td>
-                  <td className="p-2 whitespace-nowrap">
-                    {t.hora_inicio} – {t.hora_fin}
-                  </td>
-                  <td className="p-2">{t.duracion}</td>
+                <tr key={t.idTurno} className="border-b">
+                  <td className="p-2 whitespace-nowrap">{t.fecha || "-"}</td>
+                  <td className="p-2 whitespace-nowrap">{t.horaInicio || "-"}</td>
                   <td className={`p-2 font-semibold ${getEstadoColor(t.estado)}`}>
-                    {t.estado}
+                    {t.estado || "-"}
                   </td>
-                  <td className="p-2">{t.servicio}</td>
-                  <td className="p-2">{t.profesional}</td>
+                  <td className="p-2">{t.idProfesional?.servicio || "-"}</td>
+                  <td className="p-2">
+                    {t.idProfesional
+                      ? `${t.idProfesional.nombreProfesional || ""} ${
+                          t.idProfesional.apellidoProfesional || ""
+                        }`
+                      : "-"}
+                  </td>
                 </tr>
               ))}
             </tbody>

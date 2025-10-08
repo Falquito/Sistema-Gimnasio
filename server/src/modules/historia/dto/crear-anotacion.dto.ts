@@ -1,9 +1,9 @@
 import { IsInt, IsOptional, IsString, Min, MinLength } from "class-validator";
 
 export class CrearAnotacionDto {
-  // Opción A: pasar turnoId (y derivamos paciente/profesional)
-  @IsInt() @Min(1)
-  turnoId: number;
+  // Opción A: pasar turnoId (si viene de un turno)
+  @IsOptional() @IsInt() @Min(1)
+  turnoId?: number;
 
   // Opción B: si no hay turnoId, deben venir ambos:
   @IsOptional() @IsInt() @Min(1)
