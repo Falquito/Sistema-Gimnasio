@@ -98,7 +98,7 @@ export const NewLogin = ()=>{
                     
 
                     <button type="button" onClick={handleSubmit}
-                        className=" group/btn relative block w-full rounded-md bg-gradient-to-br from-emerald-100 to-emerald-950 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset] group-hover:scale-105 "
+                        className="flex items-start justify-center group/btn relative  w-full rounded-md bg-gradient-to-br from-emerald-100 to-emerald-950 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset] group-hover:scale-105 "
                         >
                         <TextGenerateEffect  duration={4} words="Iniciar Sesion &rarr;"></TextGenerateEffect>
                         

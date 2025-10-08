@@ -4,5 +4,6 @@ export interface JwtPayload {
   rol: string;
   nombre: string;
   professionalId?: number | null;
+  idProfesional:number;
   // + otros campos que quieras guardar
 }

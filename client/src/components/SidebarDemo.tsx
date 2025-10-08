@@ -16,7 +16,7 @@ import logo from "../img/logo/Logo_Muestra Sin fondo.png"
 import { href, useNavigate } from "react-router-dom";
 import { getUserRole } from "../lib/auth";
 import { label } from "framer-motion/client";
-import { BriefcaseMedical } from "lucide-react";
+import { BriefcaseMedical, ChartNoAxesCombined, ClipboardClock } from "lucide-react";
 
 
 
@@ -40,6 +40,30 @@ export function SidebarDemo() {
       ),
       roles: ["gerente", "recepcionista","medico"],
 
+    },
+    {
+      label: "Dashboard",
+      href: "/professional/dashboard",
+      icon: (
+        <ChartNoAxesCombined className="h-5 w-5 shrink-0" />
+      ),
+      roles: ["medico"]
+    },
+    {
+      label: "Dashboard",
+      href: "/estadisticas",
+      icon: (
+        <ChartNoAxesCombined className="h-5 w-5 shrink-0" />
+      ),
+      roles: ["gerente"]
+    },
+    {
+      label: "Historial clinico",
+      href: "/historialClinico",
+      icon: (
+        <ClipboardClock className="h-5 w-5 shrink-0" />
+      ),
+      roles: ["medico"]
     },
     {
       label: "Recepcionista",
