@@ -41,7 +41,7 @@ export function PatientDetail({ paciente }: Props) {
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 text-sm font-medium rounded-t-md transition ${
               activeTab === tab.id
-                ? "bg-white border border-b-0 border-gray-300 text-blue-600"
+                ? "bg-white border border-b-0 border-gray-300 text-emerald-600"
                 : "text-gray-600 hover:text-gray-800"
             }`}
           >

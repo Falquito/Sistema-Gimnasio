@@ -66,11 +66,11 @@ export function PatientList({ pacientes, selected, onSelect }: Props) {
               key={p.id_paciente}
               onClick={() => onSelect(p)}
               className={`flex items-center gap-3 p-3 rounded-md cursor-pointer transition mb-1 ${
-                isSelected ? "bg-blue-50 border border-blue-300" : "hover:bg-gray-50"
+                isSelected ? "bg-emerald-50 border border-emerald-300" : "hover:bg-gray-50"
               }`}
             >
               {/* Avatar */}
-              <div className="flex items-center justify-center w-11 h-11 rounded-full bg-blue-800 text-white font-medium text-sm flex-shrink-0">
+              <div className="flex items-center justify-center w-11 h-11 rounded-full bg-emerald-500 text-white font-medium text-sm flex-shrink-0">
                 {iniciales}
               </div>
 

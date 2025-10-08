@@ -123,15 +123,15 @@ export function ResumenTab({ paciente }: Props) {
         <h3 className="text-lg font-semibold mb-3 text-gray-700">
           Diagnóstico actual
         </h3>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
           <section>
             <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
-              <IconUserHeart size={18} className="text-blue-600" />
+              <IconUserHeart size={18} className="text-black" />
               Diagnóstico actual
             </h3>
 
             {diagnostico ? (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 shadow-sm">
+              <div className="bg-gradient-to-r from-emerald-50 to-indigo-50 border border-emerald-200 rounded-xl p-5 shadow-sm">
                 <div className="flex flex-col sm:flex-row justify-between mb-3">
                   <div>
                     <p className="text-sm text-gray-500">Fecha</p>

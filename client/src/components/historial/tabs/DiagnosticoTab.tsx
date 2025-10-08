@@ -61,7 +61,7 @@ export function DiagnosticoTab({ paciente }: Props) {
 
         <button
           onClick={() => setOpenModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white text-sm px-3 py-2 rounded-md hover:bg-blue-700"
+          className="flex items-center gap-2 bg-emerald-500 text-white text-sm px-3 py-2 rounded-md hover:bg-emerald-400"
         >
           <IconPlus size={16} />
           Agregar diagnóstico
