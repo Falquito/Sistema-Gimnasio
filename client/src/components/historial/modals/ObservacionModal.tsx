@@ -6,10 +6,11 @@ interface Props {
   open: boolean;
   onClose: () => void;
   pacienteId: number;
+  profesionalId: number; // 👈 agregado
   onSaved?: () => void;
 }
 
-export function ObservacionModal({ open, onClose, pacienteId, onSaved }: Props) {
+export function ObservacionModal({ open, onClose, pacienteId, profesionalId, onSaved }: Props) {
   const [fecha, setFecha] = useState(() => {
     const hoy = new Date();
     const local = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000);
@@ -31,19 +32,27 @@ export function ObservacionModal({ open, onClose, pacienteId, onSaved }: Props) 
 
     try {
       setLoading(true);
-      const payload = { id_paciente: pacienteId, fecha, texto };
 
-      const res = await apiFetch("/historia/observaciones", {
+      // ✅ Enviamos pacienteId y profesionalId (no turnoId)
+      const payload = {
+        pacienteId,
+        profesionalId,
+        fecha,
+        texto,
+      };
+
+      const res = await apiFetch("/historia/anotaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+      // if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+
       alert("✅ Observación registrada correctamente.");
       onClose();
       onSaved?.();
-    } catch (err: any) {
+    } catch (err) {
       console.error("❌ Error registrando observación:", err);
       alert("Ocurrió un error al registrar la observación.");
     } finally {

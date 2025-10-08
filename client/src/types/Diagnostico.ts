@@ -6,4 +6,6 @@ export interface Diagnostico {
   certeza: string;
   codigo_cie: string;
   sintomas_principales: string;
+  observaciones?: string;
+
 }

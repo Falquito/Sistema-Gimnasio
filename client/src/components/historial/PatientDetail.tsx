@@ -61,7 +61,7 @@ export function PatientDetail({ paciente }: Props) {
           <MedicacionTab pacienteId={paciente.id_paciente} />
         )}
         {activeTab === "observaciones" && (
-          <ObservacionesTab pacienteId={paciente.id_paciente} />
+          <ObservacionesTab pacienteId={paciente.id_paciente} profesionalId={1} />
         )}
       </div>
     </div>

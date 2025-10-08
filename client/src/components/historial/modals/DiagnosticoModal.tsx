@@ -21,8 +21,10 @@ export function DiagnosticoModal({
   // ---------- ESTADOS ----------
   const [fecha, setFecha] = useState(() => {
     const hoy = new Date();
-    const local = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000);
-    return local.toISOString().split("T")[0];
+    const año = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoy.getDate()).padStart(2, "0");
+    return `${año}-${mes}-${dia}`; // formato YYYY-MM-DD
   });
 
   const [estado, setEstado] = useState("Activo");
@@ -72,39 +74,36 @@ export function DiagnosticoModal({
     try {
       setLoading(true);
 
-      const fechaFinal = new Date(fecha).toISOString().split("T")[0];
+      // ✅ Enviamos directamente la fecha local sin tocarla
+      const fechaFinal = fecha;
 
-      // 🧠 Payload conforme al DTO del backend
       const payload = {
-        fecha: fechaFinal,
-        estado: estado.toUpperCase(), // "ACTIVO" / "CERRADO"
-        certeza: certeza.toUpperCase().replace(" ", "_"), // "EN_ESTUDIO", "CONFIRMADO", etc.
+        fecha: fechaFinal, // formato YYYY-MM-DD exacto
+        estado: estado.toUpperCase(),
+        certeza: certeza.toUpperCase().replace(" ", "_"),
         codigoCIE: codigoCIE,
         sintomasPrincipales: sintomas,
         observaciones: observaciones || undefined,
-        idPaciente: Number(pacienteId), // ✅ requerido por el DTO
-        idProfesional: 1, // ⚠️ reemplazá por el id del usuario logueado o quitá si lo obtiene del token
+        idPaciente: Number(pacienteId),
+        idProfesional: 1,
       };
 
       console.log("📤 Enviando diagnóstico:", payload);
 
-      const response = await apiFetch("/historia/diagnosticos", {
+      const result = await apiFetch("/historia/diagnosticos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        alert(`❌ Error al guardar diagnóstico (${response.status})`);
-        return;
-      }
+      console.log("✅ Diagnóstico guardado:", result);
 
       alert("✅ Diagnóstico registrado correctamente.");
       onClose();
       onSaved?.();
     } catch (err: any) {
       console.error("❌ Error guardando diagnóstico:", err);
-      alert("Ocurrió un error al registrar el diagnóstico.");
+      alert(`❌ Error al guardar diagnóstico (${err.message || "Error desconocido"})`);
     } finally {
       setLoading(false);
     }
@@ -180,9 +179,7 @@ export function DiagnosticoModal({
 
             {/* Síntomas */}
             <div>
-              <label className="text-sm text-gray-600">
-                Síntomas principales *
-              </label>
+              <label className="text-sm text-gray-600">Síntomas principales *</label>
               <textarea
                 value={sintomas}
                 onChange={(e) => setSintomas(e.target.value)}
@@ -227,3 +224,4 @@ export function DiagnosticoModal({
     </Dialog>
   );
 }
+  
