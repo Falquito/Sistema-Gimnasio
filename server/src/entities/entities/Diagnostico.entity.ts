@@ -35,7 +35,7 @@ export class Diagnostico {
   idDiagnostico: number;
 
   @ApiProperty({ example: "2025-10-06" })
-  @Column("character varying", { name: "fecha" }) //varchar
+  @Column("character varying", { name: "fecha", nullable:true}) //varchar
   fecha: string;
 
   @ApiProperty({ enum: EstadoDiagnostico, default: EstadoDiagnostico.ACTIVO })

@@ -14,6 +14,7 @@ import { Profesionales } from "./pages/Profesionales"
 import { NewLogin } from "./pages/NewLogin"
 import ProfessionalDashboard from "./pages/ProfessionalDashboard"
 import EstadisticasPage from "./pages/EstadisticasPage"
+import HistorialClinico from "./pages/HistorialClinico"
 
 function App() {
   const token = localStorage.getItem("token");
@@ -67,6 +68,8 @@ function App() {
                   <EstadisticasPage />
               }
             />
+            <Route path="historialClinico" element={<ProtectedRoute allowedRoles={["gerente", "medico"]}><HistorialClinico/></ProtectedRoute>} />
+
           </Route>
         </Routes>
       </BrowserRouter>
