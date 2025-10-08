@@ -20,6 +20,7 @@ import { AgendaQuery } from './dto/agenda.query';
 import { Recepcionista } from 'src/entities/entities/Recepcionista.entity';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
 
+
 @Injectable()
 export class TurnosService {
   constructor(
@@ -27,6 +28,16 @@ export class TurnosService {
     @InjectRepository(Turnos) private readonly turnoRepo: Repository<Turnos>,
     @InjectRepository(Profesionales) private readonly profRepo: Repository<Profesionales>,
   ) { }
+
+
+  async getWorkingHours(profesionalId: number) {
+    const prof = await this.profRepo.findOne({ where: { idProfesionales: profesionalId }});
+    if (!prof) throw new NotFoundException('Profesional no encontrado');
+    return {
+      start: this.normHM(prof.hora_inicio_laboral ?? '09:00'),
+      end: this.normHM(prof.hora_fin_laboral ?? '21:00'),
+    };
+  }
 
   // ====== UTIL ======
 
@@ -119,76 +130,91 @@ export class TurnosService {
 
   // ====== HU-5: CREAR ======
   async crear(dto: CrearTurnoDto) {
-    const { fecha, hora: horaInicio } = this.isoToParts(dto.inicio);
-    const queryRunner = this.dataSource.createQueryRunner();
+  const { fecha, hora: horaInicio } = this.isoToParts(dto.inicio);
+  const queryRunner = this.dataSource.createQueryRunner();
 
-    try {
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
+  try {
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-      const { pacienteId, observacion, profesionalId, recepcionistaId } = dto;
+    const { pacienteId, observacion, profesionalId, recepcionistaId } = dto;
 
-      const profesional = await queryRunner.manager.findOneBy(Profesionales, { idProfesionales: profesionalId });
-      const recepcionista = await queryRunner.manager.findOneBy(Recepcionista, { idRecepcionista: recepcionistaId });
-      const paciente = await queryRunner.manager.findOneBy(Paciente, { id_paciente: pacienteId });
+    const profesional = await queryRunner.manager.findOneBy(Profesionales, { idProfesionales: profesionalId });
+    const recepcionista = await queryRunner.manager.findOneBy(Recepcionista, { idRecepcionista: recepcionistaId });
+    const paciente = await queryRunner.manager.findOneBy(Paciente, { id_paciente: pacienteId });
 
-      // 1) duración (fija por ahora o tomada del servicio)
-      const DURACION_MIN = 60; // o await this.getDuracionMin(dto.servicioId, 60);
-
-      // 2) normalizar inicio y calcular fin del NUEVO turno
-      const hInicioNorm = this.normHM(horaInicio);
-      const hFinNorm = this.addMinutesHM(hInicioNorm, DURACION_MIN);
-
-      // 3) traer turnos del mismo día/profesional (no cancelados)
-      const existentes = await queryRunner.manager
-        .getRepository(Turnos)
-        .createQueryBuilder('t')
-        .where('t.id_profesional = :pid', { pid: profesionalId })
-        .andWhere('t.fecha = :f', { f: fecha })
-        .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
-        .getMany();
-
-      // 4) chequeo de solape en minutos (no strings)
-      const bStart = this.toMin(hInicioNorm);
-      const bEnd = this.toMin(hFinNorm);
-
-      const seSolapa = existentes.some((t) => {
-        const ini = this.normHM(t.horaInicio);
-        const fin = (t as any).horaFin ? this.normHM((t as any).horaFin) : this.addMinutesHM(ini, DURACION_MIN);
-        const aStart = this.toMin(ini);
-        const aEnd = this.toMin(fin);
-        return aStart < bEnd && aEnd > bStart; // overlap
-      });
-
-      if (seSolapa) {
-        throw new ConflictException('El horario ya está ocupado');
-      }
-
-      // 5) crear y guardar (guardar hora normalizada)
-      const turno = queryRunner.manager.create(Turnos, {
-        idRecepcionista: recepcionista!,
-        idPaciente: paciente!,
-        idProfesional: profesional!,
-        estado: 'PENDIENTE',
-        observacion,
-        fecha,
-        horaInicio: hInicioNorm, // "HH:mm" consistente
-        // horaFin: hFinNorm,     // si agregás la columna
-        fechaAlta: fecha,
-        fechaUltUpd: '-',
-      });
-
-      await queryRunner.manager.save(turno);
-      await queryRunner.commitTransaction();
-      return turno;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (error instanceof ConflictException) throw error; // 409 para solape
-      throw new InternalServerErrorException(error);
-    } finally {
-      await queryRunner.release();
+    if (!profesional) {
+      throw new NotFoundException('Profesional no encontrado');
     }
+
+    // 1) duración (fija por ahora o tomada del servicio)
+    const DURACION_MIN = 60; // o await this.getDuracionMin(dto.servicioId, 60);
+
+    // 2) normalizar inicio y calcular fin del NUEVO turno
+    const hInicioNorm = this.normHM(horaInicio);
+    const hFinNorm = this.addMinutesHM(hInicioNorm, DURACION_MIN);
+
+    // 2.a) obtener jornada laboral del profesional
+    const jornadaIni = this.normHM(profesional.hora_inicio_laboral ?? '09:00');
+    const jornadaFin = this.normHM(profesional.hora_fin_laboral ?? '21:00');
+
+    // 2.b) validar que el nuevo turno esté dentro de la jornada laboral
+    if (this.toMin(hInicioNorm) < this.toMin(jornadaIni) || this.toMin(hFinNorm) > this.toMin(jornadaFin)) {
+      throw new UnprocessableEntityException(
+        `El horario (${hInicioNorm}-${hFinNorm}) está fuera de la jornada laboral del profesional (${jornadaIni}-${jornadaFin}).`
+      );
+    }
+
+    // 3) traer turnos del mismo día/profesional (no cancelados)
+    const existentes = await queryRunner.manager
+      .getRepository(Turnos)
+      .createQueryBuilder('t')
+      .where('t.id_profesional = :pid', { pid: profesionalId })
+      .andWhere('t.fecha = :f', { f: fecha })
+      .andWhere('t.estado != :cancel', { cancel: 'CANCELADO' })
+      .getMany();
+
+    // 4) chequeo de solape en minutos (no strings)
+    const bStart = this.toMin(hInicioNorm);
+    const bEnd = this.toMin(hFinNorm);
+
+    const seSolapa = existentes.some((t) => {
+      const ini = this.normHM(t.horaInicio);
+      const fin = (t as any).horaFin ? this.normHM((t as any).horaFin) : this.addMinutesHM(ini, DURACION_MIN);
+      const aStart = this.toMin(ini);
+      const aEnd = this.toMin(fin);
+      return aStart < bEnd && aEnd > bStart; // overlap
+    });
+
+    if (seSolapa) {
+      throw new ConflictException('El horario ya está ocupado');
+    }
+
+    // 5) crear y guardar (guardar hora normalizada)
+    const turno = queryRunner.manager.create(Turnos, {
+      idRecepcionista: recepcionista!,
+      idPaciente: paciente!,
+      idProfesional: profesional!,
+      estado: 'PENDIENTE',
+      observacion,
+      fecha,
+      horaInicio: hInicioNorm, // "HH:mm" consistente
+      // horaFin: hFinNorm,     // si agregás la columna
+      fechaAlta: fecha,
+      fechaUltUpd: '-',
+    });
+
+    await queryRunner.manager.save(turno);
+    await queryRunner.commitTransaction();
+    return turno;
+  } catch (error) {
+    await queryRunner.rollbackTransaction();
+    if (error instanceof ConflictException || error instanceof UnprocessableEntityException) throw error;
+    throw new InternalServerErrorException(error);
+  } finally {
+    await queryRunner.release();
   }
+}
 
 
 

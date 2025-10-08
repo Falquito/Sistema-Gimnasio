@@ -403,7 +403,10 @@ const DateTimePickerButton = ({
     </Modal>
   );
 };
-
+const fetchWorkingHoursFor = async (profesionalId: number) => {
+  const res = await turnosApi.getWorkingHours(profesionalId);
+  return { start: res.start, end: res.end };
+};
 const InnerCalendar = ({
   onConfirm,
   durationMin,
@@ -433,8 +436,11 @@ const InnerCalendar = ({
         onClose={() => setOpen(false)}
         profesionalId={profesionalId}
         loadBusy={loadBusy}
+       
+        fetchWorkingHours={fetchWorkingHoursFor}
       />
     </div>
   );
 };
+
 

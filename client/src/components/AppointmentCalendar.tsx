@@ -1,4 +1,3 @@
-// components/AppointmentCalendar.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
@@ -17,9 +16,10 @@ export default function AppointmentCalendar({
   onClose,
   profesionalId,
   loadBusy,
-  workingHours = { start: '09:00', end: '18:00' },
-  onDateChange, 
-  isSlotDisabled, 
+  workingHours = { start: '09:00', end: '18:00' },   // fallback si no hay fetchWorkingHours
+  fetchWorkingHours,                                  // 👈 NUEVO: para traer horario real del backend
+  onDateChange,
+  isSlotDisabled,
 }: {
   initialDate?: Date;
   durationMin?: number;
@@ -27,15 +27,42 @@ export default function AppointmentCalendar({
   onClose: () => void;
   profesionalId?: number;
   loadBusy?: (args: { profesionalId: number; dateISO: string }) => Promise<BusySlot[]>;
-  workingHours?: { start: string; end: string };
-  onDateChange?: (dateISO: string) => void; 
-  isSlotDisabled?: (dateISO: string, start24: string, end24: string) => boolean; 
+  workingHours?: { start: string; end: string };   // fallback
+  fetchWorkingHours?: (profesionalId: number) => Promise<{ start: string; end: string }>;
+  onDateChange?: (dateISO: string) => void;
+  isSlotDisabled?: (dateISO: string, start24: string, end24: string) => boolean;
 }) {
   const [currentDate, setCurrentDate] = useState<Date>(initialDate ?? new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null); 
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [busy, setBusy] = useState<BusySlot[]>([]);
   const [loadingBusy, setLoadingBusy] = useState(false);
+
+  // 👇 NUEVO: estado local con horario laboral efectivo del profesional
+  const [wh, setWh] = useState<{ start: string; end: string }>(workingHours);
+
+  // Al cambiar el profesional, tratamos de obtener horario real
+  useEffect(() => {
+    let cancelled = false;
+
+    const go = async () => {
+      if (fetchWorkingHours && profesionalId) {
+        try {
+          const srv = await fetchWorkingHours(profesionalId);
+          if (!cancelled) setWh({ start: srv.start, end: srv.end });
+        } catch (e) {
+          console.error('fetchWorkingHours falló, uso fallback', e);
+          if (!cancelled) setWh(workingHours);
+        }
+      } else {
+        setWh(workingHours);
+      }
+    };
+
+    go();
+    return () => { cancelled = true; };
+    // si cambian las props del fallback, también se reflejan
+  }, [fetchWorkingHours, profesionalId, workingHours.start, workingHours.end]);
 
   const pad = (n: number) => n.toString().padStart(2, '0');
 
@@ -44,13 +71,14 @@ export default function AppointmentCalendar({
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 === 0 ? 12 : h % 12;
     return `${h12}:${pad(m)} ${ampm}`;
+    // Si querés 24h en UI, usá directamente el string HH:mm.
   };
 
   const addMinutes = (time24: string, minutes: number) => {
     const [h, m] = time24.split(':').map(Number);
     const total = h * 60 + m + minutes;
-    const hh = Math.floor((total + 24 * 60) % (24 * 60) / 60);
-    const mm = (total + 24 * 60) % (24 * 60) % 60;
+    const hh = Math.floor(((total % (24 * 60)) + 24 * 60) % (24 * 60) / 60);
+    const mm = ((total % (24 * 60)) + 24 * 60) % (24 * 60) % 60;
     return `${pad(hh)}:${pad(mm)}`;
   };
 
@@ -62,15 +90,16 @@ export default function AppointmentCalendar({
   const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =>
     toMin(aStart) < toMin(bEnd) && toMin(aEnd) > toMin(bStart);
 
+  // Slots según horario laboral efectivo `wh`
   const allSlots24 = useMemo(() => {
     const slots: string[] = [];
-    let t = workingHours.start;
-    while (t < workingHours.end) {
+    let t = wh.start;
+    while (t < wh.end) {
       slots.push(t);
       t = addMinutes(t, durationMin);
     }
     return slots;
-  }, [workingHours.start, workingHours.end, durationMin]);
+  }, [wh.start, wh.end, durationMin]);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -101,8 +130,7 @@ export default function AppointmentCalendar({
     const selected = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(selected);
     setSelectedTime(null);
-    
-    // ← LLAMAR A onDateChange si existe
+
     if (onDateChange) {
       const dateISO = selected.toISOString().slice(0, 10);
       onDateChange(dateISO);
@@ -139,22 +167,13 @@ export default function AppointmentCalendar({
   useEffect(() => {
     const run = async () => {
       if (!loadBusy || !profesionalId || !selectedDate) {
-        console.log('No se puede cargar busy - falta:', { 
-          loadBusy: !!loadBusy, 
-          profesionalId, 
-          selectedDate: !!selectedDate 
-        });
         setBusy([]);
         return;
       }
-      
       const dateISO = selectedDate.toISOString().slice(0, 10);
-      console.log(`Cargando horarios ocupados para profesional ${profesionalId} el ${dateISO}`);
-      
       try {
         setLoadingBusy(true);
         const items = await loadBusy({ profesionalId, dateISO });
-        console.log('Horarios ocupados recibidos:', items);
         setBusy(items || []);
       } catch (error) {
         console.error('Error cargando horarios ocupados:', error);
@@ -166,34 +185,33 @@ export default function AppointmentCalendar({
     run();
   }, [loadBusy, profesionalId, selectedDate]);
 
-  // Filtrar slots que se pisan con ocupados
+  // Filtrar slots que se pisan con ocupados + callback opcional de deshabilitado
   const availableSlots24 = useMemo(() => {
     if (!selectedDate) return allSlots24;
-    
+
     const dateISO = selectedDate.toISOString().slice(0, 10);
-    
+
     return allSlots24.filter((s) => {
       const end = addMinutes(s, durationMin);
-      
-      // 1. Chequear con busy slots (loadBusy)
+
+      // 1) Ocupados reales (backend)
       if (busy.length > 0) {
         const overlapped = busy.some(b => isOverlap(s, end, b.inicio, b.fin));
         if (overlapped) return false;
       }
-      
-      // 2. Chequear con isSlotDisabled (cache local)
-      if (isSlotDisabled) {
-        const disabled = isSlotDisabled(dateISO, s, end);
-        if (disabled) return false;
+
+      // 2) Regla de negocio adicional del cliente (opcional)
+      if (isSlotDisabled && isSlotDisabled(dateISO, s, end)) {
+        return false;
       }
-      
+
       return true;
     });
   }, [allSlots24, busy, durationMin, selectedDate, isSlotDisabled]);
 
   return (
     <div className="bg-white text-black md:rounded-2xl overflow-hidden shadow-2xl">
-      {/* header bonito */}
+      {/* header */}
       <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div>
           <h1 className="text-2xl font-bold text-black">Selecciona fecha y hora</h1>
@@ -262,6 +280,10 @@ export default function AppointmentCalendar({
                   <p className="text-gray-600 font-medium">
                     {selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                     {loadingBusy ? ' (cargando…) ' : ''}
+                    {/* 👇 Indicación del horario laboral usado */}
+                    <span className="ml-3 text-xs text-gray-500">
+                      ({wh.start}–{wh.end})
+                    </span>
                   </p>
                 </div>
               </div>

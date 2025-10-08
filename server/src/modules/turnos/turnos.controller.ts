@@ -26,9 +26,13 @@ getEstadisticas(@Query('period') period?: string) {
     return this.turnosService.disponibilidad(q);
   }
 
-  // HU-5: crear (registrar turno)
-  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
+  @Get('working-hours')
+  workingHours(@Query('profesionalId', ParseIntPipe) profesionalId: number) {
+    return this.turnosService.getWorkingHours(profesionalId);
+  }
 
+  // HU-5: crear (registrar turno)
+  //@Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
    // Agenda (calendario)
   @Get('agenda')
   agenda(@Query() q: AgendaQuery) {

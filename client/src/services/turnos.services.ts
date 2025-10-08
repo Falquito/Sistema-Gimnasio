@@ -335,7 +335,7 @@ export class TurnosApiService {
       profesionalId: query.profesionalId,
       desde: query.desde,
       hasta: query.hasta,
-      estado: query.incluirCancelados ? undefined : query.estado || 'PENDIENTE'
+        ...(query.estado ? { estado: query.estado } : {})
     };
 
     try {
@@ -530,6 +530,11 @@ export class TurnosApiService {
     });
     return adaptTurno(apiResp);
   }
+   async getWorkingHours(profesionalId: number): Promise<{ start: string; end: string }> {
+    return apiFetch<{ start: string; end: string }>(`${this.base}/working-hours?profesionalId=${profesionalId}`);
+  }
+
+  
 }
 
 export const turnosApi = new TurnosApiService();
