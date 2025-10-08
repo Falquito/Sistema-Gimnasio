@@ -1,7 +1,7 @@
 // components/calendar/ProfessionalCalendarView.tsx
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
-import type {View } from 'react-big-calendar';
+import type { View } from 'react-big-calendar';
 import moment from 'moment';
 import { Calendar as CalendarIcon, Clock, User, FileText, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -30,6 +30,12 @@ interface CalendarEventRBC {
   resource: Turno;
 }
 
+// helper: "HH:mm" -> Date (sólo importa la hora)
+function hhmmToDate(hhmm: string) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return new Date(1970, 0, 1, h, m, 0, 0);
+}
+
 export default function ProfessionalCalendarView({ professionalId }: ProfessionalCalendarViewProps) {
   const [events, setEvents] = useState<CalendarEventRBC[]>([]);
   const [selectedTurno, setSelectedTurno] = useState<Turno | null>(null);
@@ -38,17 +44,22 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
   const [date, setDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
 
-
   const [showDayEventsModal, setShowDayEventsModal] = useState(false);
-const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEventRBC[]>([]);
-const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEventRBC[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-// Handler para cuando hacen clic en "+X más"
-const handleShowMore = (events: any[], date: Date) => {
-  setSelectedDayEvents(events as CalendarEventRBC[]);
-  setSelectedDate(date);
-  setShowDayEventsModal(true);
-};
+  // horario laboral dinámico
+  const [workingHours, setWorkingHours] = useState<{ start: string; end: string }>({
+    start: '09:00',
+    end: '21:00',
+  });
+
+  // Handler para "+X más"
+  const handleShowMore = (events: any[], date: Date) => {
+    setSelectedDayEvents(events as CalendarEventRBC[]);
+    setSelectedDate(date);
+    setShowDayEventsModal(true);
+  };
 
   const loadMyTurnos = async (start?: Date, end?: Date) => {
     setLoading(true);
@@ -60,7 +71,7 @@ const handleShowMore = (events: any[], date: Date) => {
         profesionalId: professionalId,
         desde: startStr,
         hasta: endStr,
-        estado: 'PENDIENTE',
+        // estado: 'PENDIENTE',
         incluirCancelados: false,
       });
 
@@ -92,7 +103,16 @@ const handleShowMore = (events: any[], date: Date) => {
   };
 
   useEffect(() => {
-    if (professionalId) loadMyTurnos();
+    if (!professionalId) return;
+
+    // 1) cargar horario laboral del profesional
+    turnosApi
+      .getWorkingHours(professionalId)
+      .then(setWorkingHours)
+      .catch(() => setWorkingHours({ start: '09:00', end: '21:00' })); // fallback
+
+    // 2) cargar turnos
+    loadMyTurnos();
 
     const handleFocus = () => professionalId && loadMyTurnos();
     const handleVisibilityChange = () => {
@@ -123,13 +143,11 @@ const handleShowMore = (events: any[], date: Date) => {
 
     return (
       <div className={`clean-event ${statusClass}`}>
-       
-       
-          <div className="event-patient-name">{event.title}</div>
-            <span className="event-status-text">{(turno?.estado || 'Pendiente').toString().toLowerCase()}</span>
-         
-        </div>
-      
+        <div className="event-patient-name">{event.title}</div>
+        <span className="event-status-text">
+          {(turno?.estado || 'Pendiente').toString().toLowerCase()}
+        </span>
+      </div>
     );
   };
 
@@ -232,7 +250,6 @@ const handleShowMore = (events: any[], date: Date) => {
 
   return (
     <>
-
       {/* Calendario con spinner */}
       <div className="calendar-wrapper">
         {loading && (
@@ -247,8 +264,8 @@ const handleShowMore = (events: any[], date: Date) => {
         <Calendar
           localizer={localizer}
           events={events}
-           onShowMore={handleShowMore}
-            popup={false} 
+          onShowMore={handleShowMore}
+          popup={false}
           startAccessor="start"
           endAccessor="end"
           style={{
@@ -268,83 +285,87 @@ const handleShowMore = (events: any[], date: Date) => {
           eventPropGetter={eventPropGetter}
           step={30}
           timeslots={2}
-          min={new Date(2024, 0, 1, 8, 0)}
-          max={new Date(2024, 0, 1, 20, 0)}
+          min={hhmmToDate(workingHours.start)}   // << dinámico
+          max={hhmmToDate(workingHours.end)}     // << dinámico
           dayLayoutAlgorithm="no-overlap"
         />
       </div>
 
       {/* Modal de eventos del día */}
-{showDayEventsModal && selectedDate && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
-    <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 shadow-2xl max-h-[80vh] overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-gray-900">
-          Turnos del {moment(selectedDate).format('dddd DD [de] MMMM')}
-        </h3>
-        <button
-          onClick={() => setShowDayEventsModal(false)}
-          className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
+      {showDayEventsModal && selectedDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 shadow-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">
+                Turnos del {moment(selectedDate).format('dddd DD [de] MMMM')}
+              </h3>
+              <button
+                onClick={() => setShowDayEventsModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-      <div className="text-sm text-gray-600 mb-4">
-        {selectedDayEvents.length} turnos programados
-      </div>
+            <div className="text-sm text-gray-600 mb-4">
+              {selectedDayEvents.length} turnos programados
+            </div>
 
-      <div className="overflow-y-auto flex-1 space-y-2">
-        {selectedDayEvents
-          .sort((a, b) => a.start.getTime() - b.start.getTime())
-          .map((event) => (
-            <button
-              key={event.id}
-              onClick={() => {
-                setSelectedTurno(event.resource);
-                setShowDayEventsModal(false);
-                setShowTurnoModal(true);
-              }}
-              className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900">{event.title}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}
-                  </div>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  event.resource.estado?.toLowerCase() === 'pendiente'
-                    ? 'bg-green-100 text-green-700'
-                    : event.resource.estado?.toLowerCase() === 'completado'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {event.resource.estado}
-                </span>
-              </div>
-            </button>
-          ))}
-      </div>
+            <div className="overflow-y-auto flex-1 space-y-2">
+              {selectedDayEvents
+                .sort((a, b) => a.start.getTime() - b.start.getTime())
+                .map((event) => (
+                  <button
+                    key={event.id}
+                    onClick={() => {
+                      setSelectedTurno(event.resource);
+                      setShowDayEventsModal(false);
+                      setShowTurnoModal(true);
+                    }}
+                    className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900">{event.title}</div>
+                        <div className="text-sm text-gray-600 mt-1">
+                          {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}
+                        </div>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          event.resource.estado?.toLowerCase() === 'pendiente'
+                            ? 'bg-green-100 text-green-700'
+                            : event.resource.estado?.toLowerCase() === 'completado'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {event.resource.estado}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+            </div>
 
-      <div className="mt-4 pt-4 border-t">
-        <button
-          onClick={() => setShowDayEventsModal(false)}
-          className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-        >
-          Cerrar
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="mt-4 pt-4 border-t">
+              <button
+                onClick={() => setShowDayEventsModal(false)}
+                className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Modal */}
+      {/* Modal detalle turno */}
       {showTurnoModal && selectedTurno && (
-   <div className="fixed inset-0 z-50 flex items-center justify-center
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center
                  supports-[backdrop-filter]
-                backdrop-blur-md">
+                backdrop-blur-md"
+        >
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Detalles del Turno</h3>
@@ -415,8 +436,7 @@ const handleShowMore = (events: any[], date: Date) => {
         </div>
       )}
 
-    <style>{`
-  /* Estilo para el enlace "+X más" */
+      <style>{`
   .rbc-show-more {
     background-color: #3b82f6 !important;
     color: white !important;
@@ -427,14 +447,10 @@ const handleShowMore = (events: any[], date: Date) => {
     cursor: pointer !important;
     transition: background-color 0.2s !important;
   }
-  
   .rbc-show-more:hover {
     background-color: #2563eb !important;
   }
-
-  /* ... resto de tus estilos */
 `}</style>
-      
     </>
   );
 }

@@ -14,6 +14,7 @@ import { Profesionales } from "./pages/Profesionales"
 import { NewLogin } from "./pages/NewLogin"
 import ProfessionalDashboard from "./pages/ProfessionalDashboard"
 import EstadisticasPage from "./pages/EstadisticasPage"
+import ProfessionalDashboardPage from "./pages/ProfessionalDashboardPage"
 import HistorialClinico from "./pages/HistorialClinico"
 
 function App() {
@@ -61,11 +62,21 @@ function App() {
             <Route path="turnos" element={<ProtectedRoute><Turnos /></ProtectedRoute>} />
             <Route path="pacientes" element={<ProtectedRoute allowedRoles={["gerente", "medico", "recepcionista"]}><PacientesPage /></ProtectedRoute>} />
             <Route path="profesionales" element={<ProtectedRoute allowedRoles={["gerente", "medico"]}><Profesionales /></ProtectedRoute>} />
-            <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
+            <Route
+              path="/professional/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["medico"]}>
+                  <ProfessionalDashboardPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="estadisticas"
               element={
+                <ProtectedRoute allowedRoles={["gerente"]}>
+
                   <EstadisticasPage />
+                </ProtectedRoute>
               }
             />
             <Route path="historialClinico" element={<ProtectedRoute allowedRoles={["gerente", "medico"]}><HistorialClinico/></ProtectedRoute>} />

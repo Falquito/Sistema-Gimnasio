@@ -1,0 +1,68 @@
+/** @jsxImportSource react */
+
+import { useState } from "react";
+import { X } from "lucide-react";
+import { turnosApi } from "../../services/turnos.services";
+import type { Turno } from "../../types/turnos";
+import AppointmentCalendar, { type AppointmentCalendarOnConfirm } from "../AppointmentCalendar";
+import { ErrorAlert } from "./ErrorAlert";
+
+interface RescheduleModalProps {
+  turno: Turno | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export function RescheduleModal({ turno, onClose, onSuccess }: RescheduleModalProps) {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit: AppointmentCalendarOnConfirm = async ({ dateISO, time24 }) => {w
+    if (!turno) return;
+
+    try {
+      setError(null);
+
+      await turnosApi.reprogramarTurno(
+        turno.idTurno,
+        { nuevoInicio: `${dateISO}T${time24}:00.000Z` }
+      );
+
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al reprogramar el turno");
+    }
+  };
+
+  if (!turno) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full relative">
+        <div className="absolute right-4 top-4">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Cerrar"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-6">Reprogramar Turno</h2>
+
+          {error && <ErrorAlert message={error} />}
+
+          <AppointmentCalendar
+            profesionalId={turno.idProfesional?.id}
+            onConfirm={handleSubmit}
+            onClose={onClose}
+            durationMin={turno.idServicio?.duracionMin || 30}
+            workingHours={{ start: "09:00", end: "18:00" }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

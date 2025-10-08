@@ -4,6 +4,7 @@ import { useTurnos } from '../../hooks/useTurnos';
 import { turnosApi } from '../../services/turnos.services';
 import type { FilterState } from '../../types/dashboard';
 import type { NewSessionFormData } from './NewSessionModal';
+import type { Turno } from '../../types/turnos';
 import { calcularEstadisticas, filterTurnos } from '../../utils/dashboard.utils';
 
 // Componentes
@@ -14,7 +15,7 @@ import { AppointmentsTable } from './AppointmentsTable';
 import { NewSessionModal } from './NewSessionModal';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorAlert } from './ErrorAlert';
-
+import { RescheduleModal } from './RescheduleModal';
 /* ====================== Helpers & constantes ====================== */
 const RECEPCIONISTA_ID = 1;
 
@@ -31,7 +32,8 @@ const Dashboard: React.FC = () => {
   });
   const [actionError, setActionError] = useState<string | null>(null);
   const [showNewSessionModal, setShowNewSessionModal] = useState(false);
-
+  const [selectedTurno, setSelectedTurno] = useState<Turno | null>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   // SOLUCIÓN: Solo traer todos los turnos sin filtro en el hook
   const { turnos, loading, error, refetch } = useTurnos(undefined, 'todos');
 
@@ -93,7 +95,10 @@ const Dashboard: React.FC = () => {
       setActionError(message);
     }
   };
-
+  const handleRescheduleTurno = (turno: Turno) => {
+    setSelectedTurno(turno);
+    setShowRescheduleModal(true);
+  };
   const handleCreateSession = async (data: NewSessionFormData) => {
     try {
       console.log('Datos recibidos del modal:', data);
@@ -196,7 +201,23 @@ const Dashboard: React.FC = () => {
           statusFilter={filters.statusFilter}
           onCancelTurno={handleCancelTurno}
           onCompleteTurno={handleCompleteTurno} 
+          onRescheduleTurno={handleRescheduleTurno}
         />
+        {/* Modal de reprogramación */}
+        {showRescheduleModal && (
+          <RescheduleModal
+            turno={selectedTurno}
+            onClose={() => {
+              setShowRescheduleModal(false);
+              setSelectedTurno(null);
+            }}
+            onSuccess={() => {
+              setShowRescheduleModal(false);
+              setSelectedTurno(null);
+              refetch();
+            }}
+          />
+        )}
       </div>
     </div>
   );

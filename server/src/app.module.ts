@@ -37,7 +37,7 @@ import { HistoriaModule } from './modules/historia/historia.module';
         rejectUnauthorized:false
       },
       autoLoadEntities:true,
-      synchronize:true,
+      synchronize:false,
       entities:[
         // __dirname + '/**/entities/*.entity.{ts,js}'
         __dirname + '/**/*.entity{.ts,.js}'

@@ -72,24 +72,24 @@ export class HistoriaService {
     async crearMedicacion(dto: CrearMedicacionDto) {
     // 1) Resolver paciente/profesional/turno
     let turno: Turnos | null = null;
-    let paciente: Paciente;
-    let profesional: Profesionales;
+    let paciente = await this.pacRepo.findOneBy({id_paciente:dto.pacienteId})
+    let profesional = await this.profRepo.findOneBy({idProfesionales:dto.profesionalId})
 
-    if (dto.turnoId) {
-      turno = await this.turnoRepo.findOne({ where: { idTurno: dto.turnoId } });
-      if (!turno) throw new NotFoundException("Turno no encontrado");
-      paciente = turno.idPaciente;
-      profesional = turno.idProfesional;
-    } else {
-      if (!dto.pacienteId || !dto.profesionalId) {
-        throw new BadRequestException("Debe enviar turnoId o (pacienteId y profesionalId)");
-      }
-      const p = await this.pacRepo.findOne({ where: { id_paciente: dto.pacienteId } });
-      if (!p) throw new NotFoundException("Paciente no encontrado");
-      const prof = await this.profRepo.findOne({ where: { idProfesionales: dto.profesionalId } });
-      if (!prof) throw new NotFoundException("Profesional no encontrado");
-      paciente = p; profesional = prof;
-    }
+    // if (dto.turnoId) {
+    //   turno = await this.turnoRepo.findOne({ where: { idTurno: dto.turnoId } });
+    //   if (!turno) throw new NotFoundException("Turno no encontrado");
+    //   paciente = turno.idPaciente;
+    //   profesional = turno.idProfesional;
+    // } else {
+    //   if (!dto.pacienteId || !dto.profesionalId) {
+    //     throw new BadRequestException("Debe enviar turnoId o (pacienteId y profesionalId)");
+    //   }
+    //   const p = await this.pacRepo.findOne({ where: { id_paciente: dto.pacienteId } });
+    //   if (!p) throw new NotFoundException("Paciente no encontrado");
+    //   const prof = await this.profRepo.findOne({ where: { idProfesionales: dto.profesionalId } });
+    //   if (!prof) throw new NotFoundException("Profesional no encontrado");
+    //   paciente = p; profesional = prof;
+    // }
 
     // 2) Validaciones mínimas
     if (!dto.farmaco?.trim()) throw new BadRequestException("farmaco es requerido");
@@ -159,6 +159,7 @@ export class HistoriaService {
   ) {
     const qb = this.medRepo.createQueryBuilder("m")
       .leftJoinAndSelect("m.idProfesional", "p")
+      // .leftJoinAndSelect("m.idTurno", "t")
       .where("m.id_paciente = :pid", { pid: pacienteId });
 
     if (f.from) qb.andWhere("m.fecha_inicio >= :from", { from: f.from });

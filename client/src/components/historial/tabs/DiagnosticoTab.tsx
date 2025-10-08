@@ -108,8 +108,8 @@ export function DiagnosticoTab({ paciente }: Props) {
                     </span>
                   </td>
                   <td className="py-2 px-3">{d.certeza}</td>
-                  <td className="py-2 px-3 font-mono">{d.codigo_cie || "-"}</td>
-                  <td className="py-2 px-3 text-gray-700">{d.sintomas_principales || "-"}</td>
+                  <td className="py-2 px-3 font-mono">{d.codigoCIE || "-"}</td>
+                  <td className="py-2 px-3 text-gray-700">{d.sintomasPrincipales || "-"}</td>
                 </tr>
               ))}
             </tbody>
