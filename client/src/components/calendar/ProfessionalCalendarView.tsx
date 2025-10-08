@@ -30,7 +30,6 @@ interface CalendarEventRBC {
   resource: Turno;
 }
 
-// helper: "HH:mm" -> Date (sólo importa la hora)
 function hhmmToDate(hhmm: string) {
   const [h, m] = hhmm.split(':').map(Number);
   return new Date(1970, 0, 1, h, m, 0, 0);
@@ -48,13 +47,11 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
   const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEventRBC[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // horario laboral dinámico
   const [workingHours, setWorkingHours] = useState<{ start: string; end: string }>({
     start: '09:00',
     end: '21:00',
   });
 
-  // Handler para "+X más"
   const handleShowMore = (events: any[], date: Date) => {
     setSelectedDayEvents(events as CalendarEventRBC[]);
     setSelectedDate(date);
@@ -71,7 +68,6 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
         profesionalId: professionalId,
         desde: startStr,
         hasta: endStr,
-        // estado: 'PENDIENTE',
         incluirCancelados: false,
       });
 
@@ -105,13 +101,11 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
   useEffect(() => {
     if (!professionalId) return;
 
-    // 1) cargar horario laboral del profesional
     turnosApi
       .getWorkingHours(professionalId)
       .then(setWorkingHours)
-      .catch(() => setWorkingHours({ start: '09:00', end: '21:00' })); // fallback
+      .catch(() => setWorkingHours({ start: '09:00', end: '21:00' }));
 
-    // 2) cargar turnos
     loadMyTurnos();
 
     const handleFocus = () => professionalId && loadMyTurnos();
@@ -152,46 +146,64 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
   };
 
   const CustomToolbar = ({ onNavigate, onView, view, label }: any) => (
-    <div className="modern-toolbar">
-      <div className="toolbar-section">
-        <div className="nav-controls">
-          <button onClick={() => onNavigate('PREV')} className="nav-button">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button onClick={() => onNavigate('TODAY')} className="today-button">
-            Hoy
-          </button>
-          <button onClick={() => onNavigate('NEXT')} className="nav-button">
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
+    <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
+      {/* Navegación */}
+      <div className="flex items-center gap-2">
+        <button 
+          onClick={() => onNavigate('PREV')} 
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+        >
+          <ChevronLeft className="h-5 w-5 text-gray-700" />
+        </button>
+        <button 
+          onClick={() => onNavigate('TODAY')} 
+          className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg font-semibold hover:from-green-500 hover:to-green-400 transition-all"
+        >
+          Hoy
+        </button>
+        <button 
+          onClick={() => onNavigate('NEXT')} 
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+        >
+          <ChevronRight className="h-5 w-5 text-gray-700" />
+        </button>
       </div>
 
-      <div className="toolbar-center">
-        <h2 className="calendar-title">{label}</h2>
-      </div>
+      {/* Título central */}
+      <h2 className="text-xl font-bold text-gray-900 capitalize">{label}</h2>
 
-      <div className="toolbar-section">
-        <div className="view-selector">
-          <button
-            onClick={() => onView(Views.MONTH)}
-            className={`view-button ${view === Views.MONTH ? 'active' : ''}`}
-          >
-            Mes
-          </button>
-          <button
-            onClick={() => onView(Views.WEEK)}
-            className={`view-button ${view === Views.WEEK ? 'active' : ''}`}
-          >
-            Semana
-          </button>
-          <button
-            onClick={() => onView(Views.DAY)}
-            className={`view-button ${view === Views.DAY ? 'active' : ''}`}
-          >
-            Día
-          </button>
-        </div>
+      {/* Selector de vista */}
+      <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg">
+        <button
+          onClick={() => onView(Views.MONTH)}
+          className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+            view === Views.MONTH
+              ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md'
+              : 'text-gray-700 hover:bg-white hover:text-green-600'
+          }`}
+        >
+          Mes
+        </button>
+        <button
+          onClick={() => onView(Views.WEEK)}
+          className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+            view === Views.WEEK
+              ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md'
+              : 'text-gray-700 hover:bg-white hover:text-green-600'
+          }`}
+        >
+          Semana
+        </button>
+        <button
+          onClick={() => onView(Views.DAY)}
+          className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+            view === Views.DAY
+              ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md'
+              : 'text-gray-700 hover:bg-white hover:text-green-600'
+          }`}
+        >
+          Día
+        </button>
       </div>
     </div>
   );
@@ -212,7 +224,6 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
     }
   };
 
-  // Formatos
   const formats = {
     timeGutterFormat: 'HH:mm',
     eventTimeRangeFormat: ({ start, end }: any) =>
@@ -253,10 +264,12 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
       {/* Calendario con spinner */}
       <div className="calendar-wrapper">
         {loading && (
-          <div className="calendar-loading">
-            <div className="loading-content">
-              <div className="spinner"></div>
-              <p className="loading-text">Cargando turnos...</p>
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-40">
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-green-500 border-t-transparent"></div>
+                <p className="text-gray-700 font-medium">Cargando turnos...</p>
+              </div>
             </div>
           </div>
         )}
@@ -285,29 +298,30 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
           eventPropGetter={eventPropGetter}
           step={30}
           timeslots={2}
-          min={hhmmToDate(workingHours.start)}   // << dinámico
-          max={hhmmToDate(workingHours.end)}     // << dinámico
+          min={hhmmToDate(workingHours.start)}
+          max={hhmmToDate(workingHours.end)}
           dayLayoutAlgorithm="no-overlap"
         />
       </div>
 
       {/* Modal de eventos del día */}
       {showDayEventsModal && selectedDate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 shadow-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 shadow-2xl max-h-[80vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-gray-900">
                 Turnos del {moment(selectedDate).format('dddd DD [de] MMMM')}
               </h3>
               <button
                 onClick={() => setShowDayEventsModal(false)}
-                className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="text-sm text-gray-600 mb-4">
+            <div className="text-sm text-gray-600 mb-4 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
               {selectedDayEvents.length} turnos programados
             </div>
 
@@ -322,21 +336,22 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
                       setShowDayEventsModal(false);
                       setShowTurnoModal(true);
                     }}
-                    className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                    className="w-full text-left p-4 rounded-lg border border-gray-100 hover:border-green-300 hover:bg-green-50 transition-all"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">{event.title}</div>
-                        <div className="text-sm text-gray-600 mt-1">
+                        <div className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
                           {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}
                         </div>
                       </div>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           event.resource.estado?.toLowerCase() === 'pendiente'
                             ? 'bg-green-100 text-green-700'
                             : event.resource.estado?.toLowerCase() === 'completado'
-                            ? 'bg-blue-100 text-blue-700'
+                            ? 'bg-gray-100 text-gray-700'
                             : 'bg-gray-100 text-gray-700'
                         }`}
                       >
@@ -347,10 +362,10 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
                 ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t border-gray-100">
               <button
                 onClick={() => setShowDayEventsModal(false)}
-                className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
               >
                 Cerrar
               </button>
@@ -361,25 +376,23 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
 
       {/* Modal detalle turno */}
       {showTurnoModal && selectedTurno && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center
-                 supports-[backdrop-filter]
-                backdrop-blur-md"
-        >
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Detalles del Turno</h3>
               <button
                 onClick={() => setShowTurnoModal(false)}
-                className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                <User className="h-5 w-5 text-blue-600" />
+              <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg border border-green-100">
+                <div className="bg-green-100 p-2 rounded-lg">
+                  <User className="h-5 w-5 text-green-600" />
+                </div>
                 <div>
                   <div className="font-semibold text-gray-900">
                     {selectedTurno.idCliente?.nombre} {selectedTurno.idCliente?.apellido}
@@ -388,8 +401,10 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                <Clock className="h-5 w-5 text-green-600" />
+              <div className="flex items-center space-x-3 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                <div className="bg-emerald-100 p-2 rounded-lg">
+                  <Clock className="h-5 w-5 text-emerald-600" />
+                </div>
                 <div>
                   <div className="font-semibold text-gray-900">
                     {new Date(selectedTurno.fecha).toLocaleDateString('es-ES', {
@@ -407,8 +422,10 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
               </div>
 
               {selectedTurno.observacion && (
-                <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
-                  <FileText className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <div className="flex items-start space-x-3 p-4 bg-amber-50 rounded-lg border border-amber-100">
+                  <div className="bg-amber-100 p-2 rounded-lg">
+                    <FileText className="h-5 w-5 text-amber-600" />
+                  </div>
                   <div>
                     <div className="font-semibold text-gray-900">Observaciones</div>
                     <div className="text-sm text-gray-600 mt-1">{selectedTurno.observacion}</div>
@@ -416,9 +433,9 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
                 </div>
               )}
 
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium text-gray-700">Estado:</span>
-                <span className="px-3 py-1 rounded-full text-sm font-medium text-white bg-green-500">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <span className="font-semibold text-gray-700">Estado:</span>
+                <span className="px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-green-600 to-green-500 text-white">
                   {selectedTurno.estado.charAt(0).toUpperCase() + selectedTurno.estado.slice(1)}
                 </span>
               </div>
@@ -427,7 +444,7 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={() => setShowTurnoModal(false)}
-                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
               >
                 Cerrar
               </button>
@@ -437,20 +454,23 @@ export default function ProfessionalCalendarView({ professionalId }: Professiona
       )}
 
       <style>{`
-  .rbc-show-more {
-    background-color: #3b82f6 !important;
-    color: white !important;
-    padding: 4px 8px !important;
-    border-radius: 6px !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
-    transition: background-color 0.2s !important;
-  }
-  .rbc-show-more:hover {
-    background-color: #2563eb !important;
-  }
-`}</style>
+        .rbc-show-more {
+          background: linear-gradient(to right, #16a34a, #22c55e) !important;
+          color: white !important;
+          padding: 6px 12px !important;
+          border-radius: 8px !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          cursor: pointer !important;
+          transition: all 0.2s !important;
+          border: none !important;
+        }
+        .rbc-show-more:hover {
+          background: linear-gradient(to right, #15803d, #16a34a) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(34, 197, 94, 0.3) !important;
+        }
+      `}</style>
     </>
   );
 }

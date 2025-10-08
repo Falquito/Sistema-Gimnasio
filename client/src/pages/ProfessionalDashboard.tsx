@@ -1,12 +1,12 @@
 // pages/ProfessionalDashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, TrendingUp, CheckCircle, XCircle, AlertCircle,Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar, Clock, Users, TrendingUp, CheckCircle, XCircle, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
 import ProfessionalCalendarView from '../components/calendar/ProfessionalCalendarView';
 import { turnosApi, type ProfessionalStats } from '../services/turnos.services';
 import type { Turno } from '../types/turnos';
 
 interface ProfessionalDashboardProps {
-  professionalId: number; // ID del profesional logueado
+  professionalId: number;
   professionalName: string;
 }
 
@@ -27,21 +27,15 @@ export default function ProfessionalDashboard({
   });
   const [loading, setLoading] = useState(false);
 
-  // Cargar estadísticas usando el nuevo método
   const loadStats = async () => {
     setLoading(true);
     try {
       console.log('Loading stats for professional:', professionalId);
-      
-      // Usar el nuevo método que maneja todo automáticamente
       const professionalStats = await turnosApi.getProfessionalStats(professionalId);
-      
       console.log('Stats loaded:', professionalStats);
       setStats(professionalStats);
-      
     } catch (error) {
       console.error('Error loading stats:', error);
-      // En caso de error, mantener estadísticas vacías
       setStats({
         turnosHoy: 0,
         turnosSemana: 0,
@@ -57,16 +51,14 @@ export default function ProfessionalDashboard({
     }
   };
 
-  // Cargar estadísticas cuando cambie el profesional
   useEffect(() => {
     if (professionalId) {
       loadStats();
     }
   }, [professionalId]);
 
-  // Funciones de formato
   const formatTime = (timeString: string) => {
-    return timeString.slice(0, 5); // HH:mm
+    return timeString.slice(0, 5);
   };
 
   const formatDate = (dateString: string) => {
@@ -98,7 +90,7 @@ export default function ProfessionalDashboard({
       case 'cancelado': return 'bg-red-500';
       case 'completado': return 'bg-gray-500';
       case 'reprogramado': return 'bg-yellow-500';
-      default: return 'bg-blue-500';
+      default: return 'bg-green-500';
     }
   };
 
@@ -114,51 +106,51 @@ export default function ProfessionalDashboard({
   };
 
   return (
-<div className="">
-  <div className="bg-white border-b border-gray-100 rounded-3xl shadow-sm">
-    <div className="max-w-7xl mx-auto px-6 py-6">
-      <div className="flex items-center justify-between">
-        {/* Lado izquierdo: título + icono (estilo del 2°) */}
-        <div className="flex items-center space-x-4">
-          <div className="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-xl shadow-md">
-            <CalendarIcon className="h-7 w-7 text-white" />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Mis Turnos</h1>
-            <p className="text-gray-600 text-sm">Vista de tus citas programadas</p>
-          </div>
-        </div>
+    <div className="">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 rounded-3xl shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            {/* Lado izquierdo */}
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-xl shadow-md">
+                <CalendarIcon className="h-7 w-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">Mis Turnos</h1>
+                <p className="text-gray-600 text-sm">Vista de tus citas programadas</p>
+              </div>
+            </div>
 
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setActiveTab('calendar')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === 'calendar'
-                ? 'bg-black text-white'
-                : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <CalendarIcon className="h-4 w-4 inline mr-2" />
-            Calendario
-          </button>
+            {/* Tabs mejorados */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${
+                  activeTab === 'calendar'
+                    ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-green-300 hover:bg-green-50'
+                }`}
+              >
+                <CalendarIcon className="h-4 w-4" />
+                Calendario
+              </button>
 
-          <button
-            onClick={() => setActiveTab('stats')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === 'stats'
-                ? 'bg-black text-white'
-                : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <TrendingUp className="h-4 w-4 inline mr-2" />
-            Estadísticas
-          </button>
+              <button
+                onClick={() => setActiveTab('stats')}
+                className={`px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${
+                  activeTab === 'stats'
+                    ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-green-300 hover:bg-green-50'
+                }`}
+              >
+                <TrendingUp className="h-4 w-4" />
+                Estadísticas
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-
-
 
       {/* Contenido según tab activo */}
       {activeTab === 'calendar' ? (
@@ -167,9 +159,9 @@ export default function ProfessionalDashboard({
         <div className="p-6">
           {/* Loading state */}
           {loading && (
-            <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
+            <div className="bg-white rounded-lg border border-gray-100 p-8 mb-6">
               <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mr-3"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mr-3"></div>
                 <span className="text-gray-600">Cargando estadísticas...</span>
               </div>
             </div>

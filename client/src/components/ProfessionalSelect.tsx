@@ -20,6 +20,15 @@ type Props = {
   required?: boolean;
   onCreateNew?: () => void;
   onSelect?: (p: ProfesionalListItem | null) => void;
+  /** ← Nuevo: filtrar solo activos (estado TRUE). Default: true */
+  onlyActive?: boolean;
+};
+
+const isActive = (p: ProfesionalListItem) => {
+  // Por si tu API devuelve boolean/STRING/number
+  if (typeof (p as any).estado === "boolean") return (p as any).estado;
+  if (typeof (p as any).estado === "number") return (p as any).estado === 1;
+  return String((p as any).estado ?? "").toLowerCase() === "true";
 };
 
 export const ProfessionalSelect: React.FC<Props> = ({
@@ -31,6 +40,7 @@ export const ProfessionalSelect: React.FC<Props> = ({
   required = false,
   onCreateNew,
   onSelect,
+  onlyActive = true,
 }) => {
   const [display, setDisplay] = useState(placeholder);
   const [loading, setLoading] = useState(false);
@@ -42,13 +52,21 @@ export const ProfessionalSelect: React.FC<Props> = ({
         setDisplay(placeholder);
         return;
       }
-      // si ya mostramos un nombre calculado, no vuelvas a pedirlo
       if (display && display !== placeholder && !display.startsWith("ID:")) return;
 
       try {
         setLoading(true);
         const p = await getProfesionalById(value);
-        if (mounted) setDisplay(`${p.apellidoProfesional} ${p.nombreProfesional}`.trim());
+
+        // si pediste "solo activos" y este no lo es, mostrás INACTIVO (o limpiás)
+        if (onlyActive && p && !isActive(p)) {
+          if (mounted) setDisplay("[INACTIVO]");
+          return;
+        }
+
+        if (mounted) {
+          setDisplay(`${p.apellidoProfesional ?? ""} ${p.nombreProfesional ?? ""}`.trim() || `ID: ${value}`);
+        }
       } catch {
         if (mounted) setDisplay(`ID: ${value}`);
       } finally {
@@ -56,7 +74,7 @@ export const ProfessionalSelect: React.FC<Props> = ({
       }
     })();
     return () => { mounted = false; };
-  }, [value, placeholder]);
+  }, [value, placeholder, onlyActive]);
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -86,7 +104,7 @@ export const ProfessionalSelect: React.FC<Props> = ({
           <div className="flex items-center gap-3 flex-1">
             {value ? (
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {display.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                {display.split(" ").map(n => n?.[0] ?? "").join("").toUpperCase().slice(0, 2)}
               </div>
             ) : (
               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -114,10 +132,11 @@ export const ProfessionalSelect: React.FC<Props> = ({
 
         <ModalBody className="bg-white md:rounded-2xl md:max-w-[800px]">
           <InnerProfessionalPicker
+            onlyActive={onlyActive}
             onPick={(p) => {
-              const name = `${p.nombreProfesional} ${p.apellidoProfesional}`.trim();
+              const name = `${p.nombreProfesional ?? ""} ${p.apellidoProfesional ?? ""}`.trim();
               setLoading(false);
-              setDisplay(name);
+              setDisplay(name || `ID: ${p.idProfesionales}`);
               onChange(p.idProfesionales, name);
               onSelect?.(p);
             }}
@@ -139,9 +158,11 @@ export const ProfessionalSelect: React.FC<Props> = ({
 const InnerProfessionalPicker = ({
   onPick,
   onCreateNew,
+  onlyActive = true,
 }: {
   onPick: (p: ProfesionalListItem) => void;
   onCreateNew?: () => void;
+  onlyActive?: boolean;
 }) => {
   const { setOpen } = useModal();
   const [q, setQ] = useState("");
@@ -150,36 +171,42 @@ const InnerProfessionalPicker = ({
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
-  // Carga inicial: traigo el listado base una sola vez
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         setLoading(true);
-        const data = await buscarProfesionales(""); // trae todos
+
+        // Si tu backend soporta filtro, podés usarlo aquí:
+        // const data = await buscarProfesionales("?estado=true");
+        const data = await buscarProfesionales("");
+
+        const base = Array.isArray(data) ? data : [];
+        const filtered = onlyActive ? base.filter(isActive) : base;
+
         if (mounted) {
-          setAllProfesionales(data);
-          setResults(data);
+          setAllProfesionales(filtered);
+          setResults(filtered);
         }
       } finally {
         if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [onlyActive]);
 
-  // Filtrado en memoria por nombre + apellido (fallback robusto)
   const search = (term: string) => {
     setQ(term);
     setSelectedIndex(-1);
 
+    const source = allProfesionales;
     if (!term) {
-      setResults(allProfesionales);
+      setResults(source);
       return;
     }
     const needle = term.toLowerCase().trim();
 
-    const filtrados = allProfesionales.filter((p) => {
+    const filtrados = source.filter((p) => {
       const nombreCompleto = `${p.nombreProfesional ?? ""} ${p.apellidoProfesional ?? ""}`.toLowerCase();
       return nombreCompleto.includes(needle);
     });
@@ -187,7 +214,6 @@ const InnerProfessionalPicker = ({
     setResults(filtrados);
   };
 
-  // Navegación con teclado
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -205,16 +231,11 @@ const InnerProfessionalPicker = ({
     }
   };
 
-  const getInitials = (nombre: string, apellido: string) => {
-    return `${apellido?.[0] || ""}${nombre?.[0] || ""}`.toUpperCase();
-  };
-
   const found = results.length;
   const total = allProfesionales.length;
 
   return (
     <ModalContent className="p-0 bg-white">
-      {/* Header */}
       <div className="p-6 pb-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex items-center justify-between">
           <div>
@@ -244,7 +265,6 @@ const InnerProfessionalPicker = ({
         </div>
       </div>
 
-      {/* Buscador */}
       <div className="p-6 pb-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -266,7 +286,6 @@ const InnerProfessionalPicker = ({
             </button>
           )}
         </div>
-        {/* contador debajo del input, siempre visible */}
         {total > 0 && (
           <div className="mt-2 text-xs text-gray-500">
             Mostrando <span className="font-semibold text-gray-700">{found}</span> de{" "}
@@ -275,7 +294,6 @@ const InnerProfessionalPicker = ({
         )}
       </div>
 
-      {/* Lista de resultados */}
       <div className="px-6 pb-6">
         <div className="max-h-[400px] overflow-auto space-y-2">
           {loading && (
@@ -356,7 +374,6 @@ const InnerProfessionalPicker = ({
         </div>
       </div>
 
-      {/* Footer con contador */}
       <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
@@ -367,8 +384,6 @@ const InnerProfessionalPicker = ({
             )}
           </div>
         </div>
-
-     
       </div>
     </ModalContent>
   );

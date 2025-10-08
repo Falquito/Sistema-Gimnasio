@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 export type AppointmentCalendarOnConfirm = (payload: {
-  dateISO: string;   // "YYYY-MM-DD"
-  time24: string;    // "HH:mm"
-  endTime24: string; // "HH:mm"
+  dateISO: string;
+  time24: string;
+  endTime24: string;
 }) => void;
 
 type BusySlot = { inicio: string; fin: string };
@@ -16,8 +16,8 @@ export default function AppointmentCalendar({
   onClose,
   profesionalId,
   loadBusy,
-  workingHours = { start: '09:00', end: '18:00' },   // fallback si no hay fetchWorkingHours
-  fetchWorkingHours,                                  // 👈 NUEVO: para traer horario real del backend
+  workingHours = { start: '09:00', end: '18:00' },
+  fetchWorkingHours,
   onDateChange,
   isSlotDisabled,
 }: {
@@ -27,7 +27,7 @@ export default function AppointmentCalendar({
   onClose: () => void;
   profesionalId?: number;
   loadBusy?: (args: { profesionalId: number; dateISO: string }) => Promise<BusySlot[]>;
-  workingHours?: { start: string; end: string };   // fallback
+  workingHours?: { start: string; end: string };
   fetchWorkingHours?: (profesionalId: number) => Promise<{ start: string; end: string }>;
   onDateChange?: (dateISO: string) => void;
   isSlotDisabled?: (dateISO: string, start24: string, end24: string) => boolean;
@@ -37,14 +37,10 @@ export default function AppointmentCalendar({
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [busy, setBusy] = useState<BusySlot[]>([]);
   const [loadingBusy, setLoadingBusy] = useState(false);
-
-  // 👇 NUEVO: estado local con horario laboral efectivo del profesional
   const [wh, setWh] = useState<{ start: string; end: string }>(workingHours);
 
-  // Al cambiar el profesional, tratamos de obtener horario real
   useEffect(() => {
     let cancelled = false;
-
     const go = async () => {
       if (fetchWorkingHours && profesionalId) {
         try {
@@ -58,10 +54,8 @@ export default function AppointmentCalendar({
         setWh(workingHours);
       }
     };
-
     go();
     return () => { cancelled = true; };
-    // si cambian las props del fallback, también se reflejan
   }, [fetchWorkingHours, profesionalId, workingHours.start, workingHours.end]);
 
   const pad = (n: number) => n.toString().padStart(2, '0');
@@ -71,7 +65,6 @@ export default function AppointmentCalendar({
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 === 0 ? 12 : h % 12;
     return `${h12}:${pad(m)} ${ampm}`;
-    // Si querés 24h en UI, usá directamente el string HH:mm.
   };
 
   const addMinutes = (time24: string, minutes: number) => {
@@ -90,7 +83,6 @@ export default function AppointmentCalendar({
   const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) =>
     toMin(aStart) < toMin(bEnd) && toMin(aEnd) > toMin(bStart);
 
-  // Slots según horario laboral efectivo `wh`
   const allSlots24 = useMemo(() => {
     const slots: string[] = [];
     let t = wh.start;
@@ -130,7 +122,6 @@ export default function AppointmentCalendar({
     const selected = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(selected);
     setSelectedTime(null);
-
     if (onDateChange) {
       const dateISO = selected.toISOString().slice(0, 10);
       onDateChange(dateISO);
@@ -163,7 +154,6 @@ export default function AppointmentCalendar({
     onConfirm({ dateISO, time24, endTime24 });
   };
 
-  // Cargar ocupados del profesional para la fecha elegida
   useEffect(() => {
     const run = async () => {
       if (!loadBusy || !profesionalId || !selectedDate) {
@@ -185,61 +175,59 @@ export default function AppointmentCalendar({
     run();
   }, [loadBusy, profesionalId, selectedDate]);
 
-  // Filtrar slots que se pisan con ocupados + callback opcional de deshabilitado
   const availableSlots24 = useMemo(() => {
     if (!selectedDate) return allSlots24;
-
     const dateISO = selectedDate.toISOString().slice(0, 10);
-
     return allSlots24.filter((s) => {
       const end = addMinutes(s, durationMin);
-
-      // 1) Ocupados reales (backend)
       if (busy.length > 0) {
         const overlapped = busy.some(b => isOverlap(s, end, b.inicio, b.fin));
         if (overlapped) return false;
       }
-
-      // 2) Regla de negocio adicional del cliente (opcional)
       if (isSlotDisabled && isSlotDisabled(dateISO, s, end)) {
         return false;
       }
-
       return true;
     });
   }, [allSlots24, busy, durationMin, selectedDate, isSlotDisabled]);
 
   return (
-    <div className="bg-white text-black md:rounded-2xl overflow-hidden shadow-2xl">
-      {/* header */}
-      <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+    <div className="bg-white text-gray-900 md:rounded-2xl overflow-hidden shadow-2xl">
+      {/* Header */}
+      <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-white">
         <div>
-          <h1 className="text-2xl font-bold text-black">Selecciona fecha y hora</h1>
-          <p className="text-gray-500 text-sm">Elige un día y un horario disponible</p>
+          <h1 className="text-2xl font-bold text-gray-900">Selecciona fecha y hora</h1>
+          <p className="text-gray-600 text-sm mt-1">Elige un día y un horario disponible</p>
         </div>
-        <button onClick={onClose} className="p-3 hover:bg-gray-100 rounded-full">
+        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
           <X className="w-5 h-5 text-gray-500" />
         </button>
       </div>
 
-      <div className="flex min-h-[500px]">
+      <div className="flex flex-col md:flex-row min-h-[500px]">
         {/* Calendario */}
-        <div className="w-96 p-8 border-r border-gray-100 bg-gray-50/30">
+        <div className="w-full md:w-96 p-8 border-b md:border-b-0 md:border-r border-gray-100 bg-gray-50/30">
           <div className="flex items-center justify-between mb-8">
-            <button onClick={() => navigateMonth(-1)} className="p-3 hover:bg-white rounded-full border border-gray-200">
+            <button 
+              onClick={() => navigateMonth(-1)} 
+              className="p-2 hover:bg-white rounded-lg border border-gray-100 transition-all hover:shadow-sm"
+            >
               <ChevronLeft className="w-5 h-5 text-gray-700" />
             </button>
-            <h2 className="text-xl font-bold capitalize text-black">
+            <h2 className="text-xl font-bold capitalize text-gray-900">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
-            <button onClick={() => navigateMonth(1)} className="p-3 hover:bg-white rounded-full border border-gray-200">
+            <button 
+              onClick={() => navigateMonth(1)} 
+              className="p-2 hover:bg-white rounded-lg border border-gray-100 transition-all hover:shadow-sm"
+            >
               <ChevronRight className="w-5 h-5 text-gray-700" />
             </button>
           </div>
 
           <div className="grid grid-cols-7 gap-2 mb-4">
             {dayNames.map((d) => (
-              <div key={d} className="p-3 text-center text-gray-500 font-semibold text-sm uppercase tracking-wide">{d}</div>
+              <div key={d} className="p-2 text-center text-gray-500 font-semibold text-xs uppercase">{d}</div>
             ))}
           </div>
 
@@ -250,16 +238,16 @@ export default function AppointmentCalendar({
                 onClick={() => selectDate(day)}
                 disabled={isPastDate(day)}
                 className={[
-                  'h-12 w-12 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center',
+                  'h-11 w-11 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center',
                   !day ? 'invisible' : '',
                   isPastDate(day)
-                    ? 'text-gray-300 cursor-not-allowed bg-gray-50'
-                    : 'hover:bg-white cursor-pointer text-gray-700 hover:shadow-md hover:scale-110 hover:-translate-y-1',
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'hover:bg-white cursor-pointer text-gray-700 hover:shadow-sm',
                   isToday(day)
-                    ? 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 border-2 border-blue-200 shadow-sm'
+                    ? 'bg-green-50 text-green-600 border border-green-200'
                     : '',
                   selectedDate && day === selectedDate.getDate() && currentDate.getMonth() === selectedDate.getMonth()
-                    ? 'bg-black text-white shadow-lg scale-110 -translate-y-1'
+                    ? 'bg-gradient-to-br from-green-600 to-green-500 text-white shadow-lg scale-105'
                     : ''
                 ].join(' ')}
               >
@@ -273,54 +261,58 @@ export default function AppointmentCalendar({
         <div className="flex-1 p-8">
           {selectedDate ? (
             <div className="h-full flex flex-col">
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-1 text-black">Horarios disponibles</h3>
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${loadingBusy ? 'bg-yellow-400' : 'bg-green-400'}`}></div>
-                  <p className="text-gray-600 font-medium">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold mb-2 text-gray-900">Horarios disponibles</h3>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${loadingBusy ? 'bg-yellow-400' : 'bg-green-500'}`}></div>
+                  <p className="text-gray-600 text-sm">
                     {selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                    {loadingBusy ? ' (cargando…) ' : ''}
-                    {/* 👇 Indicación del horario laboral usado */}
-                    <span className="ml-3 text-xs text-gray-500">
-                      ({wh.start}–{wh.end})
-                    </span>
+                    {loadingBusy && ' (cargando…)'}
                   </p>
                 </div>
+                <p className="text-xs text-gray-400 mt-1">Horario: {wh.start} - {wh.end}</p>
               </div>
 
-              <div className="flex-1 space-y-2 max-h-80 overflow-y-auto pr-2">
+              <div className="flex-1 space-y-2 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                 {availableSlots24.length === 0 && (
-                  <div className="text-gray-500 text-sm">No hay horarios disponibles.</div>
+                  <div className="text-gray-400 text-sm p-4 bg-gray-50 rounded-lg text-center">
+                    No hay horarios disponibles para esta fecha
+                  </div>
                 )}
                 {availableSlots24.map((t24) => {
                   const label = to12h(t24);
+                  const isSelected = selectedTime === t24;
                   return (
                     <button
                       key={t24}
                       onClick={() => setSelectedTime(t24)}
                       className={[
-                        'w-full p-3 text-left rounded-xl border transition-all duration-300 flex items-center justify-between',
-                        selectedTime === t24
-                          ? 'border-black bg-black text-white shadow-md'
-                          : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                        'w-full p-3 text-left rounded-lg border transition-all duration-200 flex items-center justify-between',
+                        isSelected
+                          ? 'border-green-500 bg-green-50 shadow-sm'
+                          : 'border-gray-100 hover:border-green-300 hover:bg-green-50/50'
                       ].join(' ')}
                     >
-                      <span className="font-medium text-base">{label}</span>
-                      {selectedTime === t24 && (
-                        <span className="text-xs text-white/80">Seleccionado</span>
+                      <span className={`font-semibold ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>
+                        {label}
+                      </span>
+                      {isSelected && (
+                        <span className="text-xs text-green-600 font-medium">✓ Seleccionado</span>
                       )}
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-8 flex justify-end items-center">
+              <div className="mt-6 flex justify-end">
                 <button
                   onClick={handleConfirm}
                   disabled={!selectedTime}
                   className={[
-                    'px-10 py-4 rounded-2xl font-bold text-lg',
-                    selectedTime ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    'px-8 py-3 rounded-xl font-semibold text-base transition-all duration-200',
+                    selectedTime 
+                      ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-lg hover:shadow-xl hover:scale-105' 
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   ].join(' ')}
                 >
                   {selectedTime ? 'Confirmar Cita' : 'Selecciona un horario'}
@@ -329,11 +321,35 @@ export default function AppointmentCalendar({
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">Selecciona una fecha</p>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 font-medium">Selecciona una fecha del calendario</p>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f9fafb;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #16a34a;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #15803d;
+        }
+      `}</style>
     </div>
   );
 }
