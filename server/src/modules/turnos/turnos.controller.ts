@@ -15,25 +15,46 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('turnos')
 export class TurnosController {
-  constructor(private readonly turnosService: TurnosService) {}
+  constructor(private readonly turnosService: TurnosService) { }
 
   // HU-4: disponibili dad
-  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
-
+  // src/modules/turnos/turnos.controller.ts
+@Get('estadisticas')
+getEstadisticas(@Query('period') period?: string) {
+  return this.turnosService.obtenerEstadisticas(period as '6semanas' | '6meses' | '1año');
+}
   @Get('disponibles')
   getDisponibles(@Query() q: DisponibilidadQuery) {
     return this.turnosService.disponibilidad(q);
   }
 
   // HU-5: crear (registrar turno)
-  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
 
+   // Agenda (calendario)
+  @Get('agenda')
+  agenda(@Query() q: AgendaQuery) {
+    return this.turnosService.agenda(q);
+  }
+
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
+
+  @Get()
+  @ApiOkResponse({ type: Turnos, isArray: true })
+  listar(@Query('pacienteId') pacienteId?: string, @Query('estado') estado?: string) {
+    return this.turnosService.listar({
+      pacienteId: pacienteId ? Number(pacienteId) : undefined,
+      estado: estado || undefined,
+    });
+  }
+
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
   @Post()
-  @ApiOkResponse({description:"Devuelve turno creado",type:Turnos})
+  @ApiOkResponse({ description: "Devuelve turno creado", type: Turnos })
   crear(@Body() dto: CrearTurnoDto) {
     return this.turnosService.crear(dto);
   }
-  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
 
   // HU-6a: cancelar
   @Patch(':id/cancelar')
@@ -41,35 +62,24 @@ export class TurnosController {
     return this.turnosService.cancelar(id, dto);
   }
 
-  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
 
-  // Agenda (calendario)
-  @Get('agenda')
-  agenda(@Query() q: AgendaQuery) {
-    return this.turnosService.agenda(q);
-  }
+ 
 
-  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
 
   // Utilidades de lectura
+
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
+
+  @Patch(':id/completar')
+  completar(@Param('id', ParseIntPipe) id: number) {
+    return this.turnosService.completar(id);
+  }
+  
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.turnosService.getById(id);
   }
-  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
 
-  @Patch(':id/completar')
-completar(@Param('id', ParseIntPipe) id: number) {
-  return this.turnosService.completar(id);
-}
-  @Auth(validRoles.medico,validRoles.recepcionista,validRoles.gerente)
-
-  @Get()
-  @ApiOkResponse({type:Turnos,isArray:true})
-  listar(@Query('pacienteId') pacienteId?: string, @Query('estado') estado?: string) {
-    return this.turnosService.listar({
-      pacienteId: pacienteId ? Number(pacienteId) : undefined,
-      estado: estado || undefined,
-    });
-  }
 }

@@ -26,7 +26,7 @@ export class TurnosService {
     private readonly dataSource: DataSource,
     @InjectRepository(Turnos) private readonly turnoRepo: Repository<Turnos>,
     @InjectRepository(Profesionales) private readonly profRepo: Repository<Profesionales>,
-  ) {}
+  ) { }
 
   // ====== UTIL ======
 
@@ -196,52 +196,52 @@ export class TurnosService {
   }
 
   async completar(id: number) {
-  const turno = await this.getTurnoOrThrow(id);
-  
-  if (turno.estado === 'COMPLETADO') {
-    return turno; // Ya está completado
-  }
-  
-  if (turno.estado === 'CANCELADO') {
-    throw new ConflictException('No se puede completar un turno cancelado');
-  }
-  
-  turno.estado = 'COMPLETADO';
-  turno.fechaUltUpd = new Date().toISOString().slice(0, 10); // Fecha actual
-  
-  return await this.turnoRepo.save(turno);
-}
+    const turno = await this.getTurnoOrThrow(id);
 
- async agenda(q: { profesionalId?: number; desde?: string; hasta?: string; estado?: string }) {
-  const qb = this.turnoRepo.createQueryBuilder('t')
-    .leftJoinAndSelect('t.idPaciente', 'paciente')
-    .leftJoinAndSelect('t.idProfesional', 'profesional')
-    .leftJoinAndSelect('t.idRecepcionista', 'recep');
+    if (turno.estado === 'COMPLETADO') {
+      return turno; // Ya está completado
+    }
 
-  if (q.profesionalId != null) {
-    qb.andWhere('t.id_profesional = :pid', { pid: q.profesionalId });
+    if (turno.estado === 'CANCELADO') {
+      throw new ConflictException('No se puede completar un turno cancelado');
+    }
+
+    turno.estado = 'COMPLETADO';
+    turno.fechaUltUpd = new Date().toISOString().slice(0, 10); // Fecha actual
+
+    return await this.turnoRepo.save(turno);
   }
 
-  const d = this.onlyDate(q.desde);
-  if (d) qb.andWhere('t.fecha >= :d', { d });
+  async agenda(q: { profesionalId?: number; desde?: string; hasta?: string; estado?: string }) {
+    const qb = this.turnoRepo.createQueryBuilder('t')
+      .leftJoinAndSelect('t.idPaciente', 'paciente')
+      .leftJoinAndSelect('t.idProfesional', 'profesional')
+      .leftJoinAndSelect('t.idRecepcionista', 'recep');
 
-  const h = this.onlyDate(q.hasta);
-  if (h) qb.andWhere('t.fecha <= :h', { h });
+    if (q.profesionalId != null) {
+      qb.andWhere('t.id_profesional = :pid', { pid: q.profesionalId });
+    }
 
-  if (q.estado) {
-    qb.andWhere('t.estado = :e', { e: q.estado });
-  } else {
-    qb.andWhere('t.estado != :cancel', { cancel: 'CANCELADO' });
+    const d = this.onlyDate(q.desde);
+    if (d) qb.andWhere('t.fecha >= :d', { d });
+
+    const h = this.onlyDate(q.hasta);
+    if (h) qb.andWhere('t.fecha <= :h', { h });
+
+    if (q.estado) {
+      qb.andWhere('t.estado = :e', { e: q.estado });
+    } else {
+      qb.andWhere('t.estado != :cancel', { cancel: 'CANCELADO' });
+    }
+
+    qb.orderBy('t.fecha', 'ASC').addOrderBy('t.horaInicio', 'ASC');
+
+    const rows = await qb.getMany();
+
+    console.log(`Agenda query - profesional: ${q.profesionalId}, fecha: ${d}, encontrados: ${rows.length} turnos`);
+
+    return rows;
   }
-
-  qb.orderBy('t.fecha', 'ASC').addOrderBy('t.horaInicio', 'ASC');
-
-  const rows = await qb.getMany();
-  
-  console.log(`Agenda query - profesional: ${q.profesionalId}, fecha: ${d}, encontrados: ${rows.length} turnos`);
-  
-  return rows;
-}
   async listar(q: { pacienteId?: number; estado?: string }) {
     const qb = this.turnoRepo
       .createQueryBuilder('t')
@@ -263,4 +263,293 @@ export class TurnosService {
   public async getById(id: number) {
     return this.getTurnoOrThrow(id);
   }
+  async obtenerEstadisticas(period: '6semanas' | '6meses' | '1año' = '6semanas') {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
+    try {
+      const ahora = new Date();
+      const fechaDesde = new Date(ahora);
+
+      switch (period) {
+        case '6semanas':
+          fechaDesde.setDate(fechaDesde.getDate() - 42);
+          break;
+        case '6meses':
+          fechaDesde.setMonth(fechaDesde.getMonth() - 6);
+          break;
+        case '1año':
+          fechaDesde.setFullYear(fechaDesde.getFullYear() - 1);
+          break;
+      }
+
+      const fechaDesdeFmt = fechaDesde.toISOString().slice(0, 10);
+      const mesActual = ahora.toISOString().slice(0, 7);
+      const FK_PAC = `"idPacienteIdPaciente"`;
+
+      const turnosPorMes = await queryRunner.query(
+        `
+      WITH meses_serie AS (
+        SELECT 
+          generate_series(
+            date_trunc('month', $1::date),
+            date_trunc('month', CURRENT_DATE),
+            '1 month'::interval
+          )::date AS mes_fecha
+      ),
+      turnos_agrupados AS (
+        SELECT 
+          date_trunc('month', to_date(fecha, 'YYYY-MM-DD'))::date AS mes_fecha,
+          COUNT(*)::int AS total
+        FROM turnos
+        WHERE estado != 'CANCELADO'
+          AND fecha ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+          AND to_date(fecha, 'YYYY-MM-DD') >= $1
+        GROUP BY mes_fecha
+      )
+      SELECT 
+        TO_CHAR(m.mes_fecha, 'TMMonth') AS mes,
+        EXTRACT(MONTH FROM m.mes_fecha)::int AS mes_num,
+        COALESCE(t.total, 0)::int AS total
+      FROM meses_serie m
+      LEFT JOIN turnos_agrupados t ON m.mes_fecha = t.mes_fecha
+      ORDER BY m.mes_fecha;
+      `,
+        [fechaDesdeFmt]
+      );
+
+      const turnosMesActual = await queryRunner.query(
+        `
+      SELECT COUNT(*)::int AS total
+      FROM turnos
+      WHERE estado != 'CANCELADO'
+        AND fecha LIKE $1 || '%';
+      `,
+        [mesActual]
+      );
+
+      const turnosPorEstado = await queryRunner.query(`
+      SELECT estado, COUNT(*)::int AS total
+      FROM turnos
+      GROUP BY estado;
+    `);
+
+      const turnosPorHora = await queryRunner.query(`
+      SELECT hora_inicio AS hora, COUNT(*)::int AS total
+      FROM turnos
+      WHERE estado != 'CANCELADO'
+        AND hora_inicio ~ '^[0-9]{2}:[0-9]{2}$'
+      GROUP BY hora_inicio
+      ORDER BY hora_inicio;
+    `);
+
+      const turnosPorEspecialidad = await queryRunner.query(`
+      SELECT 
+        COALESCE(p.servicio, 'Sin especialidad')                         AS especialidad,
+        COUNT(*)::int                                                    AS total,
+        ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2)               AS porcentaje
+      FROM turnos t
+      LEFT JOIN profesionales p ON t.id_profesional = p.id_profesionales
+      WHERE t.estado != 'CANCELADO'
+      GROUP BY p.servicio
+      ORDER BY total DESC;
+    `);
+
+      const pacientesActivosPorMes = await queryRunner.query(
+        `
+  WITH meses_serie AS (
+    SELECT 
+      generate_series(
+        date_trunc('month', $1::date),
+        date_trunc('month', CURRENT_DATE),
+        '1 month'::interval
+      )::date AS mes_fecha
+  ),
+  pacientes_por_mes AS (
+    SELECT 
+      date_trunc('month', to_date(t.fecha, 'YYYY-MM-DD'))::date AS mes_fecha,
+      COUNT(DISTINCT t.${FK_PAC})::int AS activos
+    FROM turnos t
+    WHERE t.estado != 'CANCELADO'
+      AND t.fecha ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+      AND to_date(t.fecha, 'YYYY-MM-DD') >= $1
+    GROUP BY mes_fecha
+  )
+  SELECT 
+    TO_CHAR(m.mes_fecha, 'TMMonth') AS mes,
+    EXTRACT(MONTH FROM m.mes_fecha)::int AS mes_num,
+    EXTRACT(YEAR FROM m.mes_fecha)::int AS year,
+    COALESCE(p.activos, 0)::int AS activos
+  FROM meses_serie m
+  LEFT JOIN pacientes_por_mes p ON m.mes_fecha = p.mes_fecha
+  ORDER BY m.mes_fecha;
+  `,
+        [fechaDesdeFmt]
+      );
+
+      const pacientesPorMes = await queryRunner.query(
+        `
+  WITH meses_serie AS (
+    SELECT 
+      generate_series(
+        date_trunc('month', $1::date),
+        date_trunc('month', CURRENT_DATE),
+        '1 month'::interval
+      )::date AS mes_fecha
+  ),
+  primeras AS (
+    SELECT
+      ${FK_PAC} AS pac_id,
+      date_trunc('month', MIN(to_date(fecha,'YYYY-MM-DD')))::date AS primera_mes
+    FROM turnos
+    WHERE fecha ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+      AND estado != 'CANCELADO'  
+    GROUP BY ${FK_PAC}
+  ),
+  nuevos_por_mes AS (
+    SELECT
+      primera_mes AS mes_fecha,
+      COUNT(*)::int AS nuevos
+    FROM primeras
+    WHERE primera_mes >= $1::date
+    GROUP BY primera_mes
+  )
+  SELECT
+    TO_CHAR(m.mes_fecha, 'TMMonth') AS mes,
+    EXTRACT(MONTH FROM m.mes_fecha)::int AS mes_num,
+    EXTRACT(YEAR FROM m.mes_fecha)::int AS year,
+    COALESCE(n.nuevos, 0)::int AS nuevos
+  FROM meses_serie m
+  LEFT JOIN nuevos_por_mes n ON m.mes_fecha = n.mes_fecha
+  ORDER BY m.mes_fecha;
+  `,
+        [fechaDesdeFmt]
+      );
+
+      // Conteos de pacientes (tabla paciente)
+      const pacientes = await queryRunner.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE estado = true)  ::int AS activos,
+        COUNT(*) FILTER (WHERE estado = false) ::int AS inactivos,
+        COUNT(*)                               ::int AS total
+      FROM paciente;
+    `);
+
+      // Pacientes NUEVOS de este mes = primer turno cae en este mes
+      const pacientesNuevosMesRow = await queryRunner.query(
+        `
+      WITH primeras AS (
+        SELECT
+          ${FK_PAC}                                AS pac_id,
+          MIN(to_date(fecha,'YYYY-MM-DD'))         AS primera
+        FROM turnos
+        WHERE fecha ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+        GROUP BY ${FK_PAC}
+      )
+      SELECT COUNT(*)::int AS total
+      FROM primeras
+      WHERE TO_CHAR(primera, 'YYYY-MM') = $1;
+      `,
+        [mesActual]
+      );
+
+      const horaPico =
+        turnosPorHora.length > 0
+          ? turnosPorHora.reduce((max: any, curr: any) =>
+            Number(curr.total) > Number(max.total) ? curr : max
+          )
+          : { hora: '16:00', total: 0 };
+
+      const especialidadTop =
+        turnosPorEspecialidad.length > 0
+          ? turnosPorEspecialidad[0]
+          : { especialidad: 'N/A', porcentaje: 0 };
+
+      const totalTurnos = turnosPorMes.reduce(
+        (sum: number, m: any) => sum + Number(m.total),
+        0
+      );
+      const promedioMensual =
+        turnosPorMes.length > 0 ? Math.round(totalTurnos / turnosPorMes.length) : 0;
+      const promedioSemanal = Math.round(promedioMensual / 4.3);
+
+      const mesAnterior = new Date(ahora);
+      mesAnterior.setMonth(mesAnterior.getMonth() - 1);
+      const fechaMesAnterior = mesAnterior.toISOString().slice(0, 7);
+
+      const turnosMesAnterior = await queryRunner.query(
+        `
+      SELECT COUNT(*)::int AS total
+      FROM turnos
+      WHERE estado != 'CANCELADO'
+        AND fecha LIKE $1 || '%';
+      `,
+        [fechaMesAnterior]
+      );
+
+      const totalMesActual = Number(turnosMesActual[0]?.total || 0);
+      const totalMesAnt = Number(turnosMesAnterior[0]?.total || 0);
+      const crecimiento =
+        totalMesAnt > 0
+          ? Math.round(((totalMesActual - totalMesAnt) / totalMesAnt) * 100)
+          : 0;
+
+      const incrementoPacientes = Number(pacientesNuevosMesRow[0]?.total || 0);
+
+      return {
+        kpis: {
+          totalTurnos: totalMesActual,
+          pacientesActivos: {
+            cantidad: Number(pacientes[0]?.activos || 0),
+            incremento: incrementoPacientes,
+          },
+          horaPico: {
+            hora: horaPico.hora,
+            promedio: Number(horaPico.total),
+          },
+          especialidadTop: {
+            nombre: especialidadTop.especialidad,
+            porcentaje: Number(especialidadTop.porcentaje),
+          },
+          servicioPrincipal: {
+            nombre: 'Sesión Regular',
+            cantidad: 156,
+          },
+        },
+        turnos: {
+          porMes: turnosPorMes,
+          porEstado: turnosPorEstado,
+          porHora: turnosPorHora,
+          promedioSemanal,
+          promedioMensual,
+          crecimiento,
+        },
+        pacientes: {
+          activos: Number(pacientes[0]?.activos || 0),
+          inactivos: Number(pacientes[0]?.inactivos || 0),
+          total: Number(pacientes[0]?.total || 0),
+          porMes: pacientesPorMes,
+          activosPorMes: pacientesActivosPorMes,
+          nuevosMes: incrementoPacientes,
+        },
+        especialidades: turnosPorEspecialidad,
+        horarios: {
+          distribucion: turnosPorHora,
+          pico: horaPico.hora,
+          tranquilo:
+            turnosPorHora.length > 0
+              ? turnosPorHora.reduce((min: any, curr: any) =>
+                Number(curr.total) < Number(min.total) ? curr : min
+              ).hora
+              : '13:00',
+        },
+      };
+    } catch (error) {
+      console.error('Error obteniendo estadísticas:', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
 }
