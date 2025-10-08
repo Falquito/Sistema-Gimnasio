@@ -49,7 +49,8 @@ export class AuthService {
       sub: user.idUsuario,   
       rol: user.rol!,
       nombre,
-      professionalId,         
+      professionalId,
+      idProfesional: professionalId!  
       
     };
 
