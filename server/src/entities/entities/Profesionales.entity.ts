@@ -63,9 +63,9 @@ export class Profesionales {
   @OneToMany(()=>ObraSocialPorProfesional,(obrp)=>obrp.profesional)
   obraSocialPorProfesional:ObraSocialPorProfesional
 
-  @Column({type:"time",default:"09:00"})
+  @Column({type:"text",default:"09:00"})
   hora_inicio_laboral:string;
 
-  @Column({type:"time",default:"21:00"})
+  @Column({type:"text",default:"21:00"})
   hora_fin_laboral:string;
 }

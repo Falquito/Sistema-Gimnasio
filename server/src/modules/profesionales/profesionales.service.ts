@@ -40,7 +40,7 @@ export class ProfesionalesService {
     return hashed
   }
   async create(createProfesionalDto:CreateProfesionaleDto){
-        const {ObrasSociales,apellido,dni,nombre,telefono,email,contraseña,servicio,genero} = createProfesionalDto
+        const {hora_fin_laboral,hora_inicio_laboral,ObrasSociales,apellido,dni,nombre,telefono,email,contraseña,servicio,genero} = createProfesionalDto
         const queryRunner = this.dataSource.createQueryRunner()
         const fecha = new Date();
         const contraseñaHasheada = await this.hashPassword(contraseña)
@@ -74,7 +74,9 @@ export class ProfesionalesService {
             fechaAlta:fechaFormateada,
             fechaUltUpd:"-",
             servicio:servicio,
-            genero:genero
+            genero:genero,
+            hora_inicio_laboral:hora_inicio_laboral,
+            hora_fin_laboral:hora_fin_laboral
           })
     
           await queryRunner.manager.save(profesional)

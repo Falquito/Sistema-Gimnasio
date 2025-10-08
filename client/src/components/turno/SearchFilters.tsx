@@ -22,7 +22,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
           <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Buscar por paciente, Profesional o tipo de sesión..."
+            placeholder="Buscar por paciente, Profesional..."
             value={filters.searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 text-gray-900 placeholder-gray-400 transition-all duration-200"

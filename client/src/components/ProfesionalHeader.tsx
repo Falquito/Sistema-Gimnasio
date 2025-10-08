@@ -1,4 +1,4 @@
-import { Plus, Users } from "lucide-react";
+import { Plus, Smile, Users } from "lucide-react";
 import { LabelInputContainer } from "./signup-form-demo";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -25,7 +25,58 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
   setProfesionales
 }) => {
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+  // ---  validator functions ---
 
+  // ✅ 1. Validador para permitir solo letras (nombre y apellido)
+  const handleAlphaInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!/^[a-zA-Z\s]*$/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab' && !e.ctrlKey) {
+        e.preventDefault();
+    }
+  };
+
+  // ✅ 2. Validador para permitir solo números (DNI)
+  const handleNumericInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!/^[0-9]*$/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab' && !e.ctrlKey) {
+        e.preventDefault();
+    }
+  };
+
+  // ✅ 3. Formateador y validador de hora (HH:MM)
+   const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, ''); // Solo números
+    let formattedValue = value;
+
+    if (value.length > 2) {
+      formattedValue = `${value.slice(0, 2)}:${value.slice(2, 4)}`;
+    }
+    
+    e.target.value = formattedValue;
+  };
+
+  // ✅ 4. Validador general que se ejecuta al salir de un campo (onBlur)
+  const validateField = (name: string, value: string) => {
+    let specificError = "";
+    switch (name) {
+      case 'email':
+        if (value && !/\S+@\S+\.\S+/.test(value)) {
+            specificError = "El formato del email no es válido.";
+        }
+        break;
+      case 'horaI':
+      case 'horaF':
+        if (value) {
+            const [hours, minutes] = value.split(':').map(Number);
+            if (value.length !== 5 || isNaN(hours) || isNaN(minutes) || hours < 9 || hours > 21 || minutes < 0 || minutes > 59) {
+                specificError = "La hora debe estar entre 09:00 y 21:59.";
+            }
+        }
+        break;
+      default:
+        break;
+    }
+    setFieldErrors(prev => ({ ...prev, [name]: specificError }));
+  };
   // 🧩 Refs para cada input
   const nombreRef = useRef<HTMLInputElement>(null);
   const apellidoRef = useRef<HTMLInputElement>(null);
@@ -36,10 +87,78 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
   const emailRef = useRef<HTMLInputElement>(null);
   const generoRef = useRef<HTMLInputElement>(null)
   const servicioRef = useRef<HTMLSelectElement>(null);
+  const horaIRef= useRef<HTMLInputElement>(null)
+  const horaFRef = useRef<HTMLInputElement>(null);
   const [error,setError] = useState("")
+  const [exitoso,setExitoso] = useState(false)
+  
 
   // 🚀 Crear profesional
   const handleCreateProfesional = async () => {
+    // ⚠️ Validación final antes de enviar
+    const formValues = [
+      {
+        item:nombreRef.current?.value.trim()!
+      },
+      {
+        item: apellidoRef.current?.value.trim()!
+      },
+      {
+        item: telefonoRef.current?.value.trim()!
+      },
+      {
+      item: contraseñaRef.current?.value.trim()!
+      },
+      {
+      item: dniRef.current?.value.trim()!
+      },
+      {
+      item: emailRef.current?.value.trim()!
+      },
+      {
+        item: servicioRef.current?.value!
+      },
+      {
+        item:generoRef.current?.value!
+        // ... agrega otros campos si necesitas validarlos antes de enviar
+    }];
+    switch (formValues.findIndex((item)=>item.item==="")){
+      case 0:
+        setError("El nombre es obligatorio")
+        return
+        break
+      case 1:
+        setError("El apellido es obligatorio")
+        return
+        break
+      case 2:
+        setError("El telefono es obligatorio")
+        return
+      case 3:
+        setError("El contraseña es obligatorio")
+        return
+      case 4:
+        setError("El dni es obligatorio")
+        return
+      case 5:
+        setError("El email es obligatorio")
+        return
+      case 6:
+        setError("El servicio es obligatorio")
+        return
+      case 7:
+        setError("El genero es obligatorio")
+        return
+    }
+    
+    
+    
+    // Si hay errores en los campos, no continuar
+    if (Object.values(fieldErrors).some(err => err)) {
+        setError("Por favor, corrige los errores en el formulario.");
+        setTimeout(() => setError(""), 5000);
+        return;
+    }
     const nuevoProfesional:BodyProfesional = {
       nombre: nombreRef.current?.value.trim()!,
       apellido: apellidoRef.current?.value.trim()!,
@@ -49,6 +168,8 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
       email: emailRef.current?.value.trim()!,
       servicio: servicioRef.current?.value!,
       genero:generoRef.current?.value!,
+      hora_inicio_laboral:horaIRef.current?.value!,
+      hora_fin_laboral:horaFRef.current?.value!,
       ObrasSociales: [
         {
             idObraSocial:parseInt(idObraSocialRef.current.value)
@@ -70,6 +191,10 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
 
         const modal = document.getElementById("nuevoProfesional") as HTMLDialogElement;
         modal.close();
+        setExitoso(true)
+        setTimeout(()=>{
+          setExitoso(false)
+        },3000)
         await getProfesionales()
     } catch (error) {
 
@@ -99,7 +224,11 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
 
   return (
     <div className="bg-white border-b border-gray-200 shadow-sm rounded-3xl">
-        
+        {exitoso?( 
+              <div role="alert" className="alert alert-success fixed top-5 right-0 z-100">
+                <Smile></Smile>
+                <span>Accion realizada correctamente</span>
+            </div>):""} 
       <div className="max-w-7xl mx-auto px-6 py-6 rounded-3xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -132,27 +261,76 @@ export const ProfesionalHeader: React.FC<ProfesionalHeaderProps> = ({
 
                 {/* Nombre / Apellido */}
                 <LabelInputContainer className="flex-row items-center gap-2">
-                  <Label>Nombre</Label>
-                  <Input ref={nombreRef} type="text" placeholder="Joel..." />
-                  <Label>Apellido</Label>
-                  <Input ref={apellidoRef} type="text" placeholder="Serrudo..." />
+                  <div className="flex flex-col w-full">
+                    <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">Nombre</Label>
+                    <Input ref={nombreRef} type="text" placeholder="Joel..." onKeyDown={handleAlphaInput} />
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">Apellido</Label>
+                    <Input ref={apellidoRef} type="text" placeholder="Serrudo..." onKeyDown={handleAlphaInput} />
+                  </div>
                 </LabelInputContainer>
 
                 {/* Contraseña / Teléfono */}
-                <LabelInputContainer className="flex-row items-center gap-2">
-                  <Label>Contraseña</Label>
-                  <Input ref={contraseñaRef} type="password" placeholder="******" />
-                  <Label>Teléfono</Label>
-                  <Input ref={telefonoRef} type="text" placeholder="3875352838" />
+                 {/* ... no se pidieron validaciones aquí, se mantienen igual ... */}
+                 <LabelInputContainer className="flex-row items-center gap-2">
+                  <div className="flex flex-col w-full">
+                    <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">Contraseña</Label>
+                    <Input ref={contraseñaRef} type="password" placeholder="******" />
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">Teléfono</Label>
+                    <Input ref={telefonoRef} type="text" placeholder="3875352838" />
+                  </div>
                 </LabelInputContainer>
 
                 {/* DNI / Email */}
                 <LabelInputContainer className="flex-row items-center gap-2">
-                  <Label>DNI</Label>
-                  <Input ref={dniRef} type="text" placeholder="Sin puntos ni comillas" />
-                  <Label>Correo electrónico</Label>
-                  <Input ref={emailRef} type="email" placeholder="example@gmail.com" />
+                  <div className="flex flex-col w-full">
+                    <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">DNI</Label>
+                    <Input ref={dniRef} type="text" placeholder="Sin puntos" onKeyDown={handleNumericInput} maxLength={8} />
+                    {fieldErrors.dni && <p className="text-red-500 text-xs mt-1">{fieldErrors.dni}</p>}
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <Label>Correo electrónico</Label>
+                    <Input 
+                        ref={emailRef} 
+                        type="email" 
+                        placeholder="example@gmail.com"
+                        onBlur={(e) => validateField('email', e.target.value)}
+                    />
+                    {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
+                  </div>
                 </LabelInputContainer>
+
+                {/* Horas */}
+                <LabelInputContainer className="flex-row items-center gap-2">
+                  <div className="flex flex-col w-full">
+                    <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">Hora inicio laboral</Label>
+                    <Input 
+                        ref={horaIRef} 
+                        type="text" 
+                        placeholder="09:00" 
+                        maxLength={5} 
+                        onChange={handleTimeInput} 
+                        onBlur={(e) => validateField('horaI', e.target.value)} 
+                    />
+                    {fieldErrors.horaI && <p className="text-red-500 text-xs mt-1">{fieldErrors.horaI}</p>}
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <Label>Hora fin laboral</Label>
+                    <Input 
+                        ref={horaFRef} 
+                        type="text" 
+                        placeholder="16:00" 
+                        maxLength={5} 
+                        onChange={handleTimeInput} 
+                        onBlur={(e) => validateField('horaF', e.target.value)}
+                    />
+                     {fieldErrors.horaF && <p className="text-red-500 text-xs mt-1">{fieldErrors.horaF}</p>}
+                  </div>
+                </LabelInputContainer>
+
 
                 {/* Servicio / Obras sociales */}
                 <LabelInputContainer className="flex-col flex-wrap gap-2 items-center ">

@@ -198,7 +198,7 @@
 
 
 import type { ProfesionalListItem } from "@/services/profesionales.services";
-import { BriefcaseMedical, Calendar, Edit3, Mail, Phone, Trash2, User, Users, Search } from "lucide-react";
+import { BriefcaseMedical, Calendar, Edit3, Mail, Phone, Trash2, User, Users, Search, TimerIcon } from "lucide-react";
 import { useState, useMemo } from "react";
 
 interface ProfesionalesTableProps {
@@ -315,6 +315,7 @@ const filteredProfesionales = useMemo(() => {
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Información Personal</th>
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Contacto</th>
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Servicio</th>
+                <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Horarios</th>
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Acciones</th>
               </tr>
             </thead>
@@ -368,6 +369,13 @@ const filteredProfesionales = useMemo(() => {
                       <div className="flex items-center gap-2">
                         <BriefcaseMedical className="w-4 h-4 text-gray-400" />
                         {profesional.servicio}
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-6 text-sm text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <TimerIcon className="w-4 h-4 text-gray-400" />
+                        {profesional.hora_inicio_laboral} - {profesional.hora_fin_laboral}
                       </div>
                     </td>
 

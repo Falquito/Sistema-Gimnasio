@@ -12,6 +12,7 @@ import type { ObraSocial } from "./Pacientes"
 import { LabelInputContainer } from "@/components/signup-form-demo"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Smile } from "lucide-react"
 
 export const Profesionales = ()=>{
 
@@ -31,8 +32,11 @@ export const Profesionales = ()=>{
       const dniEditadoRef = useRef<HTMLInputElement>(null);
       const emailEditadoRef = useRef<HTMLInputElement>(null);
       const servicioEditadoRef = useRef<HTMLSelectElement>(null);
-      const generoEditadoRef = useRef<HTMLInputElement>(null) 
+      const generoEditadoRef = useRef<HTMLInputElement>(null)
+      const horaIRefEditado= useRef<HTMLInputElement>(null)
+      const horaFRefEditado = useRef<HTMLInputElement>(null);
       const [error,setError] = useState("")
+      const [exitoso,setExitoso] = useState(false)
     
     const handleEditarProfesional = async ()=>{
         const editadoProfesional:BodyProfesional = {
@@ -44,6 +48,8 @@ export const Profesionales = ()=>{
               email: emailEditadoRef.current?.value.trim()===""?selectedProfesional?.email!:emailEditadoRef.current?.value.trim()!,
               servicio: servicioEditadoRef.current?.value===""?selectedProfesional?.servicio!:servicioEditadoRef.current?.value!,
               genero:generoEditadoRef.current?.value===""?selectedProfesional?.genero!:generoEditadoRef.current?.value!,
+              hora_inicio_laboral:horaIRefEditado.current?.value===""?selectedProfesional?.hora_inicio_laboral!:horaIRefEditado.current?.value!,
+              hora_fin_laboral:horaFRefEditado.current?.value===""?selectedProfesional?.hora_fin_laboral!:horaFRefEditado.current?.value!,
               ObrasSociales: [
                 {
                     idObraSocial:parseInt(idObraSocialEditadoRef.current!.value)
@@ -52,6 +58,8 @@ export const Profesionales = ()=>{
             };
             console.log(editadoProfesional)
 
+
+    
         try {
                 setLoading(true)
                 const response = await updateProfesional(selectedProfesional?.idProfesionales!,editadoProfesional)
@@ -59,10 +67,14 @@ export const Profesionales = ()=>{
                     throw new Error(response.message)
                 }
                 setLoading(false)
-        
+                
                 const modal = document.getElementById("editarProfesional") as HTMLDialogElement;
                 modal.close();
                 await getProfesionales()
+                setExitoso(true);
+                setTimeout(() => {
+                  setExitoso(false)
+            }, 3000);
             } catch (error) {
         
                 console.error(error)
@@ -76,6 +88,7 @@ export const Profesionales = ()=>{
                 
             }finally{
                 setLoading(false)
+                
         
             }
             // Luego podrías cerrar el modal o limpiar los campos:
@@ -89,6 +102,16 @@ export const Profesionales = ()=>{
         idObraSocialEditadoRef.current!.value = "";
         generoEditadoRef.current!.value=""
     }
+    const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, ''); // Solo números
+    let formattedValue = value;
+
+    if (value.length > 2) {
+      formattedValue = `${value.slice(0, 2)}:${value.slice(2, 4)}`;
+    }
+    
+    e.target.value = formattedValue;
+  };
     const getObrasSociales =async()=>{
         const listObrasSociales = await listarObrasSociales()
         console.log(listObrasSociales)
@@ -109,7 +132,7 @@ export const Profesionales = ()=>{
         
 
     }
-
+    
     const onEliminar = async (idProfesional:number)=>{
         try {
             
@@ -118,9 +141,14 @@ export const Profesionales = ()=>{
             if(response.error){
                     throw new Error(response.message)
                 }
+            
             setLoading(false)
             await getProfesionales()
             setProfesionales(prev => prev.filter(p => p.idProfesionales !== idProfesional))
+            setExitoso(true);
+            setTimeout(() => {
+              setExitoso(false)
+          }, 3000);
         } catch (error) {
 
             
@@ -139,6 +167,7 @@ export const Profesionales = ()=>{
         
         }
     }
+    
     useEffect(()=>{
         getProfesionales()
         getObrasSociales()
@@ -149,9 +178,14 @@ export const Profesionales = ()=>{
         // <div className=" [perspective:1000px] relative b flex flex-col  mx-auto  h-full  items-start justify-start my-10">
         //         <Tabs key={profesionales.length} tabs={tabs} />
         // </div>
+        
         <div className="mx-auto px-2 h-full relative overflow-y-auto  rounded-2xl  text-xl  text-white bg-gradient-to-br bg-white">
+          {exitoso?( 
+              <div role="alert" className="alert alert-success fixed top-5 right-0 z-100">
+                <Smile></Smile>
+                <span>Accion realizada correctamente</span>
+            </div>):""}               
                     <div className="flex flex-col gap-10">
-                       
                        
 
                         {/* Modal */}
@@ -183,6 +217,33 @@ export const Profesionales = ()=>{
                   <Input ref={dniEditadoRef} type="text" value={selectedProfesional?.dni} placeholder="Sin puntos ni comillas" />
                   <Label>Correo electrónico</Label>
                   <Input ref={emailEditadoRef} type="email" placeholder={selectedProfesional?.email}  />
+                </LabelInputContainer>
+                {/* Horas */}
+                <LabelInputContainer className="flex-row items-center gap-2">
+                  <div className="flex flex-col w-full">
+                    <Label className="after:ml-0.5 after:text-red-500 after:content-['*']">Hora inicio laboral</Label>
+                    <Input 
+                        ref={horaIRefEditado} 
+                        type="text" 
+                        placeholder="09:00" 
+                        maxLength={5} 
+                        onChange={handleTimeInput} 
+                     
+                    />
+                    
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <Label>Hora fin laboral</Label>
+                    <Input 
+                        ref={horaFRefEditado} 
+                        type="text" 
+                        placeholder="16:00" 
+                        maxLength={5} 
+                        onChange={handleTimeInput} 
+                        
+                    />
+                     
+                  </div>
                 </LabelInputContainer>
 
                 {/* Servicio / Obras sociales */}

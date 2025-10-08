@@ -57,7 +57,7 @@ function App() {
               </ProtectedRoute>} />  
             <Route path="user" element={<ProtectedRoute><User /></ProtectedRoute>} />
             <Route path="recepcionista" element={<ProtectedRoute allowedRoles={["gerente", "recepcionista"]}><Recepcionista /></ProtectedRoute>} />
-            <Route path="turnos" element={<ProtectedRoute allowedRoles={["recepcionista,gerente"]}><Turnos /></ProtectedRoute>} />
+            <Route path="turnos" element={<ProtectedRoute allowedRoles={["recepcionista","gerente"]}><Turnos /></ProtectedRoute>} />
             <Route path="pacientes" element={<ProtectedRoute allowedRoles={["gerente","recepcionista"]}><PacientesPage /></ProtectedRoute>} />
             <Route path="profesionales" element={<ProtectedRoute allowedRoles={["gerente", "recepcionista"]}><Profesionales /></ProtectedRoute>} />
           </Route>

@@ -238,7 +238,7 @@ const handleSubmit: React.FormEventHandler = async (e) => {
             <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
               Nuevo Turno
             </h2>
-            <p className="text-gray-600 text-sm">Programa una nueva cita</p>
+            <p className="text-gray-600 text-sm">Programa un nuevo turno</p>
           </div>
         </div>
       </div>
