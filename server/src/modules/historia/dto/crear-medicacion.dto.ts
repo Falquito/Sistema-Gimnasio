@@ -2,10 +2,7 @@ import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from "class-vali
 import { EstadoMedicacion } from "src/entities/entities/Medicacion.entity";
 
 export class CrearMedicacionDto {
-  // Opción A: asociada a un turno (derivamos paciente y profesional)
-  @IsOptional() @IsInt() @Min(1)
-  turnoId?: number;
-
+ 
   // Opción B: sin turno -> se requieren ambos
   @IsOptional() @IsInt() @Min(1)
   pacienteId?: number;

@@ -6,13 +6,19 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuario } from 'src/entities/entities/Usuario.entity';
 import { Repository } from 'typeorm';
+import { Profesionales } from 'src/entities/entities/Profesionales.entity';
+import { Recepcionista } from 'src/entities/entities/Recepcionista.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     @InjectRepository(Usuario)
-    private readonly usuarioRepository:Repository<Usuario>
+    private readonly usuarioRepository:Repository<Usuario>,
+    @InjectRepository(Profesionales)
+    private readonly profRepository:Repository<Profesionales>,
+    @InjectRepository(Recepcionista)
+    private readonly recepcionsitaRepository:Repository<Recepcionista>
   ) {}
 
 
@@ -25,10 +31,12 @@ export class AuthService {
     const match = await bcrypt.compare(password, user.contraseA!);
     if (!match) throw new UnauthorizedException('Contraseña invalida');
     let nombre = '';
+    let idServicio;
     
     switch (user.rol) {
       case 'medico':
         nombre = user.profesionales?.[0]?.nombreProfesional ?? '';
+        idServicio = user.profesionales[0].idProfesionales
         break;
       case 'gerente':
         nombre = user.gerentes?.[0]?.nombreGerente ?? '';
@@ -40,7 +48,7 @@ export class AuthService {
     
     return {
       ...user,
-      token:this.getJwtToken({id:user.idUsuario,rol:user.rol!,nombre:nombre})
+      token:this.getJwtToken({id:user.idUsuario,rol:user.rol!,nombre:nombre,idProfesional:idServicio!})
     }
   }
 
