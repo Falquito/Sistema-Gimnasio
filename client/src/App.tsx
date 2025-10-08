@@ -75,6 +75,8 @@ function App() {
                 <EstadisticasPage />
               }
             />
+            <Route path="historialClinico" element={<ProtectedRoute allowedRoles={["gerente", "medico"]}><HistorialClinico/></ProtectedRoute>} />
+
           </Route>
         </Routes>
       </BrowserRouter>

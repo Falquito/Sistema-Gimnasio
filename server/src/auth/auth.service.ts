@@ -7,6 +7,8 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuario } from 'src/entities/entities/Usuario.entity';
 import { Repository } from 'typeorm';
+import { Profesionales } from 'src/entities/entities/Profesionales.entity';
+import { Recepcionista } from 'src/entities/entities/Recepcionista.entity';
 
 @Injectable()
 export class AuthService {
