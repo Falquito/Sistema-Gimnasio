@@ -25,7 +25,8 @@ interface AppointmentsTableProps {
   searchTerm: string;
   statusFilter: string;
   onCancelTurno: (id: number) => Promise<void>;
-  onCompleteTurno?: (id: number) => Promise<void>; // ← AHORA SÍ EN LAS PROPS
+  onCompleteTurno?: (id: number) => Promise<void>;
+  onRescheduleTurno?: (turno: Turno) => void;
   onEditTurno?: (turno: Turno) => void;
   onViewDetails?: (turno: Turno) => void;
 }
@@ -140,6 +141,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
   statusFilter,
   onCancelTurno,
   onCompleteTurno,
+  onRescheduleTurno,
   onEditTurno,
   onViewDetails,
 }) => {
@@ -432,7 +434,19 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                           </button>
                         )}
 
-                       
+                        {/* Reprogramar */}
+                        {uiEstado !== 'CANCELADO' && uiEstado !== 'COMPLETADO' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRescheduleTurno?.(turno);
+                            }}
+                            className="p-2 hover:bg-blue-100 rounded-lg transition-colors group"
+                            title="Reprogramar turno"
+                          >
+                            <Calendar className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
