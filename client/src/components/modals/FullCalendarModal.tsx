@@ -273,7 +273,6 @@ const CalendarModalContent: React.FC<CalendarModalContentProps> = ({ onScheduleA
   );
 };
 
-// Componente principal que exportas
 const CalendarModalTrigger: React.FC<{ 
   children: React.ReactNode;
   onScheduleAppointment?: (date: Date, time: string) => void;

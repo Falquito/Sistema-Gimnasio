@@ -96,7 +96,7 @@ export function SidebarDemo() {
       )}
     >
       <Sidebar  open={open} setOpen={setOpen} >
-        <SidebarBody className="shadow-2xl border-r border-gray-300 backdrop-blur-lg justify-between gap-2 bg-white ">
+        <SidebarBody className="shadow-2xl  backdrop-blur-lg justify-between gap-2 bg-white ">
           <div className="flex flex-col overflow-x-hidden overflow-y-auto">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-4 flex flex-col gap-2">
@@ -134,7 +134,7 @@ export const Logo = () => {
   return (
     <a
       href="#"
-      className="bg-emerald-500 rounded-2xl  relative z-20 flex items-center gap-2 py-1 text-sm font-bold text-white"
+      className="relative z-20 flex items-center gap-2 py-1 text-sm font-normal text-black"
     >
       <img
         src={logo}
