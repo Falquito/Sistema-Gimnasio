@@ -13,14 +13,18 @@ export function MedicacionTab({ pacienteId }: Props) {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
+  // 🔹 Cargar medicaciones desde el backend
   const getMedicaciones = async () => {
     try {
       setLoading(true);
-      const res = await apiFetch(`/historia/pacientes/${pacienteId}/medicaciones`);
-      const data = await res.json();
-      setMedicaciones(data);
+      const result = await apiFetch(`/historia/pacientes/${pacienteId}/medicaciones`);
+      console.log("📥 Respuesta medicaciones:", result);
+
+      // Si apiFetch ya devuelve el JSON directamente
+      const data = result?.data || result;
+      setMedicaciones(data || []);
     } catch (err) {
-      console.error("Error cargando medicaciones:", err);
+      console.error("❌ Error cargando medicaciones:", err);
     } finally {
       setLoading(false);
     }
@@ -32,6 +36,7 @@ export function MedicacionTab({ pacienteId }: Props) {
 
   return (
     <div className="p-6 space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
@@ -41,9 +46,10 @@ export function MedicacionTab({ pacienteId }: Props) {
             Historial completo de fármacos indicados.
           </p>
         </div>
+
         <button
           onClick={() => setShowModal(true)}
-          className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 flex items-center gap-1"
+          className="px-3 py-1 bg-emerald-500 text-white rounded-md text-sm hover:bg-emerald-400 flex items-center gap-1"
         >
           <IconPlus size={16} /> Agregar
         </button>
@@ -72,19 +78,19 @@ export function MedicacionTab({ pacienteId }: Props) {
             </thead>
             <tbody>
               {medicaciones.map((m) => (
-                <tr key={m.id_medicacion} className="border-b">
+                <tr key={m.idMedicacion} className="border-b">
                   <td className="p-2">{m.farmaco}</td>
                   <td className="p-2">{m.dosis}</td>
                   <td className="p-2">{m.frecuencia}</td>
                   <td className="p-2">{m.indicacion}</td>
-                  <td className="p-2">{m.fecha_inicio}</td>
-                  <td className="p-2">{m.fecha_fin || "-"}</td>
+                  <td className="p-2">{m.fechaInicio}</td>
+                  <td className="p-2">{m.fechaFin || "-"}</td>
                   <td className="p-2">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        m.estado === "Activo"
+                        m.estado === "ACTIVO"
                           ? "bg-green-100 text-green-700"
-                          : m.estado === "Suspendido"
+                          : m.estado === "SUSPENDIDO"
                           ? "bg-yellow-100 text-yellow-700"
                           : "bg-gray-200 text-gray-600"
                       }`}
@@ -99,6 +105,7 @@ export function MedicacionTab({ pacienteId }: Props) {
         </div>
       )}
 
+      {/* Modal */}
       {showModal && (
         <MedicacionModal
           open={showModal}

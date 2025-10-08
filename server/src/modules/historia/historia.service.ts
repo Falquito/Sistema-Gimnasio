@@ -114,7 +114,6 @@ export class HistoriaService {
       fechaFin,
       ultimaAdmin: dto.ultimaAdmin ?? null,
       estado,
-      idTurno: turno ?? null,
       idPaciente: paciente,
       idProfesional: profesional,
     } as DeepPartial<Medicacion>);
@@ -250,6 +249,7 @@ export class HistoriaService {
              .addOrderBy("a.hora", "DESC", "NULLS LAST")
              .getMany();
   }
+
 
 
       // ---- DIAGNOSTICO ----

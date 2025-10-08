@@ -21,7 +21,20 @@ export function DiagnosticoTab({ paciente }: Props) {
     try {
       setLoading(true);
       const data = await apiFetch(`/historia/pacientes/${paciente.id_paciente}/diagnosticos`);
-      setDiagnosticos(data);
+      console.log("🧩 Diagnósticos recibidos:", data);
+
+      // Normalizamos las claves al formato que usa el front
+      const normalizados = data.map((d: any) => ({
+        id_diagnostico: d.id_diagnostico ?? d.idDiagnostico,
+        fecha: d.fecha ?? "-",
+        estado: d.estado ?? "-",
+        certeza: d.certeza ?? "-",
+        codigo_cie: d.codigo_cie ?? d.codigoCIE ?? "-",
+        sintomas_principales: d.sintomas_principales ?? d.sintomasPrincipales ?? "-",
+        observaciones: d.observaciones ?? "-",
+      }));
+
+      setDiagnosticos(normalizados);
     } catch (err) {
       console.error("❌ Error cargando diagnósticos:", err);
     } finally {
@@ -48,7 +61,7 @@ export function DiagnosticoTab({ paciente }: Props) {
 
         <button
           onClick={() => setOpenModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white text-sm px-3 py-2 rounded-md hover:bg-blue-700"
+          className="flex items-center gap-2 bg-emerald-500 text-white text-sm px-3 py-2 rounded-md hover:bg-emerald-400"
         >
           <IconPlus size={16} />
           Agregar diagnóstico
@@ -79,12 +92,14 @@ export function DiagnosticoTab({ paciente }: Props) {
                 <tr key={d.id_diagnostico} className="border-b hover:bg-gray-50">
                   <td className="py-2 px-3 flex items-center gap-2">
                     <IconCalendar size={14} className="text-gray-400" />
-                    {format(new Date(d.fecha), "dd/MM/yyyy", { locale: es })}
+                    {d.fecha
+                      ? format(new Date(d.fecha), "dd/MM/yyyy", { locale: es })
+                      : "-"}
                   </td>
                   <td className="py-2 px-3">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        d.estado === "Activo"
+                        d.estado === "ACTIVO"
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-200 text-gray-600"
                       }`}
@@ -107,7 +122,7 @@ export function DiagnosticoTab({ paciente }: Props) {
         open={openModal}
         onClose={() => setOpenModal(false)}
         pacienteId={paciente.id_paciente}
-        onSaved={fetchDiagnosticos} // 🔄 Recarga lista al guardar
+        onSaved={fetchDiagnosticos}
       />
     </div>
   );

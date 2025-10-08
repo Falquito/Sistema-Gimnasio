@@ -4,6 +4,7 @@ import { useTurnos } from '../../hooks/useTurnos';
 import { turnosApi } from '../../services/turnos.services';
 import type { FilterState } from '../../types/dashboard';
 import type { NewSessionFormData } from './NewSessionModal';
+import type { Turno } from '../../types/turnos';
 import { calcularEstadisticas, filterTurnos } from '../../utils/dashboard.utils';
 
 // Componentes
@@ -18,6 +19,7 @@ import { ConfirmModal } from './ConfirmModal';
 import { CancelAppointmentModal } from './CancelAppointmentModal';
 import { ToastContainer, useToast } from './ToastNotification'; // ✅ NUEVO
 
+import { RescheduleModal } from './RescheduleModal';
 /* ====================== Helpers & constantes ====================== */
 const RECEPCIONISTA_ID = 1;
 
@@ -57,6 +59,8 @@ const Dashboard: React.FC = () => {
     patientName: null
   });
 
+  const [selectedTurno, setSelectedTurno] = useState<Turno | null>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   // SOLUCIÓN: Solo traer todos los turnos sin filtro en el hook
   const { turnos, loading, error, refetch } = useTurnos(undefined, 'todos');
 
@@ -128,7 +132,10 @@ const Dashboard: React.FC = () => {
       showError(`Error al cancelar: ${message}`); 
     }
   };
-
+  const handleRescheduleTurno = (turno: Turno) => {
+    setSelectedTurno(turno);
+    setShowRescheduleModal(true);
+  };
   const handleCreateSession = async (data: NewSessionFormData) => {
     try {
       console.log('Datos recibidos del modal:', data);
@@ -233,7 +240,23 @@ const Dashboard: React.FC = () => {
           statusFilter={filters.statusFilter}
           onCancelTurno={handleCancelTurno}
           onCompleteTurno={handleCompleteTurno} 
+          onRescheduleTurno={handleRescheduleTurno}
         />
+        {/* Modal de reprogramación */}
+        {showRescheduleModal && (
+          <RescheduleModal
+            turno={selectedTurno}
+            onClose={() => {
+              setShowRescheduleModal(false);
+              setSelectedTurno(null);
+            }}
+            onSuccess={() => {
+              setShowRescheduleModal(false);
+              setSelectedTurno(null);
+              refetch();
+            }}
+          />
+        )}
       </div>
 
       <ConfirmModal

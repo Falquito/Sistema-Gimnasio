@@ -6,40 +6,42 @@ export async function apiFetch<T = any>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = localStorage.getItem("token");
-
-  // armamos headers sin meter Authorization vacío ni forzar JSON en FormData
   const isFormData = options.body instanceof FormData;
+
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
-    ...(!isFormData ? { "Content-Type": "application/json" } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(!isFormData ? { "Content-Type": "application/json" } : {}),
   };
 
-  const res = await fetch(`${API_BASE_URL}${url}`, {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers,
   });
 
-  if (res.status === 401) {
-    // Token inválido/expirado → logout duro y cortar ejecución
+  // 🔒 Si el token es inválido o expiró → cerrar sesión
+  if (response.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
     throw new Error("No autorizado");
   }
 
-  if (!res.ok) {
-    // Intentamos leer mensaje del backend
-    let message = `HTTP ${res.status}`;
+  // ⚠️ Si hay error del servidor o request fallida
+  if (!response.ok) {
+    let errorMessage = `Error HTTP ${response.status}`;
     try {
-      const err = await res.json();
-      message = err?.message || err?.error || message;
+      const errorData = await response.json();
+      errorMessage =
+        errorData?.message || errorData?.error || errorMessage;
     } catch {
-      // por si la respuesta no es JSON
+      // respuesta no JSON → ignoramos
     }
-    throw new Error(message);
+    throw new Error(errorMessage);
   }
 
-  // 204 o respuestas vacías
-  const text = await res.text();
-  return (text ? JSON.parse(text) : null) as T;
+  // ✅ Si la respuesta está vacía (ej: 204 No Content)
+  if (response.status === 204) return null as T;
+
+  // ✅ Devolvemos directamente el resultado JSON parseado
+  return (await response.json()) as T;
 }

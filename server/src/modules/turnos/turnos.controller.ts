@@ -30,7 +30,11 @@ getEstadisticas(@Query('period') period?: string) {
   workingHours(@Query('profesionalId', ParseIntPipe) profesionalId: number) {
     return this.turnosService.getWorkingHours(profesionalId);
   }
-
+  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
+  @Patch(':id/reprogramar')
+  reprogramar( @Param('id', ParseIntPipe) id: number, @Body() dto: ReprogramarTurnoDto,) { 
+    return this.turnosService.reprogramar(id, dto);
+  }
   // HU-5: crear (registrar turno)
   //@Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
    // Agenda (calendario)
@@ -63,12 +67,6 @@ getEstadisticas(@Query('period') period?: string) {
   cancelar(@Param('id', ParseIntPipe) id: number, @Body() dto: CancelarTurnoDto) {
     return this.turnosService.cancelar(id, dto);
   }
-
-  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
-
- 
-
-  @Auth(validRoles.medico, validRoles.recepcionista, validRoles.gerente)
 
   // Utilidades de lectura
 
