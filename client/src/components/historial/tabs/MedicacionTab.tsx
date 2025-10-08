@@ -49,7 +49,7 @@ export function MedicacionTab({ pacienteId }: Props) {
 
         <button
           onClick={() => setShowModal(true)}
-          className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 flex items-center gap-1"
+          className="px-3 py-1 bg-emerald-500 text-white rounded-md text-sm hover:bg-emerald-400 flex items-center gap-1"
         >
           <IconPlus size={16} /> Agregar
         </button>

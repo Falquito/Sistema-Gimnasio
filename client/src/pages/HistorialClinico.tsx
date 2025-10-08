@@ -39,7 +39,7 @@ export default function HistorialClinico() {
           id_paciente: p.id_paciente,
           nombre: p.nombre_paciente,      // 👈 cambio clave
           apellido: p.apellido_paciente,  // 👈 cambio clave
-          diagnostico: p.diagnostico_principal ?? "Sin diagnóstico",
+          diagnostico: p.obraSocial?.nombre ?? "Sin obra social",
           ultimaConsulta: p.ultima_consulta ?? "2024-09-28",
           estado: "activo",
           telefono: p.telefono_paciente,
