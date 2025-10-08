@@ -54,12 +54,18 @@ export class Profesionales {
   // )
   // profesionalesPorServicios: ProfesionalesPorServicios[];
 
+  @Column({type:"boolean",default:true})
+  estado:boolean;
+
   @OneToMany(() => Turnos, (turnos) => turnos.idProfesional)
   turnos: Turnos[];
 
   @OneToMany(()=>ObraSocialPorProfesional,(obrp)=>obrp.profesional)
   obraSocialPorProfesional:ObraSocialPorProfesional
 
-  @Column({type:"boolean",default:true})
-  estado:boolean;
+  @Column({type:"text",default:"09:00"})
+  hora_inicio_laboral:string;
+
+  @Column({type:"text",default:"21:00"})
+  hora_fin_laboral:string;
 }

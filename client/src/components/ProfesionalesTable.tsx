@@ -198,7 +198,7 @@
 
 
 import type { ProfesionalListItem } from "@/services/profesionales.services";
-import { BriefcaseMedical, Calendar, Edit3, Mail, Phone, Trash2, User, Users, Search } from "lucide-react";
+import { BriefcaseMedical, Calendar, Edit3, Mail, Phone, Trash2, User, Users, Search, TimerIcon } from "lucide-react";
 import { useState, useMemo } from "react";
 
 interface ProfesionalesTableProps {
@@ -219,15 +219,30 @@ export const ProfesionalesTable: React.FC<ProfesionalesTableProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   // --- 🔍 Filtro dinámico ---
-  const filteredProfesionales = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return profesionales.filter((p) =>
-      p.nombreProfesional.toLowerCase().includes(term) ||
-      p.apellidoProfesional.toLowerCase().includes(term) ||
-      p.servicio.toLowerCase().includes(term) ||
-      p.dni.toString().includes(term)
-    );
-  }, [searchTerm, profesionales]);
+  // const filteredProfesionales = useMemo(() => {
+  //   const term = searchTerm.toLowerCase();
+  //   return profesionales.filter((p) =>
+  //     (p.nombreProfesional.toLowerCase().includes(term) ||
+  //     p.apellidoProfesional.toLowerCase().includes(term) ||
+  //     p.servicio.toLowerCase().includes(term) ||
+  //     p.dni.toString().includes(term) &&
+  //     p.estado===true
+  //   );
+  // }, [searchTerm, profesionales]);
+
+
+const filteredProfesionales = useMemo(() => {
+  const term = searchTerm.toLowerCase();
+  return profesionales.filter((p) =>
+    (p.nombreProfesional.toLowerCase().includes(term) ||
+     p.apellidoProfesional.toLowerCase().includes(term) ||
+     p.servicio.toLowerCase().includes(term) ||
+     p.dni.toString().includes(term)) &&
+     p.estado === true
+  );
+}, [searchTerm, profesionales]);
+
+
 
   // --- 🧮 Función para calcular tiempo activo ---
   const calcularTiempoActivo = (fechaInicio: string) => {
@@ -300,6 +315,7 @@ export const ProfesionalesTable: React.FC<ProfesionalesTableProps> = ({
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Información Personal</th>
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Contacto</th>
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Servicio</th>
+                <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Horarios</th>
                 <th className="text-left py-4 px-6 text-gray-700 font-semibold text-sm">Acciones</th>
               </tr>
             </thead>
@@ -331,7 +347,7 @@ export const ProfesionalesTable: React.FC<ProfesionalesTableProps> = ({
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <User className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">{profesional.genero}</span>
+                          <span className="text-gray-600">Genero: {profesional.genero}</span>
                         </div>
                       </div>
                     </td>
@@ -353,6 +369,13 @@ export const ProfesionalesTable: React.FC<ProfesionalesTableProps> = ({
                       <div className="flex items-center gap-2">
                         <BriefcaseMedical className="w-4 h-4 text-gray-400" />
                         {profesional.servicio}
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-6 text-sm text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <TimerIcon className="w-4 h-4 text-gray-400" />
+                        {profesional.hora_inicio_laboral} - {profesional.hora_fin_laboral}
                       </div>
                     </td>
 

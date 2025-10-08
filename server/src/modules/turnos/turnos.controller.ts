@@ -1,7 +1,5 @@
 // src/modules/turnos/turnos.controller.ts
-import {
-  Controller, Get, Post, Patch, Body, Param, Query, ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, ParseIntPipe } from '@nestjs/common';
 import { TurnosService } from './turnos.service';
 import { CrearTurnoDto } from './dto/crear-turno.dto';
 import { ReprogramarTurnoDto } from './dto/reprogramar-turno.dto';

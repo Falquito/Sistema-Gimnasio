@@ -24,6 +24,8 @@ export type BodyProfesional={
   email:string;
   servicio:string;
   genero:string;
+  hora_inicio_laboral:string;
+  hora_fin_laboral:string;
 }
 
 type Paged<T> = { page: number; limit: number; total: number; items: T[] };

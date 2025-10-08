@@ -154,7 +154,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         <div className="px-6 py-5 border-b border-gray-200 bg-gray-50/50">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Sesiones de Entrenamiento</h2>
+              <h2 className="text-xl font-bold text-gray-900">Lista de turnos</h2>
               <p className="text-gray-600 text-sm mt-1">
                 {hayFiltrosActivos 
                   ? `0 de ${totalTurnos} sesiones encontradas`
@@ -166,7 +166,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         </div>
         <div className="text-center py-16">
           <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-900 text-lg font-medium mb-2">No se encontraron sesiones</p>
+          <p className="text-gray-900 text-lg font-medium mb-2">No se encontraron turnos</p>
           <p className="text-gray-500 text-sm max-w-md mx-auto">
             {hayFiltrosActivos
               ? 'Ajusta los filtros de búsqueda para ver más resultados'
@@ -264,13 +264,13 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
           <div>
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
               <Calendar className="w-6 h-6 text-green-600" />
-              Sesiones de Entrenamiento
+              Lista de turnos
             </h2>
             <p className="text-gray-600 text-sm mt-1">
               {hayFiltrosActivos ? (
                 <>
                   <span className="font-semibold text-gray-900">{turnos.length}</span> de{' '}
-                  <span className="font-semibold text-gray-900">{totalTurnos}</span> sesiones encontradas
+                  <span className="font-semibold text-gray-900">{totalTurnos}</span> Turnos encontrados
                   {searchTerm && (
                     <span className="text-gray-500"> • Búsqueda: "{searchTerm}"</span>
                   )}
@@ -279,7 +279,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                   )}
                 </>
               ) : (
-                `${turnos.length} ${turnos.length === 1 ? 'sesión registrada' : 'sesiones registradas'}`
+                `${turnos.length} ${turnos.length === 1 ? 'turno registrado' : 'turnos registrados'}`
               )}
             </p>
           </div>
@@ -480,7 +480,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                                 onClick={() => onCompleteTurno?.(turno.idTurno)}
                                 className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                               >
-                                Completar Sesión
+                                Completar turno
                               </button>
                             )}
                           </div>
@@ -501,9 +501,9 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span>
             {hayFiltrosActivos ? (
-              <>Mostrando {turnos.length} de {totalTurnos} sesiones</>
+              <>Mostrando {turnos.length} de {totalTurnos} turnos</>
             ) : (
-              <>Mostrando {turnos.length} sesiones</>
+              <>Mostrando {turnos.length} turnos</>
             )}
           </span>
           {hayFiltrosActivos && (

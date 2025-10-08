@@ -56,7 +56,7 @@ export function SidebarDemo() {
       icon: (
         <IconCalendar className="h-5 w-5 shrink-0" />
       ),
-      roles: ["gerente", "medico","recepcionista"],
+      roles: ["gerente","recepcionista"],
     },
      {
       label: "Pacientes",
@@ -64,7 +64,7 @@ export function SidebarDemo() {
       icon: (
         <IconUser className="h-5 w-5 shrink-0" />
       ),
-      roles: ["gerente", "medico","recepcionista"],
+      roles: ["gerente","recepcionista"],
     },
     
     {
@@ -72,7 +72,8 @@ export function SidebarDemo() {
       href:"profesionales",
       icon:(
         <BriefcaseMedical></BriefcaseMedical>
-      )
+      ),
+      roles:["gerente","recepcionista"]
     },
     {
       label: "Logout",

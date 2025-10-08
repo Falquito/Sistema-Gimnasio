@@ -114,6 +114,9 @@ export class TurnosService {
     // (lógica de slots ocupados/commentado)
   }
 
+
+
+
   // ====== HU-5: CREAR ======
   async crear(dto: CrearTurnoDto) {
     const { fecha, hora: horaInicio } = this.isoToParts(dto.inicio);
@@ -186,6 +189,8 @@ export class TurnosService {
       await queryRunner.release();
     }
   }
+
+
 
   // ====== HU-6a: CANCELAR ======
   async cancelar(id: number, dto: CancelarTurnoDto) {
